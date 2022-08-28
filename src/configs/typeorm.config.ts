@@ -1,0 +1,21 @@
+import { TypeOrmModuleOptions } from "@nestjs/typeorm";
+import * as config from 'config';
+import { Category } from "src/categories/category.entity";
+import { DealState } from "src/dealStates/dealState.entity";
+import { Post } from "src/posts/post.entity";
+import { TownRange } from "src/townRanges/townRange.entity";
+import { User } from "src/users/user.entity";
+
+const dbConfig = config.get('db');
+
+export const typeORMConfig: TypeOrmModuleOptions = {
+  type: dbConfig.type,
+  host: dbConfig.host,
+  port: dbConfig.port,
+  username: dbConfig.username,
+  password: dbConfig.password,
+  database: dbConfig.database,
+  entities: [Post, User, Category, DealState, TownRange],
+  synchronize: dbConfig.synchronize, 
+  timezone: dbConfig.timezone
+}
