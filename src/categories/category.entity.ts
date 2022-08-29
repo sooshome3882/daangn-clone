@@ -13,7 +13,6 @@ export class Category extends BaseEntity {
   @Column({type: 'varchar'})
   category!: string; 
 
-  @Field(type => [Post])
   @OneToMany(type => Post, post => post.category, { eager: false })
   posts!: Post[];
 }

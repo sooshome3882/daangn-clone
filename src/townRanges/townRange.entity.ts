@@ -13,7 +13,6 @@ export class TownRange extends BaseEntity {
   @Column({type: 'int'})
   townRange!: number; 
 
-  @Field(type => [Post])
   @OneToMany(type => Post, post => post.townRange, { eager: false })
   posts!: Post[];
 }

@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/user.entity';
 import { CreatePostDto } from './dto/createPost.dto';
+import { SearchPostDto } from './dto/searchPost.dto';
 import { UpdatePostDto } from './dto/updatePost.dto';
 import { Post } from './post.entity';
 import { PostRepository } from './post.repository';
@@ -40,7 +41,7 @@ export class PostService {
     return found;
   }
 
-  async getPosts(): Promise<Post[]> {
-    return this.postRepository.find();
+  async getPosts(searchPostDto: SearchPostDto): Promise<Post[]> {
+    return this.postRepository.getPosts(searchPostDto);
   }
 }

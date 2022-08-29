@@ -13,7 +13,6 @@ export class DealState extends BaseEntity {
   @Column({type: 'varchar'})
   dealState!: string; 
 
-  @Field(type => [Post])
   @OneToMany(type => Post, post => post.dealState, { eager: false })
   posts!: Post[];
 }

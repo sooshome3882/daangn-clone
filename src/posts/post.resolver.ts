@@ -2,6 +2,7 @@ import { ParseIntPipe, UsePipes, ValidationPipe } from '@nestjs/common';
 import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
 import { User } from 'src/users/user.entity';
 import { CreatePostDto } from './dto/createPost.dto';
+import { SearchPostDto } from './dto/searchPost.dto';
 import { UpdatePostDto } from './dto/updatePost.dto';
 import { Post } from './post.entity';
 import { PostService } from './post.service';
@@ -17,6 +18,7 @@ export class PostResolver {
   }
 
   @Mutation(() => Post)
+  @UsePipes(ValidationPipe)
   updatePost(@Args('postId', ParseIntPipe) postId: number, @Args('updatePostDto') updatePostDto: UpdatePostDto) {
     return this.postService.updatePost(postId, updatePostDto);
   }
@@ -32,7 +34,9 @@ export class PostResolver {
   }
 
   @Query(() => [Post], {name: 'posts'})
-  getPosts() {
-    return this.postService.getPosts();
+  @UsePipes(ValidationPipe)
+  getPosts(@Args('searchPostDto') searchPostDto: SearchPostDto) {
+    console.log(searchPostDto);
+    return this.postService.getPosts(searchPostDto);
   }
 }
