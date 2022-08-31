@@ -1,11 +1,11 @@
-import {TypeOrmModuleOptions} from '@nestjs/typeorm';
+import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import * as config from 'config';
-import {Category} from 'src/categories/category.entity';
-import {DealState} from 'src/dealStates/dealState.entity';
-import {Post} from 'src/posts/post.entity';
-import {TownRange} from 'src/townRanges/townRange.entity';
-import {User} from 'src/users/user.entity';
-import {PriceOffer} from 'src/posts/priceOffer.entity';
+import { Category } from 'src/categories/category.entity';
+import { DealState } from 'src/dealStates/dealState.entity';
+import { Post } from 'src/posts/post.entity';
+import { TownRange } from 'src/townRanges/townRange.entity';
+import { User } from 'src/users/user.entity';
+import { PriceOffer } from 'src/posts/priceOffer.entity';
 
 const dbConfig: any = config.get('db');
 

@@ -4,6 +4,6 @@ import { IsNumber } from 'class-validator';
 @InputType()
 export class PullUpPostInputDto {
   @Field()
-  //   @IsNumber()
+  @IsNumber()
   readonly postId: number;
 }
