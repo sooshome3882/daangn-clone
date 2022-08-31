@@ -63,7 +63,6 @@ export class PostRepository extends Repository<Post> {
     });
 
     const { post } = priceOffered;
-    console.log(post.postId);
 
     const priceOfferedPost = await Post.findOne({
       where: {
@@ -71,11 +70,7 @@ export class PostRepository extends Repository<Post> {
       },
     });
 
-    console.log(priceOffered.accept);
-
     if (accept) {
-      console.log(priceOffered.accept);
-
       priceOffered.accept = true;
       priceOfferedPost.isOfferedPrice = true;
       priceOfferedPost.price = priceOffered.offerPrice;

@@ -84,7 +84,6 @@ export class PostService {
      */
 
     const priceOfferedId = await this.postRepository.requestPriceToSeller(offerPriceDto);
-    console.log('?????');
 
     // await this.postRepository.responsePriceToSeller(); // TODO - 유저 테이블 구체화된 후 수정 (알림기능)
 
@@ -93,13 +92,11 @@ export class PostService {
         priceOfferId: priceOfferedId,
       },
     });
-    console.log(priceOffer, 'here');
     return priceOffer;
   }
 
   async acceptOfferedPrice(acceptOfferedPriceDto: AcceptOfferedPriceDto): Promise<PriceOffer> {
     const priceOffered = await this.postRepository.determineOfferedPrice(acceptOfferedPriceDto);
-    console.log(priceOffered);
     return priceOffered;
   }
 }
