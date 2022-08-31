@@ -17,7 +17,6 @@ export class PostService {
   constructor(
     @InjectRepository(PostRepository)
     private postRepository: PostRepository,
-    private connection: Connection,
   ) {}
 
   async createPost(createPostDto: CreatePostDto): Promise<Post> {
