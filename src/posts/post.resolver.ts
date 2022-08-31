@@ -1,11 +1,11 @@
 import { AcceptOfferedPriceDto } from './dto/acceptOfferedPrice.dto';
-import { ParseIntPipe, UsePipes, ValidationPipe } from '@nestjs/common';
+import { ParseBoolPipe, ParseIntPipe, UsePipes, ValidationPipe } from '@nestjs/common';
 import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
 import { User } from 'src/users/user.entity';
 import { CreatePostDto } from './dto/createPost.dto';
 import { SearchPostDto } from './dto/searchPost.dto';
 import { UpdatePostDto } from './dto/updatePost.dto';
-import { PullUpPostInputDto } from './dto/pullUpPostInput.dto';
+// import { PullUpPostInputDto } from './dto/pullUpPostInput.dto';
 import { OfferPriceDto } from './dto/offerPrice.dto';
 import { Post } from './post.entity';
 import { PriceOffer } from './priceOffer.entity';
@@ -47,21 +47,28 @@ export class PostResolver {
   // 게시글 끌올
   @Mutation(() => Post)
   @UsePipes(ValidationPipe)
-  async pullupPost(@Args('pullUpPostInputDto') pullUpPostInputDto: PullUpPostInputDto) {
-    return await this.postService.pullUpPost(pullUpPostInputDto);
+  pullupPost(@Args('postId', ParseIntPipe) postId: number) {
+    return this.postService.pullUpPost(postId);
   }
 
   // 가격 제안 to 판매자
   @Mutation(() => PriceOffer)
   @UsePipes(ValidationPipe)
-  async offerPriceToSeller(@Args('offerPriceDto') offerPriceDto: OfferPriceDto): Promise<PriceOffer> {
-    return await this.postService.offerPrice(offerPriceDto);
+  offerPriceToSeller(@Args('offerPriceDto') offerPriceDto: OfferPriceDto): Promise<PriceOffer> {
+    return this.postService.offerPrice(offerPriceDto);
   }
 
   // 가격 제안 수락
   @Mutation(() => PriceOffer)
   @UsePipes(ValidationPipe)
-  async acceptOfferedPriceOfSeller(@Args('acceptOfferedPriceDto') acceptOfferPriceDto: AcceptOfferedPriceDto): Promise<PriceOffer> {
-    return await this.postService.acceptOfferedPrice(acceptOfferPriceDto);
+  acceptOfferedPriceOfSeller(@Args('acceptOfferedPriceDto') acceptOfferPriceDto: AcceptOfferedPriceDto): Promise<PriceOffer> {
+    return this.postService.acceptOfferedPrice(acceptOfferPriceDto);
+  }
+
+  // 게시글 숨김 처리
+  @Mutation(() => Post)
+  @UsePipes(ValidationPipe)
+  hidePost(@Args('postId', ParseIntPipe) postId: number) {
+    return this.postService.hidePost(postId);
   }
 }

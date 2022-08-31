@@ -4,7 +4,7 @@ import { User } from 'src/users/user.entity';
 import { CreatePostDto } from './dto/createPost.dto';
 import { SearchPostDto } from './dto/searchPost.dto';
 import { UpdatePostDto } from './dto/updatePost.dto';
-import { PullUpPostInputDto } from './dto/pullUpPostInput.dto';
+// import { PullUpPostInputDto } from './dto/pullUpPostInput.dto';
 import { OfferPriceDto } from './dto/offerPrice.dto';
 import { AcceptOfferedPriceDto } from './dto/acceptOfferedPrice.dto';
 import { Post } from './post.entity';
@@ -49,7 +49,7 @@ export class PostService {
     return this.postRepository.getPosts(searchPostDto);
   }
 
-  async pullUpPost(pullUpPostInputDto: PullUpPostInputDto) {
+  async pullUpPost(postId: number) {
     /**
      * @ 코드작성자: 이승연
      * @ 기능: 게시글 끌어올리기
@@ -60,7 +60,6 @@ export class PostService {
      * 1. postId로 해당 게시물 먼저 찾기
      * 2. 게시물 찾은 후 updatedAt을 현재날짜로 수정하기
      */
-    const { postId } = pullUpPostInputDto;
     const found = await this.postRepository.findOne(postId);
 
     if (!found) {
@@ -98,5 +97,50 @@ export class PostService {
   async acceptOfferedPrice(acceptOfferedPriceDto: AcceptOfferedPriceDto): Promise<PriceOffer> {
     const priceOffered = await this.postRepository.determineOfferedPrice(acceptOfferedPriceDto);
     return priceOffered;
+  }
+
+  async reportPost() {
+    /**
+     * @ 코드 작성자: 이승연
+     * @ 기능: 게시물 신고
+     * @ [ComplaintReason] static data -> 신고 이유 등록
+     * @ [ReportHandling] static data -> 신고 처리 상태 등록
+     * @ 1️⃣ 작성자 외 모든 사용자들이 해당 게시글 신고 가능 (신고요청)
+     * @ 👮🏻 관리자
+     * @ 2️⃣ PostsComplaints entity에 등록
+     */
+  }
+
+  async updateDealState() {
+    /**
+     * @ 코드 작성자: 이승연
+     * @ 기능: 거래 상태 변경
+     * @ [dealState] static data -> 거래 상태 등록
+     * @ default: 판매중
+     * @ request에 담긴 state에 따라 예약중 || 거래완료로 변경
+     */
+  }
+
+  async hidePost(postId: number) {
+    /**
+     * @ 코드 작성자: 이승연
+     * @ 기능: 게시글 숨김 처리
+     * @ 게시글 신고처리 (reportHandling=true) 상태일 때, isHidden = true로 변경하여 숨김처리
+     * @ 전체 게시글 조회시 isHidden = false인 것만 filtering 하기
+     */
+
+    const post = await Post.findOne({
+      where: {
+        postId,
+      },
+    });
+
+    if (!post) {
+      throw new NotFoundException(`postId가 ${postId}인 것을 찾을 수 없습니다.`);
+    }
+
+    await this.postRepository.updateHiddenState(postId);
+
+    return await this.getPostById(postId);
   }
 }

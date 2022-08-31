@@ -4,7 +4,7 @@ import { EntityRepository, getRepository, Repository } from 'typeorm';
 import { CreatePostDto } from './dto/createPost.dto';
 import { SearchPostDto } from './dto/searchPost.dto';
 import { UpdatePostDto } from './dto/updatePost.dto';
-import { PullUpPostInputDto } from './dto/pullUpPostInput.dto';
+// import { PullUpPostInputDto } from './dto/pullUpPostInput.dto';
 import { Post } from './post.entity';
 import { PriceOffer } from './priceOffer.entity';
 
@@ -82,5 +82,9 @@ export class PostRepository extends Repository<Post> {
     } else {
       return;
     }
+  }
+
+  async updateHiddenState(postId: number) {
+    await getRepository(Post).createQueryBuilder('Post').update(Post).set({ isHidden: true }).where('postId = :postId', { postId }).execute();
   }
 }
