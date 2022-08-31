@@ -14,7 +14,7 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
       debug: true,
       playground: true,
     }),
-    PostModule
+    PostModule,
   ],
 })
 export class AppModule {}

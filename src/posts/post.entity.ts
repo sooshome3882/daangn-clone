@@ -1,59 +1,60 @@
-import { Field, ObjectType } from "@nestjs/graphql";
-import { Category } from "src/categories/category.entity";
-import { DealState } from "src/dealStates/dealState.entity";
-import { TownRange } from "src/townRanges/townRange.entity";
+import { Field, ObjectType } from '@nestjs/graphql';
+import { Category } from 'src/categories/category.entity';
+import { DealState } from 'src/dealStates/dealState.entity';
+import { TownRange } from 'src/townRanges/townRange.entity';
 import { User } from 'src/users/user.entity';
-import {BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn} from 'typeorm';
+import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { PriceOffer } from './priceOffer.entity';
 
 @Entity()
 @ObjectType()
 export class Post extends BaseEntity {
   @Field()
-  @PrimaryGeneratedColumn({type: 'int'})
+  @PrimaryGeneratedColumn({ type: 'int' })
   postId!: number;
 
   @Field()
-  @Column({type: 'varchar', length: 30})
+  @Column({ type: 'varchar', length: 30 })
   title!: string;
 
   @Field()
-  @Column({type: 'text'})
+  @Column({ type: 'text' })
   content!: string;
 
   @Field()
   @Column()
   price!: number;
 
-  @Field()
-  @Column({default: false})
+  @Field(type => Boolean)
+  @Column({ default: false, type: 'boolean' })
   isOfferedPrice!: boolean;
 
   @Field()
-  @Column({type: 'boolean', default: false})
+  @Column({ type: 'boolean', default: false })
   isHidden!: boolean;
 
   @Field()
-  @Column({type: 'boolean', default: false})
+  @Column({ type: 'boolean', default: false })
   reportHandling!: boolean;
 
   @Field()
-  @Column({type: 'int', default: 0})
+  @Column({ type: 'int', default: 0 })
   likes!: number;
 
   @Field()
-  @Column({type: 'int', default: 0})
+  @Column({ type: 'int', default: 0 })
   views!: number;
 
   @Field()
-  @CreateDateColumn({type: 'datetime'})
+  @CreateDateColumn({ type: 'datetime' })
   createdAt!: Date;
 
   @Field()
-  @UpdateDateColumn({type: 'datetime'})
+  @UpdateDateColumn({ type: 'datetime' })
   updatedAt!: Date;
 
   @Field()
-  @Column({type: 'datetime', default: () => "CURRENT_TIMESTAMP"})
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   pulledAt!: Date;
 
   // @Field()
@@ -62,17 +63,20 @@ export class Post extends BaseEntity {
   // userName!: User;
 
   @Field()
-  @JoinColumn({name: 'categoryId'})
+  @JoinColumn({ name: 'categoryId' })
   @ManyToOne(type => Category, category => category.posts, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
-  category!: Category
+  category!: Category;
 
   @Field()
-  @JoinColumn({name: 'townRangeId'})
+  @JoinColumn({ name: 'townRangeId' })
   @ManyToOne(type => TownRange, townRange => townRange.posts, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
-  townRange!: TownRange
+  townRange!: TownRange;
 
   @Field()
-  @JoinColumn({name: 'dealStateId'})
+  @JoinColumn({ name: 'dealStateId' })
   @ManyToOne(type => DealState, dealState => dealState.posts, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
-  dealState!: DealState
+  dealState!: DealState;
+
+  @OneToMany(type => PriceOffer, priceOffer => priceOffer.post)
+  priceOffer!: PriceOffer[];
 }
