@@ -4,6 +4,7 @@ import { PostModule } from './posts/post.module';
 import { typeORMConfig } from './configs/typeorm.config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { UserModule } from './users/user.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
       playground: true,
     }),
     PostModule,
+    UserModule,
   ],
 })
 export class AppModule {}

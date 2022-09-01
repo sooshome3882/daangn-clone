@@ -40,7 +40,6 @@ export class PostResolver {
   @Query(() => [Post], { name: 'posts' })
   @UsePipes(ValidationPipe)
   getPosts(@Args('searchPostDto') searchPostDto: SearchPostDto) {
-    console.log(searchPostDto);
     return this.postService.getPosts(searchPostDto);
   }
 

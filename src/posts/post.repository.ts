@@ -8,6 +8,7 @@ import { PullUpPostInputDto } from './dto/pullUpPostInput.dto';
 import { Post } from './post.entity';
 import { PriceOffer } from './priceOffer.entity';
 
+
 @EntityRepository(Post)
 export class PostRepository extends Repository<Post> {
   async createPost(createPostDto: CreatePostDto): Promise<number> {
