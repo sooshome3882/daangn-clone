@@ -1,10 +1,11 @@
-import { Field, ObjectType } from '@nestjs/graphql';
+import { Field, ObjectType, Int } from '@nestjs/graphql';
 import { Category } from 'src/categories/category.entity';
 import { DealState } from 'src/dealStates/dealState.entity';
 import { TownRange } from 'src/townRanges/townRange.entity';
 import { User } from 'src/users/user.entity';
-import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { PriceOffer } from './priceOffer.entity';
+import { PostsComplaint } from './postsComplaint.entity';
+import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity()
 @ObjectType()
@@ -79,4 +80,7 @@ export class Post extends BaseEntity {
 
   @OneToMany(type => PriceOffer, priceOffer => priceOffer.post)
   priceOffer!: PriceOffer[];
+
+  @OneToMany(type => PostsComplaint, postsComplaint => postsComplaint.post, { eager: false })
+  postsComplaint!: PostsComplaint[];
 }
