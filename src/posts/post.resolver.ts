@@ -1,5 +1,6 @@
+import { CreatePostsComplaintsDto } from './dto/createPostsComplaints.dto';
 import { AcceptOfferedPriceDto } from './dto/acceptOfferedPrice.dto';
-import { ParseBoolPipe, ParseIntPipe, UsePipes, ValidationPipe } from '@nestjs/common';
+import { ParseBoolPipe, ParseFilePipe, ParseIntPipe, UsePipes, ValidationPipe } from '@nestjs/common';
 import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
 import { User } from 'src/users/user.entity';
 import { CreatePostDto } from './dto/createPost.dto';
@@ -10,6 +11,10 @@ import { OfferPriceDto } from './dto/offerPrice.dto';
 import { Post } from './post.entity';
 import { PriceOffer } from './priceOffer.entity';
 import { PostService } from './post.service';
+import { ComplaintReason } from 'src/complaintReasons/complaintReason.entity';
+import { ProcessState } from 'processStates/processState.entity';
+import { PostsComplaint } from './postsComplaint.entity';
+import { UpdateDealStateDto } from './dto/updateDealState.dto';
 
 @Resolver(() => Post)
 export class PostResolver {
@@ -63,6 +68,27 @@ export class PostResolver {
   @UsePipes(ValidationPipe)
   acceptOfferedPriceOfSeller(@Args('acceptOfferedPriceDto') acceptOfferPriceDto: AcceptOfferedPriceDto): Promise<PriceOffer> {
     return this.postService.acceptOfferedPrice(acceptOfferPriceDto);
+  }
+
+  // static data setting
+  @Query(() => ComplaintReason)
+  @UsePipes(ValidationPipe)
+  async setStaticData(@Args('postId', ParseIntPipe) postId: number): Promise<object> {
+    return await this.postService.setStaticData(postId);
+  }
+
+  // 게시글 신고
+  @Mutation(() => PostsComplaint)
+  @UsePipes(ValidationPipe)
+  async reportPost(@Args('createPostsComplaintDto', ParseFilePipe) createPostsComplaintDto: CreatePostsComplaintsDto): Promise<PostsComplaint> {
+    return await this.postService.reportPost(createPostsComplaintDto);
+  }
+
+  // 게시글 상태 변경
+  @Mutation(() => Post)
+  @UsePipes(ValidationPipe)
+  updateDealState(@Args('postId', ParseIntPipe) postId: number, @Args('updateDealStateDto') updateDealStateDto: UpdateDealStateDto): Promise<Post> {
+    return this.postService.updateDealState(postId, updateDealStateDto);
   }
 
   // 게시글 숨김 처리
