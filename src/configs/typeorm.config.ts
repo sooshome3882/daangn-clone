@@ -6,6 +6,9 @@ import { Post } from 'src/posts/post.entity';
 import { TownRange } from 'src/townRanges/townRange.entity';
 import { User } from 'src/users/user.entity';
 import { PriceOffer } from 'src/posts/priceOffer.entity';
+import { ComplaintReason } from 'src/complaintReasons/complaintReason.entity';
+import { PostsComplaint } from 'src/posts/postsComplaint.entity';
+import { ProcessState } from 'processStates/processState.entity';
 
 const dbConfig: any = config.get('db');
 
@@ -16,7 +19,7 @@ export const typeORMConfig: TypeOrmModuleOptions = {
   username: dbConfig.username,
   password: dbConfig.password,
   database: dbConfig.database,
-  entities: [Post, User, Category, PriceOffer, DealState, TownRange],
+  entities: [Post, User, Category, PriceOffer, DealState, TownRange, ComplaintReason, PostsComplaint, ProcessState],
   synchronize: dbConfig.synchronize,
   timezone: dbConfig.timezone,
 };
