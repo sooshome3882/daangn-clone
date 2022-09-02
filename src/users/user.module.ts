@@ -1,4 +1,4 @@
-import { CacheModule, CACHE_MANAGER, Module, Options } from '@nestjs/common';
+import { CacheModule, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserRepository } from './user.repository';
 import { UserResolver } from './user.resolver';
