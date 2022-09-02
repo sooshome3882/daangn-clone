@@ -1,6 +1,7 @@
 import { Field, InputType } from '@nestjs/graphql';
 import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
 import { isCertified } from '../validations/certified.decorator';
+import { IsPhoneNumber } from '../validations/phoneNumber.decorator';
 
 @InputType()
 export class JoinUserDto {
@@ -15,6 +16,7 @@ export class JoinUserDto {
 
   @Field()
   @IsNotEmpty()
+  @IsPhoneNumber('isPhoneNumber')
   phoneNumber!: string;
 
   @Field()
