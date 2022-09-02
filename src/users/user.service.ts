@@ -7,6 +7,7 @@ import { Cache } from 'cache-manager';
 import * as crypto from 'crypto';
 import * as config from 'config';
 import { SMS } from './model/sms.model';
+import { JoinUserDto } from './dto/joinUser.dto';
 
 const smsConfig = config.get('sms');
 const ACCESS_KEY_ID = smsConfig.access_key_id;
@@ -22,6 +23,27 @@ export class UserService {
     private userRepository: UserRepository,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
+
+  async join(joinUserDto: JoinUserDto): Promise<string> {
+    const found = await this.getUserByPhoneNumber(joinUserDto.phoneNumber);
+    if (!found) {
+      await this.userRepository.join(joinUserDto.marketingInfoAgree, joinUserDto.phoneNumber);
+      return '회원가입되었습니다.';
+    }
+    return '로그인되었습니다.';
+  }
+
+  async getUserByPhoneNumber(phoneNumber: string): Promise<User> {
+    return await this.userRepository.findOne({ where: { phoneNumber: phoneNumber } });
+  }
+
+  async getUserById(userId: number): Promise<User> {
+    const found = await this.userRepository.findOne(userId);
+    if (!found) {
+      throw new NotFoundException(`userId ${userId}인 것을 찾을 수 없습니다.`);
+    }
+    return found;
+  }
 
   makeSignitureForSMS(): string {
     const message = [];
