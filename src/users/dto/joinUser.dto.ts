@@ -1,6 +1,6 @@
 import { Field, InputType } from '@nestjs/graphql';
 import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
-import { isCertified } from '../pipes/certified.pipe';
+import { isCertified } from '../validations/certified.decorator';
 
 @InputType()
 export class JoinUserDto {

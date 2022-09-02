@@ -1,8 +1,8 @@
-import { BadRequestException, UsePipes, ValidationPipe } from '@nestjs/common';
+import { UsePipes, ValidationPipe } from '@nestjs/common';
 import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
 import { JoinUserDto } from './dto/joinUser.dto';
-import { InputNumberValidationPipe } from './pipes/inputNumber.pipe';
-import { PhoneNumberValidationPipe } from './pipes/phoneNumber.pipe';
+import { InputNumberValidationPipe } from './validations/inputNumber.pipe';
+import { PhoneNumberValidationPipe } from './validations/phoneNumber.pipe';
 import { User } from './user.entity';
 import { UserService } from './user.service';
 
