@@ -1,5 +1,4 @@
 import { EntityRepository, getRepository, Repository } from 'typeorm';
-import { JoinUserDto } from './dto/joinUser.dto';
 import { User } from './user.entity';
 
 @EntityRepository(User)

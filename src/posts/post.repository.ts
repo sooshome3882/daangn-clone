@@ -10,7 +10,7 @@ import { UpdatePostDto } from './dto/updatePost.dto';
 import { Post } from './post.entity';
 import { PriceOffer } from './priceOffer.entity';
 import { ComplaintReason } from 'src/complaintReasons/complaintReason.entity';
-import { ProcessState } from '../processStates/processState.entity';
+import { ProcessState } from 'src/processStates/processState.entity';
 import { PostsComplaint } from './postsComplaint.entity';
 import { DealState } from 'src/dealStates/dealState.entity';
 

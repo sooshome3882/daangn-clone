@@ -5,6 +5,7 @@ import { InputNumberValidationPipe } from './validations/inputNumber.pipe';
 import { PhoneNumberValidationPipe } from './validations/phoneNumber.pipe';
 import { User } from './user.entity';
 import { UserService } from './user.service';
+import { LoginUserDto } from './dto/loginUser.dto';
 
 @Resolver(() => User)
 export class UserResolver {
@@ -14,6 +15,12 @@ export class UserResolver {
   @UsePipes(ValidationPipe)
   join(@Args('joinUserDto') joinUserDto: JoinUserDto): Promise<string> {
     return this.userService.join(joinUserDto);
+  }
+
+  @Query(() => String)
+  @UsePipes(ValidationPipe)
+  login(@Args('loginUserDto') loginUserDto: LoginUserDto): Promise<string> {
+    return this.userService.login(loginUserDto);
   }
 
   @Mutation(() => String)

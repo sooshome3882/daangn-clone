@@ -8,6 +8,7 @@ import * as crypto from 'crypto';
 import * as config from 'config';
 import { SMS } from './model/sms.model';
 import { JoinUserDto } from './dto/joinUser.dto';
+import { LoginUserDto } from './dto/loginUser.dto';
 
 const smsConfig = config.get('sms');
 const ACCESS_KEY_ID = smsConfig.access_key_id;
@@ -29,6 +30,14 @@ export class UserService {
     if (!found) {
       await this.userRepository.join(joinUserDto.marketingInfoAgree, joinUserDto.phoneNumber);
       return '회원가입되었습니다.';
+    }
+    return '로그인되었습니다.';
+  }
+
+  async login(loginUserDto: LoginUserDto): Promise<string> {
+    const found = await this.getUserByPhoneNumber(loginUserDto.phoneNumber);
+    if (!found) {
+      return '회원가입을 해주세요';
     }
     return '로그인되었습니다.';
   }
@@ -102,7 +111,7 @@ export class UserService {
 
   async checkSMS(phoneNumber: string, inputNumber: string): Promise<string> {
     const storedNumber = (await this.cacheManager.get(phoneNumber)) as string;
-    if (storedNumber === inputNumber) return '로그인되었습니다.';
+    if (storedNumber === inputNumber) return '인증이 완료되었습니다.';
     return '인증번호가 올바르지않습니다.';
   }
 }
