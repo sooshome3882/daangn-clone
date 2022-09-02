@@ -1,4 +1,4 @@
-import { BadRequestException, ParseIntPipe, UsePipes, ValidationPipe } from '@nestjs/common';
+import { BadRequestException, UsePipes, ValidationPipe } from '@nestjs/common';
 import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
 import { JoinUserDto } from './dto/joinUser.dto';
 import { InputNumberValidationPipe } from './pipes/inputNumber.pipe';
