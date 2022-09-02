@@ -8,7 +8,7 @@ import { User } from 'src/users/user.entity';
 import { PriceOffer } from 'src/posts/priceOffer.entity';
 import { ComplaintReason } from 'src/complaintReasons/complaintReason.entity';
 import { PostsComplaint } from 'src/posts/postsComplaint.entity';
-import { ProcessState } from 'processStates/processState.entity';
+import { ProcessState } from 'src/processStates/processState.entity';
 
 const dbConfig: any = config.get('db');
 
