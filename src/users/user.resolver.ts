@@ -24,7 +24,7 @@ export class UserResolver {
   }
 
   @Query(() => String)
-  checkSMS(@Args('phoneNumber') phoneNumber: string, @Args('inputNumber') inputNumber: string): Promise<Boolean> {
+  checkSMS(@Args('phoneNumber') phoneNumber: string, @Args('inputNumber') inputNumber: string): Promise<string> {
     return this.userService.checkSMS(phoneNumber, inputNumber);
   }
 }

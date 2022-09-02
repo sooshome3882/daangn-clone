@@ -100,9 +100,9 @@ export class UserService {
     }
   }
 
-  async checkSMS(phoneNumber: string, inputNumber: string): Promise<Boolean> {
+  async checkSMS(phoneNumber: string, inputNumber: string): Promise<string> {
     const storedNumber = (await this.cacheManager.get(phoneNumber)) as string;
-    if (storedNumber === inputNumber) return true;
-    else return false;
+    if (storedNumber === inputNumber) return '로그인되었습니다.';
+    return '인증번호가 올바르지않습니다.';
   }
 }
