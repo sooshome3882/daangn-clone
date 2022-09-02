@@ -1,6 +1,7 @@
 import { BadRequestException, ParseIntPipe, UsePipes, ValidationPipe } from '@nestjs/common';
 import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
 import { JoinUserDto } from './dto/joinUser.dto';
+import { PhoneNumberValidationPipe } from './pipes/phoneNumber.pipe';
 import { User } from './user.entity';
 import { UserService } from './user.service';
 
@@ -19,12 +20,12 @@ export class UserResolver {
 
   @Mutation(() => String)
   @UsePipes(ValidationPipe)
-  sendSMS(@Args('phoneNumber') phoneNumber: string): Promise<string> {
+  sendSMS(@Args('phoneNumber', PhoneNumberValidationPipe) phoneNumber: string): Promise<string> {
     return this.userService.sendSMS(phoneNumber);
   }
 
   @Query(() => String)
-  checkSMS(@Args('phoneNumber') phoneNumber: string, @Args('inputNumber') inputNumber: string): Promise<string> {
+  checkSMS(@Args('phoneNumber', PhoneNumberValidationPipe) phoneNumber: string, @Args('inputNumber') inputNumber: string): Promise<string> {
     return this.userService.checkSMS(phoneNumber, inputNumber);
   }
 }
