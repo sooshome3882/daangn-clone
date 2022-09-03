@@ -1,4 +1,4 @@
-import { CacheInterceptor, CACHE_MANAGER, Inject, Injectable, InternalServerErrorException, NotFoundException, UseInterceptors } from '@nestjs/common';
+import { CacheInterceptor, CACHE_MANAGER, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException, UseInterceptors } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/user.entity';
 import { UserRepository } from './user.repository';
@@ -9,6 +9,7 @@ import * as config from 'config';
 import { SMS } from './model/sms.model';
 import { JoinUserDto } from './dto/joinUser.dto';
 import { LoginUserDto } from './dto/loginUser.dto';
+import { JwtService } from '@nestjs/jwt';
 
 const smsConfig: any = config.get('sms');
 const ACCESS_KEY_ID = smsConfig.access_key_id;
@@ -23,23 +24,30 @@ export class UserService {
     @InjectRepository(UserRepository)
     private userRepository: UserRepository,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private jwtService: JwtService,
   ) {}
 
   async join(joinUserDto: JoinUserDto): Promise<string> {
-    const found = await this.getUserByPhoneNumber(joinUserDto.phoneNumber);
+    const marketingInfoAgree = joinUserDto.marketingInfoAgree;
+    const phoneNumber = joinUserDto.phoneNumber;
+    const found = await this.getUserByPhoneNumber(phoneNumber);
     if (!found) {
-      await this.userRepository.join(joinUserDto.marketingInfoAgree, joinUserDto.phoneNumber);
-      return '회원가입되었습니다.';
+      await this.userRepository.join(marketingInfoAgree, phoneNumber);
     }
-    return '로그인되었습니다.';
+    const payload = { phoneNumber };
+    const accessToken = this.jwtService.sign(payload);
+    return accessToken;
   }
 
   async login(loginUserDto: LoginUserDto): Promise<string> {
-    const found = await this.getUserByPhoneNumber(loginUserDto.phoneNumber);
+    const phoneNumber = loginUserDto.phoneNumber;
+    const found = await this.getUserByPhoneNumber(phoneNumber);
     if (!found) {
-      return '회원가입을 해주세요';
+      throw new UnauthorizedException('회원가입을 해주세요');
     }
-    return '로그인되었습니다.';
+    const payload = { phoneNumber };
+    const accessToken = this.jwtService.sign(payload);
+    return accessToken;
   }
 
   async getUserByPhoneNumber(phoneNumber: string): Promise<User> {
