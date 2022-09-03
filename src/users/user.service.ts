@@ -10,7 +10,7 @@ import { SMS } from './model/sms.model';
 import { JoinUserDto } from './dto/joinUser.dto';
 import { LoginUserDto } from './dto/loginUser.dto';
 
-const smsConfig = config.get('sms');
+const smsConfig: any = config.get('sms');
 const ACCESS_KEY_ID = smsConfig.access_key_id;
 const SECRET_KEY = smsConfig.secret_key;
 const SERVICE_ID = smsConfig.service_id;
