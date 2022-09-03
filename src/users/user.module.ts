@@ -6,6 +6,7 @@ import { UserService } from './user.service';
 import * as config from 'config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
+import { JwtStrategy } from './jwt.strategy';
 
 const cacheConfig: any = config.get('cache');
 const jwtConfig: any = config.get('jwt');
@@ -25,6 +26,7 @@ const passportConfig: any = config.get('passport');
     CacheModule.register({ ttl: cacheConfig.ttl, max: cacheConfig.max }),
     TypeOrmModule.forFeature([UserRepository]),
   ],
-  providers: [UserService, UserResolver],
+  providers: [UserService, UserResolver, JwtStrategy],
+  exports: [JwtStrategy, PassportModule],
 })
 export class UserModule {}
