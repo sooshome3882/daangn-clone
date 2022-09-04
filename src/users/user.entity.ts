@@ -45,6 +45,6 @@ export class User extends BaseEntity {
   @UpdateDateColumn({ type: 'datetime' })
   updatedAt!: Date;
 
-  @OneToMany(type => Post, post => post.userName, { eager: false })
+  @OneToMany(type => Post, post => post.phoneNumber, { eager: false })
   posts: Post[];
 }

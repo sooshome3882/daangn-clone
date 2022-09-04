@@ -6,7 +6,7 @@ import axios from 'axios';
 import { Cache } from 'cache-manager';
 import * as crypto from 'crypto';
 import * as config from 'config';
-import { SMS } from './model/sms.model';
+import { SMS } from './models/sms.model';
 import { JoinUserDto } from './dto/joinUser.dto';
 import { LoginUserDto } from './dto/loginUser.dto';
 import { JwtService } from '@nestjs/jwt';

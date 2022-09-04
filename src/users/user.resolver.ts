@@ -24,7 +24,6 @@ export class UserResolver {
   }
 
   @Mutation(() => String)
-  @UsePipes(ValidationPipe)
   sendSMS(@Args('phoneNumber', PhoneNumberValidationPipe) phoneNumber: string): Promise<string> {
     return this.userService.sendSMS(phoneNumber);
   }

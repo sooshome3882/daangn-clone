@@ -1,31 +1,29 @@
 import { CreatePostsComplaintsDto } from './dto/createPostsComplaints.dto';
 import { AcceptOfferedPriceDto } from './dto/acceptOfferedPrice.dto';
-import { ParseBoolPipe, ParseFilePipe, ParseIntPipe, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import { ParseFilePipe, ParseIntPipe, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
 import { User } from 'src/users/user.entity';
 import { CreatePostDto } from './dto/createPost.dto';
 import { SearchPostDto } from './dto/searchPost.dto';
 import { UpdatePostDto } from './dto/updatePost.dto';
-// import { PullUpPostInputDto } from './dto/pullUpPostInput.dto';
 import { OfferPriceDto } from './dto/offerPrice.dto';
 import { Post } from './post.entity';
 import { PriceOffer } from './priceOffer.entity';
 import { PostService } from './post.service';
 import { ComplaintReason } from 'src/complaintReasons/complaintReason.entity';
-import { ProcessState } from 'src/processStates/processState.entity';
 import { PostsComplaint } from './postsComplaint.entity';
 import { UpdateDealStateDto } from './dto/updateDealState.dto';
-import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from 'src/users/validations/getUser.decorator';
+import { JwtAuthGuard } from 'src/users/guards/jwtAuth.guard';
 
 @Resolver(() => Post)
-@UseGuards(AuthGuard())
+@UseGuards(JwtAuthGuard)
 export class PostResolver {
   constructor(private readonly postService: PostService) {}
 
   @Mutation(() => Post)
   @UsePipes(ValidationPipe)
-  createPost(@Args('createPostDto') createPostDto: CreatePostDto) {
+  createPost(@GetUser() user: User, @Args('createPostDto') createPostDto: CreatePostDto) {
     return this.postService.createPost(createPostDto);
   }
 

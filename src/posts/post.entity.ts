@@ -58,10 +58,10 @@ export class Post extends BaseEntity {
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   pulledAt!: Date;
 
-  @Field()
+  @Field(() => User)
   @JoinColumn({ name: 'userName' })
   @ManyToOne(type => User, user => user.posts, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
-  userName!: User;
+  phoneNumber!: User;
 
   @Field()
   @JoinColumn({ name: 'categoryId' })
