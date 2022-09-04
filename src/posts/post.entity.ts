@@ -59,9 +59,9 @@ export class Post extends BaseEntity {
   pulledAt!: Date;
 
   @Field(() => User)
-  @JoinColumn({ name: 'userName' })
+  @JoinColumn({ name: 'phoneNumber' })
   @ManyToOne(type => User, user => user.posts, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
-  phoneNumber!: User;
+  user!: User;
 
   @Field()
   @JoinColumn({ name: 'categoryId' })

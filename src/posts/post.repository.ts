@@ -6,19 +6,18 @@ import { EntityRepository, getRepository, Repository } from 'typeorm';
 import { CreatePostDto } from './dto/createPost.dto';
 import { SearchPostDto } from './dto/searchPost.dto';
 import { UpdatePostDto } from './dto/updatePost.dto';
-// import { PullUpPostInputDto } from './dto/pullUpPostInput.dto';
 import { Post } from './post.entity';
 import { PriceOffer } from './priceOffer.entity';
-import { ComplaintReason } from 'src/complaintReasons/complaintReason.entity';
 import { ProcessState } from 'src/processStates/processState.entity';
 import { PostsComplaint } from './postsComplaint.entity';
 import { DealState } from 'src/dealStates/dealState.entity';
+import { User } from 'src/users/user.entity';
 
 @EntityRepository(Post)
 export class PostRepository extends Repository<Post> {
-  async createPost(createPostDto: CreatePostDto): Promise<number> {
+  async createPost(user: User, createPostDto: CreatePostDto): Promise<number> {
     const { title, content, category, price, isOfferedPrice, townRange, dealState } = createPostDto;
-    const query = await getRepository(Post).createQueryBuilder('Post').insert().into(Post).values({ title, content, price, isOfferedPrice, category, townRange, dealState }).execute();
+    const query = await getRepository(Post).createQueryBuilder('Post').insert().into(Post).values({ user: user, title, content, price, isOfferedPrice, category, townRange, dealState }).execute();
     return query.raw.insertId;
   }
 

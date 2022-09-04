@@ -24,18 +24,18 @@ export class PostResolver {
   @Mutation(() => Post)
   @UsePipes(ValidationPipe)
   createPost(@GetUser() user: User, @Args('createPostDto') createPostDto: CreatePostDto) {
-    return this.postService.createPost(createPostDto);
+    return this.postService.createPost(user, createPostDto);
   }
 
   @Mutation(() => Post)
   @UsePipes(ValidationPipe)
-  updatePost(@Args('postId', ParseIntPipe) postId: number, @Args('updatePostDto') updatePostDto: UpdatePostDto) {
-    return this.postService.updatePost(postId, updatePostDto);
+  updatePost(@GetUser() user: User, @Args('postId', ParseIntPipe) postId: number, @Args('updatePostDto') updatePostDto: UpdatePostDto) {
+    return this.postService.updatePost(user, postId, updatePostDto);
   }
 
   @Mutation(() => String)
-  deletePost(@Args('postId', ParseIntPipe) postId: number) {
-    return this.postService.deletePost(postId);
+  deletePost(@GetUser() user: User, @Args('postId', ParseIntPipe) postId: number) {
+    return this.postService.deletePost(user, postId);
   }
 
   @Query(() => Post, { name: 'post' })
