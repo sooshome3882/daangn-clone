@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from 'src/users/user.entity';
@@ -21,21 +21,31 @@ import { UpdateDealStateDto } from './dto/updateDealState.dto';
 export class PostService {
   constructor(
     @InjectRepository(PostRepository)
-    private postRepository: PostRepository, // @InjectRepository(PostsComplaint) // private postsComplaintRepository: Repository<PostsComplaint>, // @InjectRepository(PriceOffer) // private priceOfferRepository: Repository<PriceOffer>,
+    private postRepository: PostRepository,
   ) {}
 
-  async createPost(createPostDto: CreatePostDto): Promise<Post> {
-    const insertId = await this.postRepository.createPost(createPostDto);
+  async createPost(user: User, createPostDto: CreatePostDto): Promise<Post> {
+    const insertId = await this.postRepository.createPost(user, createPostDto);
     return await this.getPostById(insertId);
   }
 
-  async updatePost(postId: number, updatePostDto: UpdatePostDto): Promise<Post> {
-    await this.getPostById(postId);
+  async updatePost(user: User, postId: number, updatePostDto: UpdatePostDto): Promise<Post> {
+    const post = await this.getPostById(postId);
+    if (JSON.stringify(post.user) !== JSON.stringify(user)) {
+      throw new BadRequestException(`본인이 작성한 게시글만 수정할 수 있습니다.`);
+    }
+    if (!post) {
+      throw new NotFoundException(`postId가 ${postId}인 것을 찾을 수 없습니다.`);
+    }
     await this.postRepository.updatePost(postId, updatePostDto);
     return await this.getPostById(postId);
   }
 
-  async deletePost(postId: number): Promise<string> {
+  async deletePost(user: User, postId: number): Promise<string> {
+    const post = await this.getPostById(postId);
+    if (JSON.stringify(post.user) !== JSON.stringify(user)) {
+      throw new BadRequestException(`본인이 작성한 게시글만 삭제할 수 있습니다.`);
+    }
     const result = await this.postRepository.delete(postId);
     if (result.affected === 0) {
       throw new NotFoundException(`postId가 ${postId}인 것을 찾을 수 없습니다.`);

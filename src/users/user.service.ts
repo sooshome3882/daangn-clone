@@ -1,4 +1,4 @@
-import { CacheInterceptor, CACHE_MANAGER, Inject, Injectable, InternalServerErrorException, NotFoundException, UseInterceptors } from '@nestjs/common';
+import { CacheInterceptor, CACHE_MANAGER, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException, UseInterceptors } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/user.entity';
 import { UserRepository } from './user.repository';
@@ -6,9 +6,12 @@ import axios from 'axios';
 import { Cache } from 'cache-manager';
 import * as crypto from 'crypto';
 import * as config from 'config';
-import { SMS } from './model/sms.model';
+import { SMS } from './models/sms.model';
+import { JoinUserDto } from './dto/joinUser.dto';
+import { LoginUserDto } from './dto/loginUser.dto';
+import { JwtService } from '@nestjs/jwt';
 
-const smsConfig = config.get('sms');
+const smsConfig: any = config.get('sms');
 const ACCESS_KEY_ID = smsConfig.access_key_id;
 const SECRET_KEY = smsConfig.secret_key;
 const SERVICE_ID = smsConfig.service_id;
@@ -21,7 +24,43 @@ export class UserService {
     @InjectRepository(UserRepository)
     private userRepository: UserRepository,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private jwtService: JwtService,
   ) {}
+
+  async join(joinUserDto: JoinUserDto): Promise<string> {
+    const marketingInfoAgree = joinUserDto.marketingInfoAgree;
+    const phoneNumber = joinUserDto.phoneNumber;
+    const found = await this.getUserByPhoneNumber(phoneNumber);
+    if (!found) {
+      await this.userRepository.join(marketingInfoAgree, phoneNumber);
+    }
+    const payload = { phoneNumber };
+    const accessToken = this.jwtService.sign(payload);
+    return accessToken;
+  }
+
+  async login(loginUserDto: LoginUserDto): Promise<string> {
+    const phoneNumber = loginUserDto.phoneNumber;
+    const found = await this.getUserByPhoneNumber(phoneNumber);
+    if (!found) {
+      throw new UnauthorizedException('회원가입을 해주세요');
+    }
+    const payload = { phoneNumber };
+    const accessToken = this.jwtService.sign(payload);
+    return accessToken;
+  }
+
+  async getUserByPhoneNumber(phoneNumber: string): Promise<User> {
+    return await this.userRepository.findOne({ where: { phoneNumber: phoneNumber } });
+  }
+
+  async getUserById(userId: number): Promise<User> {
+    const found = await this.userRepository.findOne(userId);
+    if (!found) {
+      throw new NotFoundException(`userId ${userId}인 것을 찾을 수 없습니다.`);
+    }
+    return found;
+  }
 
   makeSignitureForSMS(): string {
     const message = [];
@@ -78,9 +117,9 @@ export class UserService {
     }
   }
 
-  async checkSMS(phoneNumber: string, inputNumber: string): Promise<Boolean> {
+  async checkSMS(phoneNumber: string, inputNumber: string): Promise<string> {
     const storedNumber = (await this.cacheManager.get(phoneNumber)) as string;
-    if (storedNumber === inputNumber) return true;
-    else return false;
+    if (storedNumber === inputNumber) return '인증이 완료되었습니다.';
+    return '인증번호가 올바르지않습니다.';
   }
 }
