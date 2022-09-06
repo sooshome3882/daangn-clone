@@ -12,6 +12,7 @@ import { LoginUserDto } from './dto/loginUser.dto';
 import { JwtService } from '@nestjs/jwt';
 import { ProfileUserDto } from './dto/profile.dto';
 import { createWriteStream } from 'fs';
+import { v1 as uuid } from 'uuid';
 
 const smsConfig: any = config.get('sms');
 const ACCESS_KEY_ID = smsConfig.access_key_id;
@@ -131,17 +132,18 @@ export class UserService {
       await this.userRepository.setProfileUserName(phoneNumber, userName);
     }
     if (profileImage) {
-      const { filename, createReadStream } = await profileImage;
+      const { createReadStream } = await profileImage;
+      const newFileName = uuid();
       const isImageStored: boolean = await new Promise<boolean>(async (resolve, reject) =>
         createReadStream()
-          .pipe(createWriteStream(`./src/users/uploads/${filename}`))
+          .pipe(createWriteStream(`./src/users/uploads/${newFileName}.png`))
           .on('finish', () => resolve(true))
           .on('error', () => reject(false)),
       );
       if (!isImageStored) {
         throw new InternalServerErrorException('이미지 저장에 실패하였습니다.');
       }
-      await this.userRepository.setProfileImage(phoneNumber, `./src/users/uploads/${filename}`);
+      await this.userRepository.setProfileImage(phoneNumber, `./src/users/uploads/${newFileName}.png`);
     }
     return await this.getUserByPhoneNumber(phoneNumber);
   }
