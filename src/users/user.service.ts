@@ -10,6 +10,8 @@ import { SMS } from './models/sms.model';
 import { JoinUserDto } from './dto/joinUser.dto';
 import { LoginUserDto } from './dto/loginUser.dto';
 import { JwtService } from '@nestjs/jwt';
+import { ProfileUserDto } from './dto/profile.dto';
+import { createWriteStream } from 'fs';
 
 const smsConfig: any = config.get('sms');
 const ACCESS_KEY_ID = smsConfig.access_key_id;
@@ -121,5 +123,18 @@ export class UserService {
     const storedNumber = (await this.cacheManager.get(phoneNumber)) as string;
     if (storedNumber === inputNumber) return '인증이 완료되었습니다.';
     return '인증번호가 올바르지않습니다.';
+  }
+
+  async setProfile(profileUserDto: ProfileUserDto): Promise<boolean> {
+    const { userName, profileImage } = profileUserDto;
+    if (profileImage) {
+      const { filename, createReadStream } = await profileImage;
+      return new Promise(async (resolve, reject) =>
+        createReadStream()
+          .pipe(createWriteStream(`./src/users/uploads/${filename}`))
+          .on('finish', () => resolve(true))
+          .on('error', () => reject(false)),
+      );
+    }
   }
 }
