@@ -1,4 +1,4 @@
-import { Bind, UploadedFile, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
+import { UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
 import { JoinUserDto } from './dto/joinUser.dto';
 import { InputNumberValidationPipe } from './validations/inputNumber.pipe';
@@ -8,6 +8,8 @@ import { UserService } from './user.service';
 import { LoginUserDto } from './dto/loginUser.dto';
 import { ProfileUserDto } from './dto/profile.dto';
 import { ProfileInputValidationPipe } from './validations/profile.pipe';
+import { JwtAuthGuard } from './guards/jwtAuth.guard';
+import { GetUser } from './validations/getUser.decorator';
 
 @Resolver(() => User)
 export class UserResolver {
@@ -35,8 +37,9 @@ export class UserResolver {
     return this.userService.checkSMS(phoneNumber, inputNumber);
   }
 
-  @Mutation(() => Boolean)
-  async setProfile(@Args('profileUserDto', ProfileInputValidationPipe) profileUserDto: ProfileUserDto): Promise<boolean> {
-    return this.userService.setProfile(profileUserDto);
+  @Mutation(() => User)
+  @UseGuards(JwtAuthGuard)
+  async setProfile(@GetUser('phoneNumber') phoneNumber: string, @Args('profileUserDto', ProfileInputValidationPipe) profileUserDto: ProfileUserDto): Promise<User> {
+    return this.userService.setProfile(phoneNumber, profileUserDto);
   }
 }

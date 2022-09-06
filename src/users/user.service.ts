@@ -125,16 +125,24 @@ export class UserService {
     return '인증번호가 올바르지않습니다.';
   }
 
-  async setProfile(profileUserDto: ProfileUserDto): Promise<boolean> {
+  async setProfile(phoneNumber: string, profileUserDto: ProfileUserDto): Promise<User> {
     const { userName, profileImage } = profileUserDto;
+    if (userName) {
+      await this.userRepository.setProfileUserName(phoneNumber, userName);
+    }
     if (profileImage) {
       const { filename, createReadStream } = await profileImage;
-      return new Promise(async (resolve, reject) =>
+      const isImageStored: boolean = await new Promise<boolean>(async (resolve, reject) =>
         createReadStream()
           .pipe(createWriteStream(`./src/users/uploads/${filename}`))
           .on('finish', () => resolve(true))
           .on('error', () => reject(false)),
       );
+      if (!isImageStored) {
+        throw new InternalServerErrorException('이미지 저장에 실패하였습니다.');
+      }
+      await this.userRepository.setProfileImage(phoneNumber, `./src/users/uploads/${filename}`);
     }
+    return await this.getUserByPhoneNumber(phoneNumber);
   }
 }
