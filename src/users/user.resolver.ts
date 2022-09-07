@@ -39,6 +39,7 @@ export class UserResolver {
 
   @Mutation(() => User)
   @UseGuards(JwtAuthGuard)
+  @UsePipes(ValidationPipe)
   async setProfile(@GetUser('phoneNumber') phoneNumber: string, @Args('profileUserDto', ProfileInputValidationPipe) profileUserDto: ProfileUserDto): Promise<User> {
     return this.userService.setProfile(phoneNumber, profileUserDto);
   }
