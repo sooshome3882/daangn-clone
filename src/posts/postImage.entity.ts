@@ -15,5 +15,5 @@ export class PostImage extends BaseEntity {
 
   @JoinColumn({ name: 'postId' })
   @ManyToOne(type => Post, post => post.postImages, { eager: false })
-  post!: Post;
+  post!: number;
 }
