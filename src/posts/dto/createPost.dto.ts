@@ -1,8 +1,10 @@
-import { Field, InputType } from "@nestjs/graphql";
-import { IsBoolean, IsNotEmpty, IsNumber, IsString, Length } from "class-validator";
-import { Category } from "src/categories/category.entity";
-import { DealState } from "src/dealStates/dealState.entity";
-import { TownRange } from "src/townRanges/townRange.entity";
+import { Field, InputType } from '@nestjs/graphql';
+import { IsBoolean, IsNotEmpty, IsNumber, IsString, Length } from 'class-validator';
+import * as GraphQLUpload from 'graphql-upload/GraphQLUpload.js';
+import { Category } from 'src/categories/category.entity';
+import { DealState } from 'src/dealStates/dealState.entity';
+import { TownRange } from 'src/townRanges/townRange.entity';
+import { FileUpload } from 'src/users/models/fileUpload.model';
 
 @InputType()
 export class CreatePostDto {
@@ -20,25 +22,28 @@ export class CreatePostDto {
   @Field(() => Number)
   @IsNotEmpty()
   @IsNumber()
-  category!: Category
+  category!: Category;
 
   @Field()
   @IsNotEmpty()
   @IsNumber()
-  price!: number
+  price!: number;
 
   @Field()
   @IsNotEmpty()
   @IsBoolean()
-  isOfferedPrice!: boolean
+  isOfferedPrice!: boolean;
 
   @Field(() => Number)
   @IsNotEmpty()
   @IsNumber()
-  townRange!: TownRange
+  townRange!: TownRange;
 
   @Field(() => Number)
   @IsNotEmpty()
   @IsNumber()
-  dealState!: DealState
+  dealState!: DealState;
+
+  @Field(() => GraphQLUpload, { nullable: true })
+  images: Promise<FileUpload>;
 }

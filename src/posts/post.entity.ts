@@ -80,7 +80,7 @@ export class Post extends BaseEntity {
   dealState!: DealState;
 
   @Field(() => [PostImage], { nullable: true })
-  @OneToMany(type => PostImage, postImage => postImage.post, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
+  @OneToMany(type => PostImage, postImages => postImages.post, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
   postImages?: PostImage[];
 
   @OneToMany(type => PriceOffer, priceOffer => priceOffer.post)
