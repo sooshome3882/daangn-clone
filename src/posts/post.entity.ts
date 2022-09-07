@@ -6,6 +6,7 @@ import { User } from 'src/users/user.entity';
 import { PriceOffer } from './priceOffer.entity';
 import { PostsComplaint } from './postsComplaint.entity';
 import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { PostImage } from './postImage.entity';
 
 @Entity()
 @ObjectType()
@@ -77,6 +78,10 @@ export class Post extends BaseEntity {
   @JoinColumn({ name: 'dealStateId' })
   @ManyToOne(type => DealState, dealState => dealState.posts, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
   dealState!: DealState;
+
+  @Field(() => [PostImage], { nullable: true })
+  @OneToMany(type => PostImage, postImage => postImage.post, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
+  postImages?: PostImage[];
 
   @OneToMany(type => PriceOffer, priceOffer => priceOffer.post)
   priceOffer!: PriceOffer[];
