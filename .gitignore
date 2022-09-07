@@ -40,3 +40,6 @@ config
 
 # schema
 schema.gql
+
+# uploads
+src/users/uploads

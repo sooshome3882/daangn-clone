@@ -28,7 +28,6 @@ export class PostResolver {
   }
 
   @Mutation(() => Post)
-  @UsePipes(ValidationPipe)
   updatePost(@GetUser() user: User, @Args('postId', ParseIntPipe) postId: number, @Args('updatePostDto') updatePostDto: UpdatePostDto) {
     return this.postService.updatePost(user, postId, updatePostDto);
   }
