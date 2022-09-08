@@ -178,8 +178,6 @@ export class PostService {
     /**
      * @ 코드 작성자: 이승연
      * @ 기능: 게시글 숨김 처리
-     * @ 게시글 신고처리 (reportHandling=true) 상태일 때, isHidden = true로 변경하여 숨김처리
-     * @ 전체 게시글 조회시 isHidden = false인 것만 filtering 하기
      */
 
     const post = await this.getPostById(postId);
