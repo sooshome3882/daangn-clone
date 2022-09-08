@@ -149,6 +149,10 @@ export class UserService {
   }
 
   async setMarketingInfoAgree(phoneNumber: string, marketingInfoAgree: boolean) {
+    /**
+     * @ 코드 작성자: 이승연
+     * @ 기능: 마켓팅 수신 동의 여부 변경
+     */
     await this.userRepository.updateMarketingInfo(phoneNumber, marketingInfoAgree);
 
     return await this.getUserByPhoneNumber(phoneNumber);
