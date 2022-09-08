@@ -87,15 +87,15 @@ export class PostResolver {
   // 게시글 숨김 처리
   @Mutation(() => Post)
   @UsePipes(ValidationPipe)
-  hidePost(@Args('postId', ParseIntPipe) postId: number) {
-    return this.postService.hidePost(postId);
+  hidePost(@GetUser() user: User, @Args('postId', ParseIntPipe) postId: number) {
+    return this.postService.hidePost(user, postId);
   }
 
   // 게시글 숨김 처리 해제
   @Mutation(() => Post)
   @UsePipes(ValidationPipe)
-  clearHiddenPostState(@Args('postId', ParseIntPipe) postId: number) {
-    return this.postService.clearHiddenPostState(postId);
+  clearHiddenPostState(@GetUser() user: User, @Args('postId', ParseIntPipe) postId: number) {
+    return this.postService.clearHiddenPostState(user, postId);
   }
 
   // 숨김처리 리스트 조회

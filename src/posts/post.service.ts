@@ -174,7 +174,7 @@ export class PostService {
     return await this.getPostById(postId);
   }
 
-  async hidePost(postId: number) {
+  async hidePost(user: User, postId: number) {
     /**
      * @ 코드 작성자: 이승연
      * @ 기능: 게시글 숨김 처리
@@ -182,18 +182,34 @@ export class PostService {
      * @ 전체 게시글 조회시 isHidden = false인 것만 filtering 하기
      */
 
-    const post = await this.postRepository.findOne({
-      where: {
-        postId,
-      },
-    });
+    const post = await this.getPostById(postId);
+    if (JSON.stringify(post.user) !== JSON.stringify(user)) {
+      throw new BadRequestException(`본인이 작성한 게시글만 숨김처리할 수 있습니다.`);
+    }
 
     if (!post) {
       throw new NotFoundException(`postId가 ${postId}인 것을 찾을 수 없습니다.`);
     }
 
     await this.postRepository.updateHiddenStateTrue(postId);
+    return await this.getPostById(postId);
+  }
 
+  async clearHiddenPostState(user: User, postId: number) {
+    /**
+     * @ 코드 작성자: 이승연
+     * @ 기능: 게시글 숨김 처리 해제
+     */
+    const post = await this.getPostById(postId);
+    if (JSON.stringify(post.user) !== JSON.stringify(user)) {
+      throw new BadRequestException(`본인이 작성한 게시글만 숨김처리를 해제할 수 있습니다.`);
+    }
+
+    if (!post) {
+      throw new NotFoundException(`postId가 ${postId}인 것을 찾을 수 없습니다.`);
+    }
+
+    await this.postRepository.updateHiddenStateFalse(postId);
     return await this.getPostById(postId);
   }
 
@@ -207,25 +223,5 @@ export class PostService {
      */
 
     return await this.postRepository.getHiddenPostsList(user, hiddenPostsListDto);
-  }
-
-  async clearHiddenPostState(postId: number) {
-    /**
-     * @ 코드 작성자: 이승연
-     * @ 기능: 게시글 숨김 처리 해제
-     */
-    const post = await this.postRepository.findOne({
-      where: {
-        postId,
-      },
-    });
-
-    if (!post) {
-      throw new NotFoundException(`postId가 ${postId}인 것을 찾을 수 없습니다.`);
-    }
-
-    await this.postRepository.updateHiddenStateFalse(postId);
-
-    return await this.getPostById(postId);
   }
 }
