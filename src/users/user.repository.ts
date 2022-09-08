@@ -14,4 +14,8 @@ export class UserRepository extends Repository<User> {
   async setProfileImage(phoneNumber: string, profileImage: string) {
     await getRepository(User).createQueryBuilder('User').update(User).set({ profileImage }).where('phoneNumber = :phoneNumber', { phoneNumber: phoneNumber }).execute();
   }
+
+  async updateMarketingInfo(phoneNumber: string, marketingInfoAgree: boolean) {
+    await getRepository(User).createQueryBuilder('User').update(User).set({ marketingInfoAgree }).where('phoneNumber = :phoneNumber', { phoneNumber }).execute();
+  }
 }

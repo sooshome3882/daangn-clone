@@ -147,4 +147,10 @@ export class UserService {
     }
     return await this.getUserByPhoneNumber(phoneNumber);
   }
+
+  async setMarketingInfoAgree(phoneNumber: string, marketingInfoAgree: boolean) {
+    await this.userRepository.updateMarketingInfo(phoneNumber, marketingInfoAgree);
+
+    return await this.getUserByPhoneNumber(phoneNumber);
+  }
 }

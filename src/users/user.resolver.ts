@@ -1,4 +1,4 @@
-import { UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import { ParseBoolPipe, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
 import { JoinUserDto } from './dto/joinUser.dto';
 import { InputNumberValidationPipe } from './validations/inputNumber.pipe';
@@ -42,5 +42,11 @@ export class UserResolver {
   @UsePipes(ValidationPipe)
   async setProfile(@GetUser('phoneNumber') phoneNumber: string, @Args('profileUserDto', ProfileInputValidationPipe) profileUserDto: ProfileUserDto): Promise<User> {
     return this.userService.setProfile(phoneNumber, profileUserDto);
+  }
+
+  @Mutation(() => User)
+  @UsePipes(ValidationPipe)
+  async setMarkeingInfoAgree(@Args('phoneNumber', PhoneNumberValidationPipe) phoneNumber: string, @Args('marketingInfoAgree', ParseBoolPipe) marketingInfoAgree: boolean): Promise<User> {
+    return this.userService.setMarketingInfoAgree(phoneNumber, marketingInfoAgree);
   }
 }
