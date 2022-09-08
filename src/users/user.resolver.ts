@@ -46,7 +46,7 @@ export class UserResolver {
 
   @Mutation(() => User)
   @UsePipes(ValidationPipe)
-  async setMarkeingInfoAgree(@Args('phoneNumber', PhoneNumberValidationPipe) phoneNumber: string, @Args('marketingInfoAgree', ParseBoolPipe) marketingInfoAgree: boolean): Promise<User> {
+  async setMarkeingInfoAgree(@GetUser('phoneNumber', PhoneNumberValidationPipe) phoneNumber: string, @Args('marketingInfoAgree', ParseBoolPipe) marketingInfoAgree: boolean): Promise<User> {
     return this.userService.setMarketingInfoAgree(phoneNumber, marketingInfoAgree);
   }
 }
