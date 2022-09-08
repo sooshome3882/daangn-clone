@@ -15,6 +15,7 @@ import { PostsComplaint } from './postsComplaint.entity';
 import { UpdateDealStateDto } from './dto/updateDealState.dto';
 import { GetUser } from 'src/users/validations/getUser.decorator';
 import { JwtAuthGuard } from 'src/users/guards/jwtAuth.guard';
+import { HiddenPostsListDto } from './dto/hiddenPostsList.dto';
 
 @Resolver(() => Post)
 @UseGuards(JwtAuthGuard)
@@ -69,13 +70,6 @@ export class PostResolver {
     return this.postService.acceptOfferedPrice(acceptOfferPriceDto);
   }
 
-  // static data setting
-  @Query(() => ComplaintReason)
-  @UsePipes(ValidationPipe)
-  async setStaticData(@Args('postId', ParseIntPipe) postId: number): Promise<object> {
-    return await this.postService.setStaticData(postId);
-  }
-
   // 게시글 신고
   @Mutation(() => PostsComplaint)
   @UsePipes(ValidationPipe)
@@ -95,5 +89,19 @@ export class PostResolver {
   @UsePipes(ValidationPipe)
   hidePost(@Args('postId', ParseIntPipe) postId: number) {
     return this.postService.hidePost(postId);
+  }
+
+  // 게시글 숨김 처리 해제
+  @Mutation(() => Post)
+  @UsePipes(ValidationPipe)
+  clearHiddenPostState(@Args('postId', ParseIntPipe) postId: number) {
+    return this.postService.clearHiddenPostState(postId);
+  }
+
+  // 숨김처리 리스트 조회
+  @Query(() => Post)
+  @UsePipes(ValidationPipe)
+  getHiddenPosts(@GetUser() user: User, @Args('hiddenPostsListDto') hiddenPostsListDto: HiddenPostsListDto) {
+    return this.postService.getHiddenPostsList(user, hiddenPostsListDto);
   }
 }

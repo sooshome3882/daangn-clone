@@ -1,3 +1,4 @@
+import { HiddenPostsListDto } from './dto/hiddenPostsList.dto';
 import { UpdateDealStateDto } from './dto/updateDealState.dto';
 import { CreatePostsComplaintsDto } from './dto/createPostsComplaints.dto';
 import { AcceptOfferedPriceDto } from './dto/acceptOfferedPrice.dto';
@@ -89,8 +90,12 @@ export class PostRepository extends Repository<Post> {
     }
   }
 
-  async updateHiddenState(postId: number) {
+  async updateHiddenStateTrue(postId: number) {
     await getRepository(Post).createQueryBuilder('Post').update(Post).set({ isHidden: true }).where('postId = :postId', { postId }).execute();
+  }
+
+  async updateHiddenStateFalse(postId: number) {
+    await getRepository(Post).createQueryBuilder('Post').update(Post).set({ isHidden: false }).where('postId = :postId', { postId }).execute();
   }
 
   async putComplaintReasons() {
@@ -172,5 +177,19 @@ export class PostRepository extends Repository<Post> {
     const { dealState } = updateDealStateDto;
 
     await getRepository(Post).createQueryBuilder('Post').update(Post).set({ dealState }).where('postId = :postId', { postId: postId }).execute();
+  }
+
+  async getHiddenPostsList(user: User, hiddenPostsListDto: HiddenPostsListDto) {
+    const { perPage, page } = hiddenPostsListDto;
+
+    return await getRepository(Post)
+      .createQueryBuilder('Post')
+      .where('isHidden = :isHidden', { isHidden: true })
+      .andWhere('reportHandling = :reportHandling', { reportHandling: false })
+      .andWhere('user = :user', { user })
+      .orderBy('post.createdAt', 'DESC')
+      .offset((page - 1) * perPage)
+      .limit(perPage)
+      .getMany();
   }
 }

@@ -1,6 +1,5 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { User } from 'src/users/user.entity';
 import { CreatePostDto } from './dto/createPost.dto';
 import { SearchPostDto } from './dto/searchPost.dto';
@@ -16,6 +15,7 @@ import { ProcessState } from 'src/processStates/processState.entity';
 import { PostsComplaint } from './postsComplaint.entity';
 import { DealState } from 'src/dealStates/dealState.entity';
 import { UpdateDealStateDto } from './dto/updateDealState.dto';
+import { HiddenPostsListDto } from './dto/hiddenPostsList.dto';
 
 @Injectable()
 export class PostService {
@@ -115,26 +115,26 @@ export class PostService {
     return priceOffered;
   }
 
-  async setStaticData(postId: number): Promise<object> {
-    // 임시방편으로 static data 저장하기
-    const complaintReason = await ComplaintReason.find();
-    const processState = await ProcessState.find();
-    const dealState = await DealState.find();
+  // async setStaticData(postId: number): Promise<object> {
+  //   // 임시방편으로 static data 저장하기
+  //   const complaintReason = await ComplaintReason.find();
+  //   const processState = await ProcessState.find();
+  //   const dealState = await DealState.find();
 
-    if (Object.keys(complaintReason).length === 0) {
-      this.postRepository.putComplaintReasons();
-    }
-    if (Object.keys(processState).length === 0) {
-      this.postRepository.putProcessStates();
-    }
-    if (Object.keys(dealState).length === 0) {
-      this.postRepository.putDealState();
-    }
+  //   if (Object.keys(complaintReason).length === 0) {
+  //     this.postRepository.putComplaintReasons();
+  //   }
+  //   if (Object.keys(processState).length === 0) {
+  //     this.postRepository.putProcessStates();
+  //   }
+  //   if (Object.keys(dealState).length === 0) {
+  //     this.postRepository.putDealState();
+  //   }
 
-    const data = { ...complaintReason, ...processState, ...dealState };
+  //   const data = { ...complaintReason, ...processState, ...dealState };
 
-    return data;
-  }
+  //   return data;
+  // }
 
   async getPostsComplaintById(complaintId: number): Promise<PostsComplaint> {
     const found = await PostsComplaint.findOne(complaintId);
@@ -192,7 +192,39 @@ export class PostService {
       throw new NotFoundException(`postId가 ${postId}인 것을 찾을 수 없습니다.`);
     }
 
-    await this.postRepository.updateHiddenState(postId);
+    await this.postRepository.updateHiddenStateTrue(postId);
+
+    return await this.getPostById(postId);
+  }
+
+  async getHiddenPostsList(user: User, hiddenPostsListDto: HiddenPostsListDto) {
+    /**
+     * @ 코드 작성자: 이승연
+     * @ 기능: 숨김 처리 게시글 리스트 불러오기
+     * @ 부가 설명
+     * 1. 판매내역 -> 판매중 / 거래완료 / 숨김
+     * 2. Post 에서 isHidden이 true인 것들만 불러오기 (자신이 작성한 것만 볼 수 있도록 사용자 인증 기능 포함)
+     */
+
+    return await this.postRepository.getHiddenPostsList(user, hiddenPostsListDto);
+  }
+
+  async clearHiddenPostState(postId: number) {
+    /**
+     * @ 코드 작성자: 이승연
+     * @ 기능: 게시글 숨김 처리 해제
+     */
+    const post = await this.postRepository.findOne({
+      where: {
+        postId,
+      },
+    });
+
+    if (!post) {
+      throw new NotFoundException(`postId가 ${postId}인 것을 찾을 수 없습니다.`);
+    }
+
+    await this.postRepository.updateHiddenStateFalse(postId);
 
     return await this.getPostById(postId);
   }
