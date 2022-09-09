@@ -6,6 +6,9 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { UserModule } from './users/user.module';
 import * as graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.js';
+import * as config from 'config';
+
+const uploadConfig: any = config.get('upload');
 
 @Module({
   imports: [
@@ -22,6 +25,6 @@ import * as graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.js';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(graphqlUploadExpress()).forRoutes('graphql');
+    consumer.apply(graphqlUploadExpress({ maxFileSize: uploadConfig.maxSize, maxFiles: uploadConfig.maxFiles })).forRoutes('graphql');
   }
 }
