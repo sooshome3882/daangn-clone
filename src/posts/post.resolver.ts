@@ -15,6 +15,7 @@ import { PostsComplaint } from './postsComplaint.entity';
 import { UpdateDealStateDto } from './dto/updateDealState.dto';
 import { GetUser } from 'src/users/validations/getUser.decorator';
 import { JwtAuthGuard } from 'src/users/guards/jwtAuth.guard';
+import { CreatePostValidationPipe } from './pipes/createPost.pipe';
 
 @Resolver(() => Post)
 @UseGuards(JwtAuthGuard)
@@ -23,7 +24,7 @@ export class PostResolver {
 
   @Mutation(() => Post)
   @UsePipes(ValidationPipe)
-  createPost(@GetUser() user: User, @Args('createPostDto') createPostDto: CreatePostDto) {
+  createPost(@GetUser() user: User, @Args('createPostDto', CreatePostValidationPipe) createPostDto: CreatePostDto) {
     return this.postService.createPost(user, createPostDto);
   }
 
