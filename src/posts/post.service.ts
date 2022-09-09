@@ -28,7 +28,6 @@ export class PostService {
   async createPost(user: User, createPostDto: CreatePostDto): Promise<Post> {
     const insertId = await this.postRepository.createPost(user, createPostDto);
     const { images } = createPostDto;
-    console.log(images);
     if (images) {
       for (const image of images) {
         const { createReadStream } = await image;
