@@ -44,6 +44,6 @@ export class CreatePostDto {
   @IsNumber()
   dealState!: DealState;
 
-  @Field(() => GraphQLUpload, { nullable: true })
-  images: Promise<FileUpload>;
+  @Field(() => [GraphQLUpload], { nullable: true })
+  images?: Promise<FileUpload>[];
 }

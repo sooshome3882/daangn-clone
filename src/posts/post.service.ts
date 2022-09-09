@@ -28,19 +28,22 @@ export class PostService {
   async createPost(user: User, createPostDto: CreatePostDto): Promise<Post> {
     const insertId = await this.postRepository.createPost(user, createPostDto);
     const { images } = createPostDto;
+    console.log(images);
     if (images) {
-      const { createReadStream } = await images;
-      const imagePath = `./src/posts/uploads/${uuid()}.png`;
-      const isImageStored: boolean = await new Promise<boolean>(async (resolve, reject) =>
-        createReadStream()
-          .pipe(createWriteStream(imagePath))
-          .on('finish', () => resolve(true))
-          .on('error', () => reject(false)),
-      );
-      if (!isImageStored) {
-        throw new InternalServerErrorException('이미지 저장에 실패하였습니다.');
+      for (const image of images) {
+        const { createReadStream } = await image;
+        const imagePath = `./src/posts/uploads/${uuid()}.png`;
+        const isImageStored: boolean = await new Promise<boolean>(async (resolve, reject) =>
+          createReadStream()
+            .pipe(createWriteStream(imagePath))
+            .on('finish', () => resolve(true))
+            .on('error', () => reject(false)),
+        );
+        if (!isImageStored) {
+          throw new InternalServerErrorException('이미지 저장에 실패하였습니다.');
+        }
+        await this.postRepository.setPostImagePath(insertId, imagePath);
       }
-      await this.postRepository.setPostImagePath(insertId, imagePath);
     }
     return await this.getPostById(insertId);
   }
