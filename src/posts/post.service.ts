@@ -37,7 +37,7 @@ export class PostService {
           createReadStream()
             .pipe(createWriteStream(imagePath))
             .on('finish', () => resolve(true))
-            .on('error', () => reject(false)),
+            .on('error', () => resolve(false)),
         );
         if (!isImageStored) {
           throw new InternalServerErrorException('이미지 저장에 실패하였습니다.');
