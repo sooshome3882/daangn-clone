@@ -1,6 +1,6 @@
 import { BadRequestException, PipeTransform } from '@nestjs/common';
 
-export class CreatePostValidationPipe implements PipeTransform {
+export class PostImagesValidationPipe implements PipeTransform {
   readonly imageExtensionOptions = ['png', 'jpg', 'jpeg'];
   async transform(value: any) {
     const { images } = value;

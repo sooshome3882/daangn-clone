@@ -22,7 +22,11 @@ export class PostRepository extends Repository<Post> {
     return query.raw.insertId;
   }
 
-  async setPostImagePath(post: number, imagePath: string) {
+  async deletePostImagePath(postId: number) {
+    await getRepository(PostImage).createQueryBuilder('PostImage').delete().from(PostImage).where('postId = :postId', { postId: postId }).execute();
+  }
+
+  async addPostImagePath(post: number, imagePath: string) {
     await getRepository(PostImage).createQueryBuilder('PostImage').insert().into(PostImage).values({ imagePath, post }).execute();
   }
 
