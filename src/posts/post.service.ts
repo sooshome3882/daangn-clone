@@ -211,7 +211,7 @@ export class PostService {
     return await this.getPostById(postId);
   }
 
-  async getHiddenPostsList(user: User, hiddenPostsListDto: HiddenPostsListDto) {
+  async getHiddenPostsList(user: User, searchPostDto: SearchPostDto) {
     /**
      * @ 코드 작성자: 이승연
      * @ 기능: 숨김 처리 게시글 리스트 불러오기
@@ -220,6 +220,23 @@ export class PostService {
      * 2. Post 에서 isHidden이 true인 것들만 불러오기 (자신이 작성한 것만 볼 수 있도록 사용자 인증 기능 포함)
      */
 
-    return await this.postRepository.getHiddenPostsList(user, hiddenPostsListDto);
+    return await this.postRepository.getHiddenPostsList(user, searchPostDto);
+  }
+
+  async buy(user: User) {
+    /**
+     * @ 코드 작성자: 이승연
+     * @ 기능: 특정 게시글 물건 구매 처리
+     */
+  }
+
+  async getBuyingListsOfUser(user: User, searchPostDto: SearchPostDto) {
+    /**
+     * @ 코드 작성자: 이승연
+     * @ 기능: 구매리스트 조회
+     * @ 1️⃣ Post 테이블의 buyerPhoneNumber에 해당 유저의 번호가 존재하는 리스트 조회
+     */
+
+    return await this.postRepository.getBuyingListOfUser(user, searchPostDto);
   }
 }

@@ -101,7 +101,14 @@ export class PostResolver {
   // 숨김처리 리스트 조회
   @Query(() => Post)
   @UsePipes(ValidationPipe)
-  getHiddenPosts(@GetUser() user: User, @Args('hiddenPostsListDto') hiddenPostsListDto: HiddenPostsListDto) {
-    return this.postService.getHiddenPostsList(user, hiddenPostsListDto);
+  getHiddenPosts(@GetUser() user: User, @Args('searchPostDto') searchPostDto: SearchPostDto) {
+    return this.postService.getHiddenPostsList(user, searchPostDto);
+  }
+
+  // 특정 사용자 구매리스트 조회
+  @Query(() => Post)
+  @UsePipes(ValidationPipe)
+  getBuyingListsOfUser(@GetUser() user: User, @Args('searchPostDto') searchPostDto: SearchPostDto) {
+    return this.postService.getBuyingListsOfUser(user, searchPostDto);
   }
 }

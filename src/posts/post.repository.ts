@@ -179,14 +179,26 @@ export class PostRepository extends Repository<Post> {
     await getRepository(Post).createQueryBuilder('Post').update(Post).set({ dealState }).where('postId = :postId', { postId: postId }).execute();
   }
 
-  async getHiddenPostsList(user: User, hiddenPostsListDto: HiddenPostsListDto) {
-    const { perPage, page } = hiddenPostsListDto;
+  async getHiddenPostsList(user: User, searchPostDto: SearchPostDto) {
+    const { perPage, page } = searchPostDto;
 
     return await getRepository(Post)
       .createQueryBuilder('Post')
       .where('isHidden = :isHidden', { isHidden: true })
       .andWhere('reportHandling = :reportHandling', { reportHandling: false })
       .andWhere('user = :user', { user })
+      .orderBy('post.createdAt', 'DESC')
+      .offset((page - 1) * perPage)
+      .limit(perPage)
+      .getMany();
+  }
+
+  async getBuyingListOfUser(user: User, searchPostDto: SearchPostDto) {
+    const { perPage, page } = searchPostDto;
+
+    return await getRepository(Post)
+      .createQueryBuilder('Post')
+      .where('buyerPhoneNumber = :buyerPhoneNumber', { buyerPhoneNumber: user.phoneNumber })
       .orderBy('post.createdAt', 'DESC')
       .offset((page - 1) * perPage)
       .limit(perPage)
