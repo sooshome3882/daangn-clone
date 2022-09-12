@@ -6,6 +6,7 @@ import { User } from 'src/users/user.entity';
 import { PriceOffer } from './priceOffer.entity';
 import { PostsComplaint } from './postsComplaint.entity';
 import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { PostsLikeRecord } from './postsLikeRecord.entity';
 
 @Entity()
 @ObjectType()
@@ -88,4 +89,7 @@ export class Post extends BaseEntity {
 
   @OneToMany(type => PostsComplaint, postsComplaint => postsComplaint.post, { eager: false })
   postsComplaint!: PostsComplaint[];
+
+  @OneToMany(type => PostsLikeRecord, postsLikeRecord => postsLikeRecord.post, { eager: false })
+  postsLikeRecord!: PostsLikeRecord[];
 }

@@ -1,0 +1,22 @@
+import { Field, ObjectType } from '@nestjs/graphql';
+import { User } from 'src/users/user.entity';
+import { BaseEntity, Column, Entity, JoinColumn, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import { Post } from './post.entity';
+
+@Entity()
+@ObjectType()
+export class PostsLikeRecord extends BaseEntity {
+  @Field()
+  @PrimaryGeneratedColumn({ type: 'int' })
+  postsLikeId!: number;
+
+  @Field()
+  @JoinColumn({ name: 'postId' })
+  @ManyToOne(type => Post, post => post.postsLikeRecord, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
+  post!: Post;
+
+  @Field()
+  @JoinColumn({ name: 'userPhoneNumber' })
+  @ManyToOne(type => User, user => user.postsLikeRecord, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
+  user!: User;
+}
