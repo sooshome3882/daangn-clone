@@ -15,7 +15,6 @@ import { PostsComplaint } from './postsComplaint.entity';
 import { UpdateDealStateDto } from './dto/updateDealState.dto';
 import { GetUser } from 'src/users/validations/getUser.decorator';
 import { JwtAuthGuard } from 'src/users/guards/jwtAuth.guard';
-import { HiddenPostsListDto } from './dto/hiddenPostsList.dto';
 
 @Resolver(() => Post)
 @UseGuards(JwtAuthGuard)
@@ -110,5 +109,12 @@ export class PostResolver {
   @UsePipes(ValidationPipe)
   getBuyingListsOfUser(@GetUser() user: User, @Args('searchPostDto') searchPostDto: SearchPostDto) {
     return this.postService.getBuyingListsOfUser(user, searchPostDto);
+  }
+
+  // 특정 사용자 관심목록 조회
+  @Query(() => Post)
+  @UsePipes(ValidationPipe)
+  getWatchListOfUser(@GetUser() user: User, @Args('searchPostDto') searchPostDto: SearchPostDto) {
+    return this.postService.getWatchListOfUser(user, searchPostDto);
   }
 }

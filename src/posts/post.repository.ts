@@ -1,4 +1,3 @@
-import { HiddenPostsListDto } from './dto/hiddenPostsList.dto';
 import { UpdateDealStateDto } from './dto/updateDealState.dto';
 import { CreatePostsComplaintsDto } from './dto/createPostsComplaints.dto';
 import { AcceptOfferedPriceDto } from './dto/acceptOfferedPrice.dto';
@@ -199,6 +198,19 @@ export class PostRepository extends Repository<Post> {
     return await getRepository(Post)
       .createQueryBuilder('Post')
       .where('buyerPhoneNumber = :buyerPhoneNumber', { buyerPhoneNumber: user.phoneNumber })
+      .orderBy('post.createdAt', 'DESC')
+      .offset((page - 1) * perPage)
+      .limit(perPage)
+      .getMany();
+  }
+
+  async getWatchListOfUser(user: User, searchPostDto: SearchPostDto) {
+    const { perPage, page } = searchPostDto;
+
+    return await getRepository(Post)
+      .createQueryBuilder('post')
+      .innerJoinAndSelect('post.postsLikeRecord', 'postsLikeRecord')
+      .where('postsLikeRecord.userPhoneNumber = :userPhoneNumber', { userPhoneNumber: user.phoneNumber })
       .orderBy('post.createdAt', 'DESC')
       .offset((page - 1) * perPage)
       .limit(perPage)

@@ -15,7 +15,6 @@ import { ProcessState } from 'src/processStates/processState.entity';
 import { PostsComplaint } from './postsComplaint.entity';
 import { DealState } from 'src/dealStates/dealState.entity';
 import { UpdateDealStateDto } from './dto/updateDealState.dto';
-import { HiddenPostsListDto } from './dto/hiddenPostsList.dto';
 
 @Injectable()
 export class PostService {
@@ -238,5 +237,15 @@ export class PostService {
      */
 
     return await this.postRepository.getBuyingListOfUser(user, searchPostDto);
+  }
+
+  async getWatchListOfUser(user: User, searchPostDto: SearchPostDto) {
+    /**
+     * @ 코드 작성자: 이승연
+     * @ 기능: 관심목록 조회
+     * @ 1️⃣ 좋아요 누른 게시글 조회
+     */
+
+    return await this.postRepository.getWatchListOfUser(user, searchPostDto);
   }
 }

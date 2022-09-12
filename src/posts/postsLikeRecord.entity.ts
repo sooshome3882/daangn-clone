@@ -10,12 +10,12 @@ export class PostsLikeRecord extends BaseEntity {
   @PrimaryGeneratedColumn({ type: 'int' })
   postsLikeId!: number;
 
-  @Field()
+  @Field(() => Post)
   @JoinColumn({ name: 'postId' })
   @ManyToOne(type => Post, post => post.postsLikeRecord, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
   post!: Post;
 
-  @Field()
+  @Field(() => User)
   @JoinColumn({ name: 'userPhoneNumber' })
   @ManyToOne(type => User, user => user.postsLikeRecord, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
   user!: User;
