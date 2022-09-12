@@ -182,7 +182,8 @@ export class PostRepository extends Repository<Post> {
     const { perPage, page } = searchPostDto;
 
     return await getRepository(Post)
-      .createQueryBuilder('Post')
+      .createQueryBuilder()
+      .select('post')
       .where('isHidden = :isHidden', { isHidden: true })
       .andWhere('reportHandling = :reportHandling', { reportHandling: false })
       .andWhere('user = :user', { user })
@@ -196,7 +197,8 @@ export class PostRepository extends Repository<Post> {
     const { perPage, page } = searchPostDto;
 
     return await getRepository(Post)
-      .createQueryBuilder('Post')
+      .createQueryBuilder()
+      .select('post')
       .where('buyerPhoneNumber = :buyerPhoneNumber', { buyerPhoneNumber: user.phoneNumber })
       .orderBy('post.createdAt', 'DESC')
       .offset((page - 1) * perPage)
@@ -207,6 +209,7 @@ export class PostRepository extends Repository<Post> {
   async getWatchListOfUser(user: User, searchPostDto: SearchPostDto) {
     const { perPage, page } = searchPostDto;
 
+    // 🔥 수정예정
     return await getRepository(Post)
       .createQueryBuilder('post')
       .innerJoinAndSelect('post.postsLikeRecord', 'postsLikeRecord')
