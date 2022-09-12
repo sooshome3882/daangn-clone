@@ -11,8 +11,11 @@ import { JoinUserDto } from './dto/joinUser.dto';
 import { LoginUserDto } from './dto/loginUser.dto';
 import { JwtService } from '@nestjs/jwt';
 import { ProfileUserDto } from './dto/profile.dto';
+import { FollowDto } from './dto/follow.dto';
 import { createWriteStream } from 'fs';
 import { v1 as uuid } from 'uuid';
+import { Followings } from './followings.entity';
+import { SearchPostDto } from 'src/posts/dto/searchPost.dto';
 
 const smsConfig: any = config.get('sms');
 const ACCESS_KEY_ID = smsConfig.access_key_id;
@@ -156,5 +159,49 @@ export class UserService {
     await this.userRepository.updateMarketingInfo(phoneNumber, marketingInfoAgree);
 
     return await this.getUserByPhoneNumber(phoneNumber);
+  }
+
+  async getFollowingsById(followingId: number): Promise<Followings> {
+    const found = await Followings.findOne(followingId);
+    if (!found) {
+      throw new NotFoundException(`followingId가 ${followingId}인 것을 찾을 수 없습니다.`);
+    }
+    return found;
+  }
+
+  async followUsers(user: User, followDto: FollowDto) {
+    /**
+     * @ 코드 작성자: 이승연
+     * @ 기능: 팔로우
+     *
+     * @ 모아보기 -> followings 테이블에 추가
+     */
+    const insertId = await this.userRepository.followUsers(user, followDto);
+
+    return await this.getFollowingsById(insertId);
+  }
+
+  async deleteFollowUsers(followingId: number): Promise<String> {
+    /**
+     * @ 코드 작성자: 이승연
+     * @ 기능: 팔로우 취소
+     *
+     * @ 모아보기 취소 -> followings 테이블에서 삭제
+     */
+
+    await this.userRepository.deleteFollowUsers(followingId);
+
+    const following = await this.getFollowingsById(followingId);
+    if (!following) {
+      return '삭제 완료';
+    }
+  }
+
+  async seeFollowUsers(searchPostDto: SearchPostDto) {
+    /**
+     * @ 코드 작성자: 이승연
+     * @ 기능: 팔로잉 모아보기
+     */
+    return await this.userRepository.seeFollowUsers(searchPostDto);
   }
 }

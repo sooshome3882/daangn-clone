@@ -1,10 +1,14 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import { BaseEntity, CreateDateColumn, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { BaseEntity, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { User } from './user.entity';
 
 @Entity()
 @ObjectType()
 export class Followings extends BaseEntity {
+  @Field()
+  @PrimaryGeneratedColumn({ type: 'int' })
+  followingId: number;
+
   @Field(() => User)
   @JoinColumn({ name: 'userPhoneNumber' })
   @ManyToOne(type => User, user => user.followers, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
