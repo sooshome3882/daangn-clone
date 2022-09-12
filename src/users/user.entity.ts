@@ -43,4 +43,7 @@ export class User extends BaseEntity {
 
   @OneToMany(type => Post, post => post.user, { eager: false })
   posts: Post[];
+
+  @OneToMany(type => Post, post => post.buyer, { eager: false })
+  buyPosts: Post[];
 }
