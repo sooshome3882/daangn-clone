@@ -2,6 +2,7 @@ import { Field, ObjectType } from '@nestjs/graphql';
 import { Post } from 'src/posts/post.entity';
 import { PostsLikeRecord } from 'src/posts/postsLikeRecord.entity';
 import { BaseEntity, Column, CreateDateColumn, Entity, OneToMany, PrimaryColumn, UpdateDateColumn } from 'typeorm';
+import { Followings } from './followings.entity';
 
 @Entity()
 @ObjectType()
@@ -48,6 +49,12 @@ export class User extends BaseEntity {
   @OneToMany(type => Post, post => post.buyer, { eager: false })
   buyPosts!: Post[];
 
-  @OneToMany(type => PostsLikeRecord, postsLikeRecord => postsLikeRecord)
+  @OneToMany(type => PostsLikeRecord, postsLikeRecord => postsLikeRecord.post, { eager: false })
   postsLikeRecord!: PostsLikeRecord[];
+
+  @OneToMany(type => Followings, followings => followings.followingUser, { eager: false })
+  followers!: Followings[];
+
+  @OneToMany(type => Followings, followings => followings.followingUser, { eager: false })
+  followings!: Followings[];
 }
