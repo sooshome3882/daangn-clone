@@ -6,6 +6,7 @@ import { User } from 'src/users/user.entity';
 import { PriceOffer } from './priceOffer.entity';
 import { PostsComplaint } from './postsComplaint.entity';
 import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { PostsLikeRecord } from './postsLikeRecord.entity';
 import { PostImage } from './postImage.entity';
 
 @Entity()
@@ -64,6 +65,11 @@ export class Post extends BaseEntity {
   @ManyToOne(type => User, user => user.posts, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
   user!: User;
 
+  @Field(() => User)
+  @JoinColumn({ name: 'buyerPhoneNumber' })
+  @ManyToOne(type => User, user => user.buyPosts, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
+  buyer!: User;
+
   @Field()
   @JoinColumn({ name: 'categoryId' })
   @ManyToOne(type => Category, category => category.posts, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
@@ -88,4 +94,7 @@ export class Post extends BaseEntity {
 
   @OneToMany(type => PostsComplaint, postsComplaint => postsComplaint.post, { eager: false })
   postsComplaint!: PostsComplaint[];
+
+  @OneToMany(type => PostsLikeRecord, postsLikeRecord => postsLikeRecord.post, { eager: false })
+  postsLikeRecord!: PostsLikeRecord[];
 }

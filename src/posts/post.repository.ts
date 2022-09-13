@@ -98,8 +98,12 @@ export class PostRepository extends Repository<Post> {
     }
   }
 
-  async updateHiddenState(postId: number) {
+  async updateHiddenStateTrue(postId: number) {
     await getRepository(Post).createQueryBuilder('Post').update(Post).set({ isHidden: true }).where('postId = :postId', { postId }).execute();
+  }
+
+  async updateHiddenStateFalse(postId: number) {
+    await getRepository(Post).createQueryBuilder('Post').update(Post).set({ isHidden: false }).where('postId = :postId', { postId }).execute();
   }
 
   async putComplaintReasons() {
@@ -181,5 +185,47 @@ export class PostRepository extends Repository<Post> {
     const { dealState } = updateDealStateDto;
 
     await getRepository(Post).createQueryBuilder('Post').update(Post).set({ dealState }).where('postId = :postId', { postId: postId }).execute();
+  }
+
+  async getHiddenPostsList(user: User, searchPostDto: SearchPostDto) {
+    const { perPage, page } = searchPostDto;
+
+    return await getRepository(Post)
+      .createQueryBuilder()
+      .select('post')
+      .where('isHidden = :isHidden', { isHidden: true })
+      .andWhere('reportHandling = :reportHandling', { reportHandling: false })
+      .andWhere('user = :user', { user })
+      .orderBy('post.createdAt', 'DESC')
+      .offset((page - 1) * perPage)
+      .limit(perPage)
+      .getMany();
+  }
+
+  async getBuyingListOfUser(user: User, searchPostDto: SearchPostDto) {
+    const { perPage, page } = searchPostDto;
+
+    return await getRepository(Post)
+      .createQueryBuilder()
+      .select('post')
+      .where('buyerPhoneNumber = :buyerPhoneNumber', { buyerPhoneNumber: user.phoneNumber })
+      .orderBy('post.createdAt', 'DESC')
+      .offset((page - 1) * perPage)
+      .limit(perPage)
+      .getMany();
+  }
+
+  async getWatchListOfUser(user: User, searchPostDto: SearchPostDto) {
+    const { perPage, page } = searchPostDto;
+
+    // 🔥 수정예정
+    return await getRepository(Post)
+      .createQueryBuilder('post')
+      .innerJoinAndSelect('post.postsLikeRecord', 'postsLikeRecord')
+      .where('postsLikeRecord.userPhoneNumber = :userPhoneNumber', { userPhoneNumber: user.phoneNumber })
+      .orderBy('post.createdAt', 'DESC')
+      .offset((page - 1) * perPage)
+      .limit(perPage)
+      .getMany();
   }
 }

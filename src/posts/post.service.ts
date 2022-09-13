@@ -151,26 +151,26 @@ export class PostService {
     return priceOffered;
   }
 
-  async setStaticData(postId: number): Promise<object> {
-    // 임시방편으로 static data 저장하기
-    const complaintReason = await ComplaintReason.find();
-    const processState = await ProcessState.find();
-    const dealState = await DealState.find();
+  // async setStaticData(postId: number): Promise<object> {
+  //   // 임시방편으로 static data 저장하기
+  //   const complaintReason = await ComplaintReason.find();
+  //   const processState = await ProcessState.find();
+  //   const dealState = await DealState.find();
 
-    if (Object.keys(complaintReason).length === 0) {
-      this.postRepository.putComplaintReasons();
-    }
-    if (Object.keys(processState).length === 0) {
-      this.postRepository.putProcessStates();
-    }
-    if (Object.keys(dealState).length === 0) {
-      this.postRepository.putDealState();
-    }
+  //   if (Object.keys(complaintReason).length === 0) {
+  //     this.postRepository.putComplaintReasons();
+  //   }
+  //   if (Object.keys(processState).length === 0) {
+  //     this.postRepository.putProcessStates();
+  //   }
+  //   if (Object.keys(dealState).length === 0) {
+  //     this.postRepository.putDealState();
+  //   }
 
-    const data = { ...complaintReason, ...processState, ...dealState };
+  //   const data = { ...complaintReason, ...processState, ...dealState };
 
-    return data;
-  }
+  //   return data;
+  // }
 
   async getPostsComplaintById(complaintId: number): Promise<PostsComplaint> {
     const found = await PostsComplaint.findOne(complaintId);
@@ -210,26 +210,79 @@ export class PostService {
     return await this.getPostById(postId);
   }
 
-  async hidePost(postId: number) {
+  async hidePost(user: User, postId: number) {
     /**
      * @ 코드 작성자: 이승연
      * @ 기능: 게시글 숨김 처리
-     * @ 게시글 신고처리 (reportHandling=true) 상태일 때, isHidden = true로 변경하여 숨김처리
-     * @ 전체 게시글 조회시 isHidden = false인 것만 filtering 하기
      */
 
-    const post = await this.postRepository.findOne({
-      where: {
-        postId,
-      },
-    });
+    const post = await this.getPostById(postId);
+    if (JSON.stringify(post.user) !== JSON.stringify(user)) {
+      throw new BadRequestException(`본인이 작성한 게시글만 숨김처리할 수 있습니다.`);
+    }
 
     if (!post) {
       throw new NotFoundException(`postId가 ${postId}인 것을 찾을 수 없습니다.`);
     }
 
-    await this.postRepository.updateHiddenState(postId);
-
+    await this.postRepository.updateHiddenStateTrue(postId);
     return await this.getPostById(postId);
+  }
+
+  async clearHiddenPostState(user: User, postId: number) {
+    /**
+     * @ 코드 작성자: 이승연
+     * @ 기능: 게시글 숨김 처리 해제
+     */
+    const post = await this.getPostById(postId);
+    if (JSON.stringify(post.user) !== JSON.stringify(user)) {
+      throw new BadRequestException(`본인이 작성한 게시글만 숨김처리를 해제할 수 있습니다.`);
+    }
+
+    if (!post) {
+      throw new NotFoundException(`postId가 ${postId}인 것을 찾을 수 없습니다.`);
+    }
+
+    await this.postRepository.updateHiddenStateFalse(postId);
+    return await this.getPostById(postId);
+  }
+
+  async getHiddenPostsList(user: User, searchPostDto: SearchPostDto) {
+    /**
+     * @ 코드 작성자: 이승연
+     * @ 기능: 숨김 처리 게시글 리스트 불러오기
+     * @ 부가 설명
+     * 1. 판매내역 -> 판매중 / 거래완료 / 숨김
+     * 2. Post 에서 isHidden이 true인 것들만 불러오기 (자신이 작성한 것만 볼 수 있도록 사용자 인증 기능 포함)
+     */
+
+    return await this.postRepository.getHiddenPostsList(user, searchPostDto);
+  }
+
+  async buy(user: User) {
+    /**
+     * @ 코드 작성자: 이승연
+     * @ 기능: 특정 게시글 물건 구매 처리
+     */
+  }
+
+  async getBuyingListsOfUser(user: User, searchPostDto: SearchPostDto) {
+    /**
+     * @ 코드 작성자: 이승연
+     * @ 기능: 구매리스트 조회
+     * @ 1️⃣ Post 테이블의 buyerPhoneNumber에 해당 유저의 번호가 존재하는 리스트 조회
+     */
+
+    return await this.postRepository.getBuyingListOfUser(user, searchPostDto);
+  }
+
+  async getWatchListOfUser(user: User, searchPostDto: SearchPostDto) {
+    /**
+     * @ 코드 작성자: 이승연
+     * @ 기능: 관심목록 조회
+     * @ 1️⃣ 좋아요 누른 게시글 조회
+     */
+
+    return await this.postRepository.getWatchListOfUser(user, searchPostDto);
   }
 }

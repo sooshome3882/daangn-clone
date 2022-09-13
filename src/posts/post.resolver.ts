@@ -70,13 +70,6 @@ export class PostResolver {
     return this.postService.acceptOfferedPrice(acceptOfferPriceDto);
   }
 
-  // static data setting
-  @Query(() => ComplaintReason)
-  @UsePipes(ValidationPipe)
-  async setStaticData(@Args('postId', ParseIntPipe) postId: number): Promise<object> {
-    return await this.postService.setStaticData(postId);
-  }
-
   // 게시글 신고
   @Mutation(() => PostsComplaint)
   @UsePipes(ValidationPipe)
@@ -94,7 +87,35 @@ export class PostResolver {
   // 게시글 숨김 처리
   @Mutation(() => Post)
   @UsePipes(ValidationPipe)
-  hidePost(@Args('postId', ParseIntPipe) postId: number) {
-    return this.postService.hidePost(postId);
+  hidePost(@GetUser() user: User, @Args('postId', ParseIntPipe) postId: number) {
+    return this.postService.hidePost(user, postId);
+  }
+
+  // 게시글 숨김 처리 해제
+  @Mutation(() => Post)
+  @UsePipes(ValidationPipe)
+  async clearHiddenPostState(@GetUser() user: User, @Args('postId', ParseIntPipe) postId: number) {
+    return this.postService.clearHiddenPostState(user, postId);
+  }
+
+  // 숨김처리 리스트 조회
+  @Query(() => Post)
+  @UsePipes(ValidationPipe)
+  async getHiddenPosts(@GetUser() user: User, @Args('searchPostDto') searchPostDto: SearchPostDto) {
+    return this.postService.getHiddenPostsList(user, searchPostDto);
+  }
+
+  // 특정 사용자 구매리스트 조회
+  @Query(() => Post)
+  @UsePipes(ValidationPipe)
+  async getBuyingListsOfUser(@GetUser() user: User, @Args('searchPostDto') searchPostDto: SearchPostDto) {
+    return this.postService.getBuyingListsOfUser(user, searchPostDto);
+  }
+
+  // 특정 사용자 관심목록 조회
+  @Query(() => Post)
+  @UsePipes(ValidationPipe)
+  async getWatchListOfUser(@GetUser() user: User, @Args('searchPostDto') searchPostDto: SearchPostDto) {
+    return this.postService.getWatchListOfUser(user, searchPostDto);
   }
 }
