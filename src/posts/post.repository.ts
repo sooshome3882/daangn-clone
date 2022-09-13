@@ -12,13 +12,22 @@ import { ProcessState } from 'src/processStates/processState.entity';
 import { PostsComplaint } from './postsComplaint.entity';
 import { DealState } from 'src/dealStates/dealState.entity';
 import { User } from 'src/users/user.entity';
+import { PostImage } from './postImage.entity';
 
 @EntityRepository(Post)
 export class PostRepository extends Repository<Post> {
   async createPost(user: User, createPostDto: CreatePostDto): Promise<number> {
     const { title, content, category, price, isOfferedPrice, townRange, dealState } = createPostDto;
-    const query = await getRepository(Post).createQueryBuilder('Post').insert().into(Post).values({ user: user, title, content, price, isOfferedPrice, category, townRange, dealState }).execute();
+    const query = await getRepository(Post).createQueryBuilder('Post').insert().into(Post).values({ user, title, content, price, isOfferedPrice, category, townRange, dealState }).execute();
     return query.raw.insertId;
+  }
+
+  async deletePostImagePath(postId: number) {
+    await getRepository(PostImage).createQueryBuilder('PostImage').delete().from(PostImage).where('postId = :postId', { postId: postId }).execute();
+  }
+
+  async addPostImagePath(post: number, imagePath: string) {
+    await getRepository(PostImage).createQueryBuilder('PostImage').insert().into(PostImage).values({ imagePath, post }).execute();
   }
 
   async updatePost(postId: number, updatePostDto: UpdatePostDto): Promise<void> {
@@ -28,7 +37,7 @@ export class PostRepository extends Repository<Post> {
 
   async getPosts(searchPostDto: SearchPostDto): Promise<Post[]> {
     const { search, minPrice, maxPrice, category, townRange, dealState, perPage, page } = searchPostDto;
-    const queryBuilder = await getRepository(Post)
+    const queryBuilder = getRepository(Post)
       .createQueryBuilder('post')
       .innerJoinAndSelect('post.category', 'category')
       .innerJoinAndSelect('post.townRange', 'townRange')
