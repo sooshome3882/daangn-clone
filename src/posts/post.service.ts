@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/user.entity';
 import { CreatePostDto } from './dto/createPost.dto';
@@ -15,6 +15,8 @@ import { ProcessState } from 'src/processStates/processState.entity';
 import { PostsComplaint } from './postsComplaint.entity';
 import { DealState } from 'src/dealStates/dealState.entity';
 import { UpdateDealStateDto } from './dto/updateDealState.dto';
+import { v1 as uuid } from 'uuid';
+import { createWriteStream } from 'fs';
 
 @Injectable()
 export class PostService {
@@ -25,6 +27,23 @@ export class PostService {
 
   async createPost(user: User, createPostDto: CreatePostDto): Promise<Post> {
     const insertId = await this.postRepository.createPost(user, createPostDto);
+    const { images } = createPostDto;
+    if (images) {
+      for (const image of images) {
+        const { createReadStream } = await image;
+        const imagePath = `./src/posts/uploads/${uuid()}.png`;
+        const isImageStored: boolean = await new Promise<boolean>(async (resolve, reject) =>
+          createReadStream()
+            .pipe(createWriteStream(imagePath))
+            .on('finish', () => resolve(true))
+            .on('error', () => resolve(false)),
+        );
+        if (!isImageStored) {
+          throw new InternalServerErrorException('이미지 저장에 실패하였습니다.');
+        }
+        await this.postRepository.addPostImagePath(insertId, imagePath);
+      }
+    }
     return await this.getPostById(insertId);
   }
 
@@ -37,6 +56,24 @@ export class PostService {
       throw new NotFoundException(`postId가 ${postId}인 것을 찾을 수 없습니다.`);
     }
     await this.postRepository.updatePost(postId, updatePostDto);
+    await this.postRepository.deletePostImagePath(postId);
+    const { images } = updatePostDto;
+    if (images) {
+      for (const image of images) {
+        const { createReadStream } = await image;
+        const imagePath = `./src/posts/uploads/${uuid()}.png`;
+        const isImageStored: boolean = await new Promise<boolean>(async (resolve, reject) =>
+          createReadStream()
+            .pipe(createWriteStream(imagePath))
+            .on('finish', () => resolve(true))
+            .on('error', () => resolve(false)),
+        );
+        if (!isImageStored) {
+          throw new InternalServerErrorException('이미지 저장에 실패하였습니다.');
+        }
+        await this.postRepository.addPostImagePath(postId, imagePath);
+      }
+    }
     return await this.getPostById(postId);
   }
 

@@ -7,7 +7,7 @@ import { TownRange } from 'src/townRanges/townRange.entity';
 @InputType()
 export class SearchPostDto {
   @Field({ nullable: true })
-  search: string;
+  search?: string;
 
   @Field({ nullable: true, defaultValue: 0 })
   @IsNumber()

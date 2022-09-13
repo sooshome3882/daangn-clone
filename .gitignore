@@ -43,3 +43,4 @@ schema.gql
 
 # uploads
 src/users/uploads
+src/posts/uploads

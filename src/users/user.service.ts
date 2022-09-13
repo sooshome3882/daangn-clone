@@ -141,7 +141,7 @@ export class UserService {
         createReadStream()
           .pipe(createWriteStream(`./src/users/uploads/${newFileName}.png`))
           .on('finish', () => resolve(true))
-          .on('error', () => reject(false)),
+          .on('error', () => resolve(false)),
       );
       if (!isImageStored) {
         throw new InternalServerErrorException('이미지 저장에 실패하였습니다.');

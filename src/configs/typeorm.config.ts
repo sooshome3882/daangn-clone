@@ -11,6 +11,7 @@ import { PostsComplaint } from 'src/posts/postsComplaint.entity';
 import { ProcessState } from 'src/processStates/processState.entity';
 import { PostsLikeRecord } from 'src/posts/postsLikeRecord.entity';
 import { Followings } from 'src/users/followings.entity';
+import { PostImage } from 'src/posts/postImage.entity';
 
 const dbConfig: any = config.get('db');
 
@@ -21,7 +22,7 @@ export const typeORMConfig: TypeOrmModuleOptions = {
   username: dbConfig.username,
   password: dbConfig.password,
   database: dbConfig.database,
-  entities: [Post, User, Category, PriceOffer, DealState, TownRange, ComplaintReason, PostsComplaint, ProcessState, PostsLikeRecord, Followings],
+  entities: [Post, User, Category, PriceOffer, DealState, TownRange, ComplaintReason, PostsComplaint, ProcessState, PostsLikeRecord, Followings, PostImage],
   synchronize: dbConfig.synchronize,
   timezone: dbConfig.timezone,
 };
