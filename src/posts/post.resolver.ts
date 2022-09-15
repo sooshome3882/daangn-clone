@@ -1,3 +1,5 @@
+import { PostsLikeDto } from './dto/addPostsLike.dto';
+import { PostsLikeRecord } from 'src/posts/postsLikeRecord.entity';
 import { CreatePostsComplaintsDto } from './dto/createPostsComplaints.dto';
 import { AcceptOfferedPriceDto } from './dto/acceptOfferedPrice.dto';
 import { ParseFilePipe, ParseIntPipe, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
@@ -15,6 +17,8 @@ import { UpdateDealStateDto } from './dto/updateDealState.dto';
 import { GetUser } from 'src/users/validations/getUser.decorator';
 import { JwtAuthGuard } from 'src/users/guards/jwtAuth.guard';
 import { PostImagesValidationPipe } from './pipes/postImages.pipe';
+import { PostsViewRecord } from './postsViewRecord.entity';
+import { PostsViewDto } from './dto/addPostsView.dto';
 
 @Resolver(() => Post)
 @UseGuards(JwtAuthGuard)
@@ -93,5 +97,23 @@ export class PostResolver {
   @Mutation(() => Post)
   clearHiddenPostState(@GetUser() user: User, @Args('postId', ParseIntPipe) postId: number) {
     return this.postService.clearHiddenPostState(user, postId);
+  }
+
+  // 게시글 좋아요 누르기
+  @Mutation(() => PostsLikeRecord)
+  addLikeToPost(@GetUser() user: User, @Args('postsLikeDto') postsLikeDto: PostsLikeDto): Promise<PostsLikeRecord> {
+    return this.postService.addLikeToPost(user, postsLikeDto);
+  }
+
+  // 게시글 좋아요 취소하기
+  @Mutation(() => Post)
+  substractLikeToPost(@GetUser() user: User, @Args('postsLikeDto') postsLikeDto: PostsLikeDto): Promise<Post> {
+    return this.postService.substractLikeToPost(user, postsLikeDto);
+  }
+
+  // 게시글 조회수 증가
+  @Mutation(() => PostsViewRecord)
+  addViewToPost(@GetUser() user: User, @Args('postsViewDto') postsViewDto: PostsViewDto): Promise<PostsViewRecord> {
+    return this.postService.addViewToPost(user, postsViewDto);
   }
 }

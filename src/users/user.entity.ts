@@ -4,6 +4,7 @@ import { PostsLikeRecord } from 'src/posts/postsLikeRecord.entity';
 import { PurchaseHistory } from 'src/mypage/purchaseHistory.entity';
 import { BaseEntity, Column, CreateDateColumn, Entity, OneToMany, PrimaryColumn, UpdateDateColumn } from 'typeorm';
 import { Followings } from '../mypage/followings.entity';
+import { PostsViewRecord } from 'src/posts/postsViewRecord.entity';
 
 @Entity()
 @ObjectType()
@@ -49,6 +50,9 @@ export class User extends BaseEntity {
 
   @OneToMany(type => PostsLikeRecord, postsLikeRecord => postsLikeRecord.post, { eager: false })
   postsLikeRecord!: PostsLikeRecord[];
+
+  @OneToMany(type => PostsViewRecord, postsViewRecord => postsViewRecord.user, { eager: false })
+  postsViewRecord!: PostsViewRecord;
 
   @OneToMany(type => Followings, followings => followings.followingUser, { eager: false })
   followings!: Followings[];

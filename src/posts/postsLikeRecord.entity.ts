@@ -1,12 +1,12 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { User } from 'src/users/user.entity';
-import { BaseEntity, Column, Entity, JoinColumn, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import { BaseEntity, Entity, JoinColumn, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
 import { Post } from './post.entity';
 
 @Entity()
 @ObjectType()
 export class PostsLikeRecord extends BaseEntity {
-  @Field()
+  @Field(() => Number)
   @PrimaryGeneratedColumn({ type: 'int' })
   postsLikeId!: number;
 

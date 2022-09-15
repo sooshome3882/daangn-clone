@@ -1,3 +1,4 @@
+import { PostsViewDto } from './dto/addPostsView.dto';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/user.entity';
@@ -12,6 +13,10 @@ import { PriceOffer } from './priceOffer.entity';
 import { PostRepository } from './post.repository';
 import { PostsComplaint } from './postsComplaint.entity';
 import { UpdateDealStateDto } from './dto/updateDealState.dto';
+import { PostsLikeRecord } from './postsLikeRecord.entity';
+import { PostsLikeDto } from './dto/addPostsLike.dto';
+import { Transaction } from 'typeorm';
+import { PostsViewRecord } from './postsViewRecord.entity';
 
 @Injectable()
 export class PostService {
@@ -179,5 +184,104 @@ export class PostService {
     }
     await this.postRepository.updateHiddenStateFalse(postId);
     return await this.getPostById(postId);
+  }
+
+  async getPostsLikeRecordById(postsLikeId: number) {
+    const found = await PostsLikeRecord.findOne(postsLikeId);
+    if (!found) {
+      throw new NotFoundException(`postsLikeId가 ${postsLikeId}인 기록을 찾을 수 없습니다.`);
+    }
+    return found;
+  }
+
+  async getPostsLikeRecordByUser(user: User, post: Post) {
+    const found = await PostsLikeRecord.findOne({
+      where: {
+        user,
+        post,
+      },
+    });
+    return found;
+  }
+
+  async addLikeToPost(user: User, postsLikeDto: PostsLikeDto): Promise<PostsLikeRecord> {
+    /**
+     * 기능: 게시글 좋아요 누르기
+     *
+     * @author 이승연(dltmddus1998)
+     * @param {user, addPostsLikeDto} 로그인한 유저, 게시글 번호
+     * @return {PostsLikeRecord} 로그인한 유저가 해당 게시글에 좋아요 누른 기록 반환
+     * @throws {BadRequestException} 이미 좋아요를 누른 경우 예외 처리
+     */
+    const { post } = postsLikeDto;
+    const postsLikeReocrd = await this.getPostsLikeRecordByUser(user, post);
+    if (postsLikeReocrd) {
+      throw new BadRequestException(`이미 좋아요를 누른 게시물입니다.`);
+    } else {
+      const likeAddedPost = await Post.findOne(post);
+      const likes = likeAddedPost.likes;
+      const insertId = await this.postRepository.addLikeTransaction(user, postsLikeDto, post, likes);
+      const updatedPostsLikeRecord = await PostsLikeRecord.findOne(insertId);
+      return updatedPostsLikeRecord;
+    }
+  }
+
+  async substractLikeToPost(user: User, postsLikeDto: PostsLikeDto): Promise<Post> {
+    /**
+     * 기능: 게시글 좋아요 취소하기
+     *
+     * @author 이승연(dltmddus1998)
+     * @param {user, addPostsLikeDto} 로그인한 유저, 게시글 번호
+     * @return {PostsLikeRecord} 해당 게시글 반환
+     * @throws {BadRequestException} 좋아요를 누르지 않은 경우 예외 처리
+     */
+    const { post } = postsLikeDto;
+    const postsLikeRecord = await this.getPostsLikeRecordByUser(user, post);
+    if (!postsLikeRecord) {
+      throw new BadRequestException(`해당 게시글에 좋아요를 누르지 않았습니다.`);
+    } else {
+      const likeSubstractedPost = await Post.findOne(post);
+      const likeSubstractedPostsLikeRecord = await PostsLikeRecord.findOne({
+        where: {
+          post,
+        },
+      });
+      const postsLikeId = likeSubstractedPostsLikeRecord.postsLikeId;
+      const likes = likeSubstractedPost.likes;
+      await this.postRepository.substractLikeTransaction(user, postsLikeId, post, likes);
+      return await Post.findOne(post);
+    }
+  }
+
+  async getPostsViewRecordByUser(user: User, post: Post) {
+    const found = await PostsViewRecord.findOne({
+      where: {
+        user,
+        post,
+      },
+    });
+    return found;
+  }
+
+  async addViewToPost(user: User, postsViewDto: PostsViewDto): Promise<PostsViewRecord> {
+    /**
+     * 기능: 게시글 조회수 추가 (1인당 1개 Max)
+     *
+     * @author 이승연(dltmddus1998)
+     * @param {user, addPostsViewDto} 로그인한 유저, 게시글 번호
+     * @return {PostsViewRecord} 로그인한 유저가 해당 게시글을 조회한 기록 반환
+     * @throws {BadRequestException} 이미 조회한 경우 예외 처리
+     */
+    const { post } = postsViewDto;
+    const postsViewRecord = await this.getPostsViewRecordByUser(user, post);
+    if (postsViewRecord) {
+      throw new BadRequestException(`해당 유저가 이미 조회한 게시글입니다.`);
+    } else {
+      const viewAddedPost = await Post.findOne(post);
+      const views = viewAddedPost.views;
+      const insertId = await this.postRepository.addViewTransaction(user, postsViewDto, post, views);
+      const updatedPostsViewRecord = await PostsViewRecord.findOne(insertId);
+      return updatedPostsViewRecord;
+    }
   }
 }
