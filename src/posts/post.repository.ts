@@ -12,22 +12,15 @@ import { ProcessState } from 'src/processStates/processState.entity';
 import { PostsComplaint } from './postsComplaint.entity';
 import { DealState } from 'src/dealStates/dealState.entity';
 import { User } from 'src/users/user.entity';
-import { PostImage } from './postImage.entity';
+import { PurchaseHistory } from '../mypage/purchaseHistory.entity';
+import { PurchaseHistoryDto } from '../mypage/dto/purchaseHistory.dto';
 
 @EntityRepository(Post)
 export class PostRepository extends Repository<Post> {
   async createPost(user: User, createPostDto: CreatePostDto): Promise<number> {
     const { title, content, category, price, isOfferedPrice, townRange, dealState } = createPostDto;
-    const query = await getRepository(Post).createQueryBuilder('Post').insert().into(Post).values({ user, title, content, price, isOfferedPrice, category, townRange, dealState }).execute();
+    const query = await getRepository(Post).createQueryBuilder('Post').insert().into(Post).values({ user: user, title, content, price, isOfferedPrice, category, townRange, dealState }).execute();
     return query.raw.insertId;
-  }
-
-  async deletePostImagePath(postId: number) {
-    await getRepository(PostImage).createQueryBuilder('PostImage').delete().from(PostImage).where('postId = :postId', { postId: postId }).execute();
-  }
-
-  async addPostImagePath(post: number, imagePath: string) {
-    await getRepository(PostImage).createQueryBuilder('PostImage').insert().into(PostImage).values({ imagePath, post }).execute();
   }
 
   async updatePost(postId: number, updatePostDto: UpdatePostDto): Promise<void> {
@@ -37,7 +30,7 @@ export class PostRepository extends Repository<Post> {
 
   async getPosts(searchPostDto: SearchPostDto): Promise<Post[]> {
     const { search, minPrice, maxPrice, category, townRange, dealState, perPage, page } = searchPostDto;
-    const queryBuilder = getRepository(Post)
+    const queryBuilder = await getRepository(Post)
       .createQueryBuilder('post')
       .innerJoinAndSelect('post.category', 'category')
       .innerJoinAndSelect('post.townRange', 'townRange')
@@ -75,23 +68,18 @@ export class PostRepository extends Repository<Post> {
         priceOfferId,
       },
     });
-
     const { post } = priceOffered;
-
     const priceOfferedPost = await Post.findOne({
       where: {
         postId: post.postId,
       },
     });
-
     if (accept) {
       priceOffered.accept = true;
       priceOfferedPost.isOfferedPrice = true;
       priceOfferedPost.price = priceOffered.offerPrice;
-
       Post.save(priceOfferedPost);
       PriceOffer.save(priceOffered);
-
       return priceOffered;
     } else {
       return;
@@ -104,36 +92,6 @@ export class PostRepository extends Repository<Post> {
 
   async updateHiddenStateFalse(postId: number) {
     await getRepository(Post).createQueryBuilder('Post').update(Post).set({ isHidden: false }).where('postId = :postId', { postId }).execute();
-  }
-
-  async putComplaintReasons() {
-    //   await getRepository(ComplaintReason)
-    //     .createQueryBuilder()
-    //     .insert()
-    //     .into(ComplaintReason)
-    //     .values([
-    //       { complaintReasonId: 1, type: 'C', complaintReason: '욕설/비하/혐오 발언이에요' },
-    //       { complaintReasonId: 2, type: 'C', complaintReason: '성희롱/음란성 메시지에요' },
-    //       { complaintReasonId: 3, type: 'C', complaintReason: '사기 대화를 시도해요' },
-    //       { complaintReasonId: 4, type: 'C', complaintReason: '가격 제안 불가 게시글에 가격을 제안해요' },
-    //       { complaintReasonId: 5, type: 'C', complaintReason: '영업 / 홍보 목적의 메시지에요' },
-    //       { complaintReasonId: 6, type: 'C', complaintReason: '연애 목적의 대화를 시도해요' },
-    //       { complaintReasonId: 7, type: 'C', complaintReason: '기타' },
-    //       { complaintReasonId: 100, type: 'P', complaintReason: '판매금지물품이에요' },
-    //       { complaintReasonId: 101, type: 'P', complaintReason: '중고거래 게시글이 아니에요' },
-    //       { complaintReasonId: 102, type: 'P', complaintReason: '전문 판매업자 같아요' },
-    //       { complaintReasonId: 103, type: 'P', complaintReason: '사기글이에요' },
-    //       { complaintReasonId: 104, type: 'P', complaintReason: '기타' },
-    //       { complaintReasonId: 200, type: 'U', complaintReason: '전문 판매업자 같아요' },
-    //       { complaintReasonId: 201, type: 'U', complaintReason: '비매너 사용자에요' },
-    //       { complaintReasonId: 202, type: 'U', complaintReason: '욕설을 해요' },
-    //       { complaintReasonId: 203, type: 'U', complaintReason: '성희롱을 해요' },
-    //       { complaintReasonId: 204, type: 'U', complaintReason: '거래/환불 분쟁 신고' },
-    //       { complaintReasonId: 205, type: 'U', complaintReason: '사기당했어요' },
-    //       { complaintReasonId: 206, type: 'U', complaintReason: '연애 목적의 대화를 시도해요' },
-    //       { complaintReasonId: 207, type: 'U', complaintReason: '기타' },
-    //     ])
-    //     .execute();
   }
 
   async putProcessStates() {
@@ -166,7 +124,6 @@ export class PostRepository extends Repository<Post> {
 
   async createPostsComplaint(createPostsComplaintsDto: CreatePostsComplaintsDto): Promise<number> {
     const { post, complaintReason, processState } = createPostsComplaintsDto;
-
     const query = await getRepository(PostsComplaint)
       .createQueryBuilder('PostsComplaint')
       .insert()
@@ -177,55 +134,11 @@ export class PostRepository extends Repository<Post> {
         processState,
       })
       .execute();
-
     return query.raw.insertId;
   }
 
   async updateDealState(postId: number, updateDealStateDto: UpdateDealStateDto) {
     const { dealState } = updateDealStateDto;
-
     await getRepository(Post).createQueryBuilder('Post').update(Post).set({ dealState }).where('postId = :postId', { postId: postId }).execute();
-  }
-
-  async getHiddenPostsList(user: User, searchPostDto: SearchPostDto) {
-    const { perPage, page } = searchPostDto;
-
-    return await getRepository(Post)
-      .createQueryBuilder()
-      .select('post')
-      .where('isHidden = :isHidden', { isHidden: true })
-      .andWhere('reportHandling = :reportHandling', { reportHandling: false })
-      .andWhere('user = :user', { user })
-      .orderBy('post.createdAt', 'DESC')
-      .offset((page - 1) * perPage)
-      .limit(perPage)
-      .getMany();
-  }
-
-  async getBuyingListOfUser(user: User, searchPostDto: SearchPostDto) {
-    const { perPage, page } = searchPostDto;
-
-    return await getRepository(Post)
-      .createQueryBuilder()
-      .select('post')
-      .where('buyerPhoneNumber = :buyerPhoneNumber', { buyerPhoneNumber: user.phoneNumber })
-      .orderBy('post.createdAt', 'DESC')
-      .offset((page - 1) * perPage)
-      .limit(perPage)
-      .getMany();
-  }
-
-  async getWatchListOfUser(user: User, searchPostDto: SearchPostDto) {
-    const { perPage, page } = searchPostDto;
-
-    // 🔥 수정예정
-    return await getRepository(Post)
-      .createQueryBuilder('post')
-      .innerJoinAndSelect('post.postsLikeRecord', 'postsLikeRecord')
-      .where('postsLikeRecord.userPhoneNumber = :userPhoneNumber', { userPhoneNumber: user.phoneNumber })
-      .orderBy('post.createdAt', 'DESC')
-      .offset((page - 1) * perPage)
-      .limit(perPage)
-      .getMany();
   }
 }
