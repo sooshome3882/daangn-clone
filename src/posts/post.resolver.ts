@@ -10,7 +10,6 @@ import { OfferPriceDto } from './dto/offerPrice.dto';
 import { Post } from './post.entity';
 import { PriceOffer } from './priceOffer.entity';
 import { PostService } from './post.service';
-import { ComplaintReason } from 'src/complaintReasons/complaintReason.entity';
 import { PostsComplaint } from './postsComplaint.entity';
 import { UpdateDealStateDto } from './dto/updateDealState.dto';
 import { GetUser } from 'src/users/validations/getUser.decorator';
@@ -73,8 +72,8 @@ export class PostResolver {
   // 게시글 신고
   @Mutation(() => PostsComplaint)
   @UsePipes(ValidationPipe)
-  async reportPost(@Args('createPostsComplaintDto', ParseFilePipe) createPostsComplaintDto: CreatePostsComplaintsDto): Promise<PostsComplaint> {
-    return await this.postService.reportPost(createPostsComplaintDto);
+  reportPost(@Args('createPostsComplaintDto', ParseFilePipe) createPostsComplaintDto: CreatePostsComplaintsDto): Promise<PostsComplaint> {
+    return this.postService.reportPost(createPostsComplaintDto);
   }
 
   // 게시글 상태 변경
@@ -86,36 +85,13 @@ export class PostResolver {
 
   // 게시글 숨김 처리
   @Mutation(() => Post)
-  @UsePipes(ValidationPipe)
   hidePost(@GetUser() user: User, @Args('postId', ParseIntPipe) postId: number) {
     return this.postService.hidePost(user, postId);
   }
 
   // 게시글 숨김 처리 해제
   @Mutation(() => Post)
-  @UsePipes(ValidationPipe)
-  async clearHiddenPostState(@GetUser() user: User, @Args('postId', ParseIntPipe) postId: number) {
+  clearHiddenPostState(@GetUser() user: User, @Args('postId', ParseIntPipe) postId: number) {
     return this.postService.clearHiddenPostState(user, postId);
-  }
-
-  // 숨김처리 리스트 조회
-  @Query(() => Post)
-  @UsePipes(ValidationPipe)
-  async getHiddenPosts(@GetUser() user: User, @Args('searchPostDto') searchPostDto: SearchPostDto) {
-    return this.postService.getHiddenPostsList(user, searchPostDto);
-  }
-
-  // 특정 사용자 구매리스트 조회
-  @Query(() => Post)
-  @UsePipes(ValidationPipe)
-  async getBuyingListsOfUser(@GetUser() user: User, @Args('searchPostDto') searchPostDto: SearchPostDto) {
-    return this.postService.getBuyingListsOfUser(user, searchPostDto);
-  }
-
-  // 특정 사용자 관심목록 조회
-  @Query(() => Post)
-  @UsePipes(ValidationPipe)
-  async getWatchListOfUser(@GetUser() user: User, @Args('searchPostDto') searchPostDto: SearchPostDto) {
-    return this.postService.getWatchListOfUser(user, searchPostDto);
   }
 }

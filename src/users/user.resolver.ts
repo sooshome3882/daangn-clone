@@ -11,8 +11,8 @@ import { ProfileUserDto } from './dto/profile.dto';
 import { ProfileInputValidationPipe } from './validations/profile.pipe';
 import { JwtAuthGuard } from './guards/jwtAuth.guard';
 import { GetUser } from './validations/getUser.decorator';
-import { Followings } from './followings.entity';
-import { FollowDto } from './dto/follow.dto';
+import { Followings } from '../mypage/followings.entity';
+import { FollowDto } from '../mypage/dto/follow.dto';
 
 @Resolver(() => User)
 export class UserResolver {
@@ -45,32 +45,5 @@ export class UserResolver {
   @UsePipes(ValidationPipe)
   setProfile(@GetUser('phoneNumber') phoneNumber: string, @Args('profileUserDto', ProfileInputValidationPipe) profileUserDto: ProfileUserDto): Promise<User> {
     return this.userService.setProfile(phoneNumber, profileUserDto);
-  }
-
-  @Mutation(() => User)
-  @UsePipes(ValidationPipe)
-  async setMarkeingInfoAgree(@GetUser('phoneNumber', PhoneNumberValidationPipe) phoneNumber: string, @Args('marketingInfoAgree', ParseBoolPipe) marketingInfoAgree: boolean): Promise<User> {
-    return this.userService.setMarketingInfoAgree(phoneNumber, marketingInfoAgree);
-  }
-
-  // 팔로우
-  @Mutation(() => Followings)
-  @UsePipes(ValidationPipe)
-  async followUsers(@GetUser() user: User, @Args('followDto') followDto: FollowDto): Promise<Followings> {
-    return this.userService.followUsers(user, followDto);
-  }
-
-  // 팔로우 취소
-  @Mutation(() => String)
-  @UsePipes(ValidationPipe)
-  async deleteFollowUsers(@Args('followingId') followingId: number): Promise<String> {
-    return this.userService.deleteFollowUsers(followingId);
-  }
-
-  // 팔로잉 모아보기
-  @Query(() => Followings)
-  @UsePipes(ValidationPipe)
-  async seeFollowUsers(@Args('searchPostDto') searchPostDto: SearchPostDto) {
-    return this.userService.seeFollowUsers(searchPostDto);
   }
 }
