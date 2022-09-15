@@ -85,14 +85,12 @@ export class PostResolver {
 
   // 게시글 숨김 처리
   @Mutation(() => Post)
-  @UseGuards(JwtAuthGuard)
   hidePost(@GetUser() user: User, @Args('postId', ParseIntPipe) postId: number) {
     return this.postService.hidePost(user, postId);
   }
 
   // 게시글 숨김 처리 해제
   @Mutation(() => Post)
-  @UseGuards(JwtAuthGuard)
   clearHiddenPostState(@GetUser() user: User, @Args('postId', ParseIntPipe) postId: number) {
     return this.postService.clearHiddenPostState(user, postId);
   }
