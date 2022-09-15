@@ -3,7 +3,6 @@ import { Followings } from './followings.entity';
 import { User } from 'src/users/user.entity';
 import { Post } from 'src/posts/post.entity';
 import { PurchaseHistory } from './purchaseHistory.entity';
-import { FollowDto } from './dto/follow.dto';
 import { PurchaseHistoryDto } from './dto/purchaseHistory.dto';
 
 @EntityRepository(Followings)
@@ -21,10 +20,12 @@ export class MypageRepository extends Repository<Followings> {
     return await getRepository(Followings).createQueryBuilder('Followings').delete().from(Followings).where('followingId = :followingId', { followingId }).execute();
   }
 
-  async seeFollowUsers(page: number, perPage: number) {
+  async seeFollowUsers(user: User, page: number, perPage: number) {
     return await getRepository(Followings)
-      .createQueryBuilder()
-      .select('followings')
+      .createQueryBuilder('followings')
+      .innerJoinAndSelect('followings.followingUser', 'user')
+      .innerJoinAndSelect('followings.followerUser', 'subjectUser')
+      .where('user.phoneNumber = :phoneNumber', { phoneNumber: user.phoneNumber })
       .orderBy('followings.createdAt', 'DESC')
       .offset((page - 1) * perPage)
       .limit(perPage)
@@ -33,11 +34,9 @@ export class MypageRepository extends Repository<Followings> {
 
   async getHiddenPostsList(user: User, page: number, perPage: number) {
     return await getRepository(Post)
-      .createQueryBuilder()
-      .select('post')
-      .where('isHidden = :isHidden', { isHidden: true })
-      .andWhere('reportHandling = :reportHandling', { reportHandling: false })
-      .andWhere('user = :user', { user })
+      .createQueryBuilder('post')
+      .innerJoinAndSelect('post.user', 'user')
+      .where('user.phoneNumber = :phoneNumber', { phoneNumber: user.phoneNumber })
       .orderBy('post.createdAt', 'DESC')
       .offset((page - 1) * perPage)
       .limit(perPage)
@@ -62,8 +61,15 @@ export class MypageRepository extends Repository<Followings> {
     return queryBuilder.getMany();
   }
 
-  async getSellingListsOfUser(user: User, page: number, perPage: number) {
-    // return await getRepository(Post).createQueryBuilder().select('post').where('');
+  async getSellingListOfUser(user: User, page: number, perPage: number) {
+    return await getRepository(Post)
+      .createQueryBuilder('post')
+      .innerJoinAndSelect('post.user', 'user')
+      .where('user.phoneNumber = :phoneNumber', { phoneNumber: user.phoneNumber })
+      .orderBy('post.createdAt', 'DESC')
+      .offset((page - 1) * perPage)
+      .limit(perPage)
+      .getMany();
   }
 
   async getWatchListOfUser(user: User, page: number, perPage: number): Promise<Post[]> {
@@ -76,5 +82,13 @@ export class MypageRepository extends Repository<Followings> {
       .offset((page - 1) * perPage)
       .limit(perPage)
       .getMany();
+  }
+
+  async getMyProfileFromUser(user: User): Promise<User> {
+    return await getRepository(User).createQueryBuilder().select().where('phoneNumber = :phoneNumber', { phoneNumber: user.phoneNumber }).getOne();
+  }
+
+  async getOtherProfileFromUser(phoneNumber: string): Promise<User> {
+    return await getRepository(User).createQueryBuilder().select().where('phoneNumber = :phoneNumber', { phoneNumber: phoneNumber }).getOne();
   }
 }
