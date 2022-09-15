@@ -168,7 +168,7 @@ export class MypageService {
      * @author 이승연(dltmddus1998)
      * @param {user}
      * @returns {userName, profileImage, mannerTemp, respTime, ...}
-     * @throws
+     * @throws {}
      */
     /**
      * 유저테이블: 닉네임, 프로필 이미지, 매너온도, 응답률
@@ -186,9 +186,9 @@ export class MypageService {
      * 기능: 다른 유저 프로필 조회하기
      *
      * @author 이승연(dltmddus1998)
-     * @param
-     * @returns
-     * @throws
+     * @param {getOtherProfileDto} 팔로우하고자 하는 유저 번호
+     * @returns {}
+     * @throws {}
      */
     /**
      * 유저테이블: 해당 유저의 닉네임, 프로필 이미지, 매너온도, 응답률
