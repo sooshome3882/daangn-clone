@@ -7,6 +7,7 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { UserModule } from './users/user.module';
 import * as graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.js';
 import * as config from 'config';
+import { MypageModule } from './mypage/mypage.module';
 
 const uploadConfig: any = config.get('upload');
 
@@ -21,6 +22,7 @@ const uploadConfig: any = config.get('upload');
     }),
     PostModule,
     UserModule,
+    MypageModule,
   ],
 })
 export class AppModule implements NestModule {
