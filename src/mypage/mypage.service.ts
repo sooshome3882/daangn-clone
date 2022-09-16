@@ -7,6 +7,7 @@ import { MypageRepository } from './mypage.repository';
 import { FollowDto } from './dto/follow.dto';
 import { PurchaseHistoryDto } from './dto/purchaseHistory.dto';
 import { Post } from 'src/posts/post.entity';
+import { GetOtherProfileDto } from './dto/getOtherProfile.dto';
 
 @Injectable()
 export class MypageService {
@@ -15,7 +16,7 @@ export class MypageService {
     private mypageRepository: MypageRepository,
   ) {}
 
-  async getHiddenPostsList(user: User, page: number, perPage: number) {
+  async getHiddenPostsList(user: User, page: number, perPage: number): Promise<Post[]> {
     /**
      * 기능: 숨김 처리한 게시글 리스트 조회하기
      *
@@ -53,7 +54,7 @@ export class MypageService {
     return await this.mypageRepository.getBuyingListOfUser(user, page, perPage);
   }
 
-  async getSellingListsOfUser(user: User, page: number, perPage: number) {
+  async getSellingListOfUser(user: User, page: number, perPage: number) {
     /**
      * TODO
      * 기능: 판매리스트 조회하기
@@ -62,6 +63,7 @@ export class MypageService {
      * @param {user, page, perPage} 로그인한 유저, 조회할 페이지, 한 페이지당 게시글 개수
      * @returns {Post[]} 판매처리된 게시글 전체 리스트 반환
      */
+    return await this.mypageRepository.getSellingListOfUser(user, page, perPage);
   }
 
   async getWatchListOfUser(user: User, page: number, perPage: number): Promise<Post[]> {
@@ -110,18 +112,18 @@ export class MypageService {
      * @throws {NotFoundException} followingId에 해당하는 팔로잉이 없을 때 예외 처리
      */
     const { followerUser } = followDto;
-    console.log(followerUser);
-    console.log(user);
     const followerUserFind = await User.findOne({ where: { phoneNumber: followerUser } });
+
     if (followerUser.toString() === user.phoneNumber) {
       throw new BadRequestException(`본인을 팔로우할 수 없습니다.`);
     } else if (!followerUserFind) {
       throw new BadRequestException(`존재하지 않는 유저입니다.`);
     } else {
-      let insertId: number;
+      const insertId = await this.mypageRepository.followUsers(user, followerUser);
       const found = await Followings.findOne(insertId);
       if (!found) {
-        insertId = await this.mypageRepository.followUsers(user, followerUser);
+        throw new NotFoundException(`${insertId}에 해당하는 팔로우 기록이 없습니다.`);
+      } else {
         return await this.getFollowingsById(insertId);
       }
     }
@@ -148,7 +150,7 @@ export class MypageService {
     return '삭제되었습니다.';
   }
 
-  async seeFollowUsers(page: number, perPage: number): Promise<Followings[]> {
+  async seeFollowUsers(user: User, page: number, perPage: number): Promise<Followings[]> {
     /**
      * 기능: 팔로잉 모아보기
      *
@@ -156,6 +158,47 @@ export class MypageService {
      * @param {page, perPage} 조회할 페이지, 한 페이지당 게시글 개수
      * @returns {Followings[]} 팔로우 리스트 전체 반환
      */
-    return await this.mypageRepository.seeFollowUsers(page, perPage);
+    return await this.mypageRepository.seeFollowUsers(user, page, perPage);
+  }
+
+  async getMyProfile(user: User): Promise<Object> {
+    /**
+     * 기능: 내 프로필 조회하기
+     *
+     * @author 이승연(dltmddus1998)
+     * @param {user}
+     * @returns {userName, profileImage, mannerTemp, respTime, ...}
+     * @throws {}
+     */
+    /**
+     * 유저테이블: 닉네임, 프로필 이미지, 매너온도, 응답률
+     * TODO: 받은 매너 평가, 받은 거래 후기
+     */
+    const myProfileFromUser = await this.mypageRepository.getMyProfileFromUser(user);
+    // const data = {
+    //   myProfileFromUser,
+    // };
+    return myProfileFromUser;
+  }
+
+  async getOtherProfile(getOtherProfileDto: GetOtherProfileDto): Promise<Object> {
+    /**
+     * 기능: 다른 유저 프로필 조회하기
+     *
+     * @author 이승연(dltmddus1998)
+     * @param {getOtherProfileDto} 팔로우하고자 하는 유저 번호
+     * @returns {}
+     * @throws {}
+     */
+    /**
+     * 유저테이블: 해당 유저의 닉네임, 프로필 이미지, 매너온도, 응답률
+     * TODO: 받은 매너 평가, 받은 거래 후기
+     */
+    const { phoneNumber } = getOtherProfileDto;
+    const otherProfileFromUser = await this.mypageRepository.getOtherProfileFromUser(phoneNumber);
+    // const data = {
+    //   otherProfileFromUser,
+    // };
+    return otherProfileFromUser;
   }
 }

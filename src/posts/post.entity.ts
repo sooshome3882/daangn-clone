@@ -9,11 +9,12 @@ import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, On
 import { PostsLikeRecord } from './postsLikeRecord.entity';
 import { PostImage } from './postImage.entity';
 import { PurchaseHistory } from '../mypage/purchaseHistory.entity';
+import { PostsViewRecord } from './postsViewRecord.entity';
 
 @Entity()
 @ObjectType()
 export class Post extends BaseEntity {
-  @Field()
+  @Field(() => Number)
   @PrimaryGeneratedColumn({ type: 'int' })
   postId!: number;
 
@@ -93,6 +94,9 @@ export class Post extends BaseEntity {
 
   @OneToMany(type => PostsLikeRecord, postsLikeRecord => postsLikeRecord.post, { eager: false })
   postsLikeRecord!: PostsLikeRecord[];
+
+  @OneToMany(type => PostsViewRecord, postsViewRecord => postsViewRecord.post, { eager: false })
+  postsViewRecord!: PostsViewRecord[];
 
   @OneToMany(type => PurchaseHistory, purchaseHistory => purchaseHistory.post, { eager: false })
   purchaseHistory!: PurchaseHistory[];

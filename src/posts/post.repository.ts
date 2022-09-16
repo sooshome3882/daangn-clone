@@ -1,8 +1,9 @@
+import { NotFoundException } from '@nestjs/common';
 import { UpdateDealStateDto } from './dto/updateDealState.dto';
 import { CreatePostsComplaintsDto } from './dto/createPostsComplaints.dto';
 import { AcceptOfferedPriceDto } from './dto/acceptOfferedPrice.dto';
 import { OfferPriceDto } from './dto/offerPrice.dto';
-import { EntityRepository, getRepository, Repository } from 'typeorm';
+import { EntityRepository, getConnection, getRepository, Repository } from 'typeorm';
 import { CreatePostDto } from './dto/createPost.dto';
 import { SearchPostDto } from './dto/searchPost.dto';
 import { UpdatePostDto } from './dto/updatePost.dto';
@@ -12,8 +13,10 @@ import { ProcessState } from 'src/processStates/processState.entity';
 import { PostsComplaint } from './postsComplaint.entity';
 import { DealState } from 'src/dealStates/dealState.entity';
 import { User } from 'src/users/user.entity';
-import { PurchaseHistory } from '../mypage/purchaseHistory.entity';
-import { PurchaseHistoryDto } from '../mypage/dto/purchaseHistory.dto';
+import { PostsLikeRecord } from './postsLikeRecord.entity';
+import { PostsLikeDto } from './dto/addPostsLike.dto';
+import { PostsViewDto } from './dto/addPostsView.dto';
+import { PostsViewRecord } from './postsViewRecord.entity';
 
 @EntityRepository(Post)
 export class PostRepository extends Repository<Post> {
@@ -140,5 +143,98 @@ export class PostRepository extends Repository<Post> {
   async updateDealState(postId: number, updateDealStateDto: UpdateDealStateDto) {
     const { dealState } = updateDealStateDto;
     await getRepository(Post).createQueryBuilder('Post').update(Post).set({ dealState }).where('postId = :postId', { postId: postId }).execute();
+  }
+
+  async addLikeToPost(user: User, postsLikeDto: PostsLikeDto) {
+    const { post } = postsLikeDto;
+    const query = await getRepository(PostsLikeRecord).createQueryBuilder('postsLikeRecord').insert().into(PostsLikeRecord).values({ post, user }).execute();
+    return query.raw.insertId;
+  }
+
+  async addLikeCntToPost(post: Post, likes: number) {
+    likes = likes + 1;
+    return await getRepository(Post).createQueryBuilder('post').update(Post).set({ likes }).where('postId = :postId', { postId: post }).execute();
+  }
+
+  async addLikeTransaction(user: User, postsLikeDto: PostsLikeDto, post: Post, likes: number) {
+    const queryRunner = getConnection().createQueryRunner();
+    try {
+      await queryRunner.startTransaction();
+      const insertId = await this.addLikeToPost(user, postsLikeDto);
+      const addLikeCntToPost = await this.addLikeCntToPost(post, likes);
+      await queryRunner.manager.save(insertId);
+      await queryRunner.manager.save(addLikeCntToPost);
+      await queryRunner.commitTransaction();
+      return insertId;
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async substractLikeToPost(user: User, postsLikeId: number) {
+    const result = await PostsLikeRecord.delete(postsLikeId);
+    if (result.affected === 0) {
+      throw new NotFoundException(`postsLikeId가 ${postsLikeId}인 것을 찾을 수 없습니다.`);
+    } else {
+      return '삭제되었습니다.';
+    }
+  }
+
+  async substractLikeCntToPost(post: Post, likes: number) {
+    if (likes > 0) {
+      likes = likes - 1;
+      return await getRepository(Post).createQueryBuilder('post').update(Post).set({ likes }).where('postId = :postId', { postId: post }).execute();
+    } else {
+      return;
+    }
+  }
+
+  async substractLikeTransaction(user: User, postsLikeId: number, post: Post, likes: number) {
+    const queryRunner = getConnection().createQueryRunner();
+    try {
+      await queryRunner.startTransaction();
+      const substractLikeToPost = await this.substractLikeToPost(user, postsLikeId);
+      const substractLikeCntToPost = await this.substractLikeCntToPost(post, likes);
+      await queryRunner.manager.save(substractLikeToPost);
+      await queryRunner.manager.save(substractLikeCntToPost);
+      await queryRunner.commitTransaction();
+      return substractLikeToPost;
+    } catch (err) {
+      console.error(err);
+      await queryRunner.rollbackTransaction();
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async addViewToPost(user: User, postsViewDto: PostsViewDto) {
+    const { post } = postsViewDto;
+    const query = await getRepository(PostsViewRecord).createQueryBuilder('postsViewRecord').insert().into(PostsViewRecord).values({ post, user }).execute();
+
+    return query.raw.insertId;
+  }
+
+  async addViewCntToPost(post: Post, views: number) {
+    views = views + 1;
+    return await getRepository(Post).createQueryBuilder('post').update(Post).set({ views }).where('postId = :postId', { postId: post }).execute();
+  }
+
+  async addViewTransaction(user: User, postsViewDto: PostsViewDto, post: Post, views: number) {
+    const queryRunner = getConnection().createQueryRunner();
+    try {
+      await queryRunner.startTransaction();
+      const insertId = await this.addViewToPost(user, postsViewDto);
+      const addViewCntToPost = await this.addViewCntToPost(post, views);
+      await queryRunner.manager.save(insertId);
+      await queryRunner.manager.save(addViewCntToPost);
+      await queryRunner.commitTransaction();
+      return insertId;
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+    } finally {
+      await queryRunner.release();
+    }
   }
 }
