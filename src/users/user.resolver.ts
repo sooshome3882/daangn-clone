@@ -11,6 +11,7 @@ import { ProfileInputValidationPipe } from './validations/profile.pipe';
 import { JwtAuthGuard } from './guards/jwtAuth.guard';
 import { GetUser } from './validations/getUser.decorator';
 import { MyLocationDto } from './dto/mylocation.dto';
+import { Location } from './location.entity';
 
 @Resolver(() => User)
 export class UserResolver {
@@ -53,5 +54,11 @@ export class UserResolver {
   @UsePipes(ValidationPipe)
   setProfile(@GetUser('phoneNumber') phoneNumber: string, @Args('profileUserDto', ProfileInputValidationPipe) profileUserDto: ProfileUserDto): Promise<User> {
     return this.userService.setProfile(phoneNumber, profileUserDto);
+  }
+
+  @Query(() => [Location])
+  @UseGuards(JwtAuthGuard)
+  getMyTownList(@GetUser() user: User): Promise<Location[]> {
+    return this.userService.getMyTownList(user);
   }
 }

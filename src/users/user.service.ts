@@ -26,6 +26,8 @@ import { createWriteStream } from 'fs';
 import { v1 as uuid } from 'uuid';
 import { MyLocationDto } from './dto/mylocation.dto';
 import { ElasticsearchService } from '@nestjs/elasticsearch';
+import { getRepository } from 'typeorm';
+import { Location } from './location.entity';
 
 const smsConfig: any = config.get('sms');
 const ACCESS_KEY_ID = smsConfig.access_key_id;
@@ -261,5 +263,9 @@ export class UserService {
       await this.userRepository.setProfileImage(phoneNumber, `./src/users/uploads/${newFileName}.png`);
     }
     return await this.getUserByPhoneNumber({ phoneNumber });
+  }
+
+  async getMyTownList(user: User): Promise<Location[]> {
+    return await getRepository(Location).find({ where: { user: user.phoneNumber } });
   }
 }
