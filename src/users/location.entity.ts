@@ -47,5 +47,5 @@ export class Location extends BaseEntity {
   @JoinColumn({ name: 'townRangeId' })
   @Column({ type: 'int', default: 2 })
   @ManyToOne(type => TownRange, townRange => townRange.locations, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
-  townRange!: number;
+  townRangeId!: number;
 }
