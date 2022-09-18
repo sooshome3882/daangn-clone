@@ -25,11 +25,29 @@ export class PostService {
   ) {}
 
   async createPost(user: User, createPostDto: CreatePostDto): Promise<Post> {
+    /**
+     * 게시글 작성
+     *
+     * @author 허정연(golgol22)
+     * @param {user, title, content, category, price, isOfferedPrice, townRange, dealState, images}
+     *        로그인한 유저, 제목, 내용, 카테고리, 가격, 가격제안받기여부, 동네범위, 거래상태, 이미지
+     * @return {Post} 게시글 반환
+     */
     const insertId = await this.postRepository.createPost(user, createPostDto);
     return await this.getPostById(insertId);
   }
 
   async updatePost(user: User, postId: number, updatePostDto: UpdatePostDto): Promise<Post> {
+    /**
+     * 게시글 수정
+     *
+     * @author 허정연(golgol22)
+     * @param {user, postId, title, content, category, price, isOfferedPrice, townRange, images}
+     *        로그인한 유저, 게시글 ID, 제목, 내용, 카테고리, 가격, 가격제안받기여부, 동네범위, 이미지
+     * @return {Post} 게시글 반환
+     * @throws {ForbiddenException} 권한없는 사용자의 수정 요청 예외처리
+     * @throws {NotFoundException} 해당 게시글이 없을 때 예외 처리
+     */
     const post = await this.getPostById(postId);
     if (JSON.stringify(post.user) !== JSON.stringify(user)) {
       throw new ForbiddenException(`본인이 작성한 게시글만 수정할 수 있습니다.`);
@@ -42,6 +60,15 @@ export class PostService {
   }
 
   async deletePost(user: User, postId: number): Promise<string> {
+    /**
+     * 게시글 삭제
+     *
+     * @author 허정연(golgol22)
+     * @param {user, postId} 로그인한 유저, 게시글 ID
+     * @return {string} 삭제되었습니다.
+     * @throws {ForbiddenException} 권한없는 사용자의 삭제 요청 예외처리
+     * @throws {NotFoundException} 해당 게시글이 없을 때 예외 처리
+     */
     const post = await this.getPostById(postId);
     if (JSON.stringify(post.user) !== JSON.stringify(user)) {
       throw new ForbiddenException(`본인이 작성한 게시글만 삭제할 수 있습니다.`);
@@ -54,19 +81,36 @@ export class PostService {
   }
 
   async getPostById(postId: number): Promise<Post> {
+    /**
+     * 게시글 상세보기
+     *
+     * @author 허정연(golgol22)
+     * @param {user, postId} 로그인한 유저, 게시글 ID
+     * @return {Post} 게시글 반환
+     * @throws {NotFoundException} 해당 게시글이 없을 때 예외 처리
+     */
     const found = await this.postRepository.findOne(postId);
     if (!found) {
       throw new NotFoundException(`postId가 ${postId}인 것을 찾을 수 없습니다.`);
     }
     return found;
   }
+
   async getPosts(searchPostDto: SearchPostDto): Promise<Post[]> {
+    /**
+     * 게시글 목록 및 검색
+     *
+     * @author 허정연(golgol22)
+     * @param {search, minPrice, maxPrice, category, townRange, dealState, perPage, page}
+     *        검색어, 최소가격, 최대가격, 카테고리, 동네범위, 거래상태, 한 페이지당 게시글 개수, 페이지
+     * @return {Post[]} 게시글 목록 반환
+     */
     return this.postRepository.getPosts(searchPostDto);
   }
 
   async pullUpPost(postId: number) {
     /**
-     * 기능: 게시글 끌어올리기
+     * 게시글 끌어올리기
      *
      * @author 이승연(dltmddus1998)
      * @param {postId} 게시글 번호
@@ -83,7 +127,7 @@ export class PostService {
 
   async offerPrice(offerPriceDto: OfferPriceDto): Promise<PriceOffer> {
     /**
-     * 기능: 가격 제안하기
+     * 가격 제안하기
      *
      * @author 이승연(dltmddus1998)
      * @param {offerPrice, post} 가격 제시, 게시글
@@ -101,7 +145,7 @@ export class PostService {
 
   async acceptOfferedPrice(acceptOfferedPriceDto: AcceptOfferedPriceDto): Promise<PriceOffer> {
     /**
-     * 기능: 가격 제안 수락하기
+     * 가격 제안 수락하기
      *
      * @author 이승연(dltmddus1998)
      * @param {accept, priceOfferId} 가격 제시 수락 여부, 가격제시 번호
@@ -121,7 +165,7 @@ export class PostService {
 
   async reportPost(createPostsComplaintDto: CreatePostsComplaintsDto): Promise<PostsComplaint> {
     /**
-     * 기능: 게시글 신고하기
+     * 게시글 신고하기
      *
      * @author 이승연(dltmddus1998)
      * @param {post, complaintReason, processState} 게시글, 신고 내용, 신고 처리 상태
@@ -134,7 +178,7 @@ export class PostService {
 
   async updateDealState(postId: number, updateDealStateDto: UpdateDealStateDto): Promise<Post> {
     /**
-     * 기능: 거래 상태 변경하기
+     * 거래 상태 변경하기
      *
      * @author 이승연(dltmddus1998)
      * @param {dealState} 거래 상태
@@ -147,7 +191,7 @@ export class PostService {
 
   async hidePost(user: User, postId: number) {
     /**
-     * 기능: 게시글 숨김 처리하기
+     * 게시글 숨김 처리하기
      *
      * @author 이승연(dltmddus1998)
      * @param {user, postId} 로그인한 유저, 게시글 번호
@@ -167,7 +211,7 @@ export class PostService {
 
   async clearHiddenPostState(user: User, postId: number) {
     /**
-     * 기능: 게시글 숨김 처리 해제하기
+     * 게시글 숨김 처리 해제하기
      *
      * @author 이승연(dltmddus1998)
      * @param {user, postId} 로그인한 유저, 게시글 번호
@@ -205,7 +249,7 @@ export class PostService {
 
   async addLikeToPost(user: User, postsLikeDto: PostsLikeDto): Promise<PostsLikeRecord> {
     /**
-     * 기능: 게시글 좋아요 누르기
+     * 게시글 좋아요 누르기
      *
      * @author 이승연(dltmddus1998)
      * @param {user, addPostsLikeDto} 로그인한 유저, 게시글 번호
@@ -227,7 +271,7 @@ export class PostService {
 
   async substractLikeToPost(user: User, postsLikeDto: PostsLikeDto): Promise<Post> {
     /**
-     * 기능: 게시글 좋아요 취소하기
+     * 게시글 좋아요 취소하기
      *
      * @author 이승연(dltmddus1998)
      * @param {user, addPostsLikeDto} 로그인한 유저, 게시글 번호
@@ -264,7 +308,7 @@ export class PostService {
 
   async addViewToPost(user: User, postsViewDto: PostsViewDto): Promise<PostsViewRecord> {
     /**
-     * 기능: 게시글 조회수 추가 (1인당 1개 Max)
+     * 게시글 조회수 추가 (1인당 1개 Max)
      *
      * @author 이승연(dltmddus1998)
      * @param {user, addPostsViewDto} 로그인한 유저, 게시글 번호
