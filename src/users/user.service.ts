@@ -26,7 +26,7 @@ import { createWriteStream } from 'fs';
 import { v1 as uuid } from 'uuid';
 import { MyLocationDto } from './dto/mylocation.dto';
 import { ElasticsearchService } from '@nestjs/elasticsearch';
-import { getRepository } from 'typeorm';
+import { Equal, getRepository, Not } from 'typeorm';
 import { Location } from './location.entity';
 
 const smsConfig: any = config.get('sms');
@@ -267,5 +267,19 @@ export class UserService {
 
   async getMyTownList(user: User): Promise<Location[]> {
     return await getRepository(Location).find({ where: { user: user.phoneNumber } });
+  }
+
+  async updateTownSelection(user: User, eupMyeonDong: string): Promise<Location[]> {
+    const location = await getRepository(Location).findOne({ where: { user: user.phoneNumber, eupMyeonDong: eupMyeonDong } });
+    if (location.isSelected) {
+      throw new BadRequestException('이미 선택된 지역입니다.');
+    }
+    location.isSelected = true;
+    await getRepository(Location).save(location);
+
+    const location2 = await getRepository(Location).findOne({ where: { user: user.phoneNumber, eupMyeonDong: Not(Equal(eupMyeonDong)) } });
+    location2.isSelected = false;
+    await getRepository(Location).save(location2);
+    return await this.getMyTownList(user);
   }
 }

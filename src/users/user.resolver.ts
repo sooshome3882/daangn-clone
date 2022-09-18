@@ -61,4 +61,10 @@ export class UserResolver {
   getMyTownList(@GetUser() user: User): Promise<Location[]> {
     return this.userService.getMyTownList(user);
   }
+
+  @Mutation(() => [Location])
+  @UseGuards(JwtAuthGuard)
+  updateTownSelection(@GetUser() user: User, @Args('eupMyeonDong') eupMyeonDong: string): Promise<Location[]> {
+    return this.userService.updateTownSelection(user, eupMyeonDong);
+  }
 }
