@@ -12,6 +12,7 @@ import { JwtAuthGuard } from './guards/jwtAuth.guard';
 import { GetUser } from './validations/getUser.decorator';
 import { MyLocationDto } from './dto/mylocation.dto';
 import { Location } from './location.entity';
+import { DeleteTownDto } from './dto/deleteTown.dto';
 
 @Resolver(() => User)
 export class UserResolver {
@@ -72,5 +73,11 @@ export class UserResolver {
   @UseGuards(JwtAuthGuard)
   addTown(@GetUser() user: User, @Args('area') area: string): Promise<Location[]> {
     return this.userService.addTown(user, area);
+  }
+
+  @Mutation(() => [Location])
+  @UseGuards(JwtAuthGuard)
+  deleteTown(@GetUser() user: User, @Args('deleteTownDto') deleteTownDto: DeleteTownDto): Promise<Location[]> {
+    return this.userService.deleteTown(user, deleteTownDto);
   }
 }

@@ -28,6 +28,7 @@ import { MyLocationDto } from './dto/mylocation.dto';
 import { ElasticsearchService } from '@nestjs/elasticsearch';
 import { EntityManager, Equal, getConnection, getRepository, Not } from 'typeorm';
 import { Location } from './location.entity';
+import { DeleteTownDto } from './dto/deleteTown.dto';
 
 const smsConfig: any = config.get('sms');
 const ACCESS_KEY_ID = smsConfig.access_key_id;
@@ -297,7 +298,7 @@ export class UserService {
   async addTown(user: User, area: string): Promise<Location[]> {
     const { siDo, siGunGu, eupMyeonDong } = await this.verifyExistInData(area);
     const count = await getRepository(Location).count({ where: { user: user.phoneNumber } });
-    if (count == 2) {
+    if (count === 2) {
       throw new BadRequestException('동네는 2개까지 등록이 가능합니다.');
     }
     const location = await getRepository(Location).findOne({ where: { user: user.phoneNumber, eupMyeonDong: eupMyeonDong } });
@@ -314,6 +315,36 @@ export class UserService {
       .catch(err => {
         console.error(err);
         throw new InternalServerErrorException('동네 추가에 실패하였습니다. 잠시후 다시 시도해주세요.');
+      });
+    return await this.getMyTownList(user);
+  }
+
+  async deleteTown(user: User, deleteTownDto: DeleteTownDto): Promise<Location[]> {
+    const { deleteDupMyeonDong, addArea } = deleteTownDto;
+    const [locations, count] = await getRepository(Location).findAndCount({ where: { user: user.phoneNumber } });
+    await getConnection()
+      .transaction(async (manager: EntityManager) => {
+        if (count === 1) {
+          if (!addArea) {
+            throw new BadRequestException('동네는 1개이상 등록해야 합니다.');
+          }
+          const { siDo, siGunGu, eupMyeonDong } = await this.verifyExistInData(addArea);
+          locations.filter(location => {
+            if (location.eupMyeonDong === eupMyeonDong) throw new ConflictException('이미 추가된 동네입니다.');
+          });
+          await this.userRepository.addLocation(manager, siDo, siGunGu, eupMyeonDong, user.phoneNumber);
+        }
+        const location2 = await getRepository(Location).findOne({ where: { user: user.phoneNumber, eupMyeonDong: Not(Equal(deleteDupMyeonDong)) } });
+        location2.isSelected = true;
+        await manager.save(location2);
+        const result = await manager.delete(Location, { user: user.phoneNumber, eupMyeonDong: deleteDupMyeonDong });
+        if (result.affected === 0) {
+          throw new NotFoundException(`등록된 적 없는 동네입니다.`);
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        throw new InternalServerErrorException('동네 삭제에 실패하였습니다. 잠시후 다시 시도해주세요.');
       });
     return await this.getMyTownList(user);
   }
