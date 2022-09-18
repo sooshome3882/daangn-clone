@@ -1,15 +1,15 @@
 import { InternalServerErrorException } from '@nestjs/common';
-import { EntityRepository, getConnection, getRepository, Repository } from 'typeorm';
+import { EntityManager, EntityRepository, getConnection, getRepository, Repository } from 'typeorm';
 import { Location } from './location.entity';
 import { User } from './user.entity';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
-  async join(manager: any, marketingInfoAgree: boolean, phoneNumber: string) {
+  async join(manager: EntityManager, marketingInfoAgree: boolean, phoneNumber: string) {
     await manager.getRepository(User).createQueryBuilder('User').insert().into(User).values({ marketingInfoAgree, phoneNumber }).execute();
   }
 
-  async addLocation(manager: any, siDo: string, siGunGu: string, eupMyeonDong: string, phoneNumber: string) {
+  async addLocation(manager: EntityManager, siDo: string, siGunGu: string, eupMyeonDong: string, phoneNumber: string) {
     await manager.getRepository(Location).createQueryBuilder('Location').insert().into(Location).values({ user: phoneNumber, siDo, siGunGu, eupMyeonDong }).execute();
   }
 
