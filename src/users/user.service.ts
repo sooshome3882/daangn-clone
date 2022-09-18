@@ -95,8 +95,8 @@ export class UserService {
     const { area, marketingInfoAgree, phoneNumber } = joinUserDto;
     const found = await this.getUserByPhoneNumber({ phoneNumber });
     if (!found) {
-      const areaArr = area.split(' ');
-      if (areaArr.length !== 3) {
+      const [siDo, siGunGu, eupMyeonDong] = area.split(' ');
+      if (!(siDo && siGunGu && eupMyeonDong)) {
         throw new BadRequestException('지역 형식이 올바르지 않습니다.');
       }
       const result = await this.esService.search({
@@ -107,17 +107,17 @@ export class UserService {
               must: [
                 {
                   match: {
-                    '시도.keyword': areaArr[0],
+                    '시도.keyword': siDo,
                   },
                 },
                 {
                   match: {
-                    '시군구.keyword': areaArr[1],
+                    '시군구.keyword': siGunGu,
                   },
                 },
                 {
                   match: {
-                    '읍면동.keyword': areaArr[2],
+                    '읍면동.keyword': eupMyeonDong,
                   },
                 },
               ],
@@ -130,8 +130,7 @@ export class UserService {
       if (hits.length === 0) {
         throw new BadRequestException('지역 형식이 올바르지 않습니다.');
       }
-      await this.userRepository.join(marketingInfoAgree, phoneNumber);
-      await this.userRepository.addLocation(areaArr[0], areaArr[1], areaArr[2], phoneNumber);
+      await this.userRepository.joinTransaction(marketingInfoAgree, phoneNumber, siDo, siGunGu, eupMyeonDong);
     }
     const payload = { phoneNumber };
     const accessToken = this.jwtService.sign(payload);
@@ -150,7 +149,7 @@ export class UserService {
   }
 
   async getUserByPhoneNumber({ phoneNumber }: { phoneNumber: string }): Promise<User> {
-    return await this.userRepository.findOne({ where: { phoneNumber: phoneNumber } });
+    return await this.userRepository.findOne({ where: { phoneNumber } });
   }
 
   async getUserById(userId: number): Promise<User> {
