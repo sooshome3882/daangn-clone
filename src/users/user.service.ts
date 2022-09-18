@@ -1,4 +1,15 @@
-import { BadRequestException, CacheInterceptor, CACHE_MANAGER, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException, UseInterceptors } from '@nestjs/common';
+import {
+  BadRequestException,
+  CacheInterceptor,
+  CACHE_MANAGER,
+  ConflictException,
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+  UnauthorizedException,
+  UseInterceptors,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/user.entity';
 import { UserRepository } from './user.repository';
@@ -224,6 +235,10 @@ export class UserService {
   async setProfile(phoneNumber: string, profileUserDto: ProfileUserDto): Promise<User> {
     const { userName, profileImage } = profileUserDto;
     if (userName) {
+      const found = await this.userRepository.findOne({ where: { userName } });
+      if (found) {
+        throw new ConflictException(`${userName}은 이미 사용중인 이름입니다.`);
+      }
       await this.userRepository.setProfileUserName(phoneNumber, userName);
     }
     if (profileImage) {
