@@ -18,38 +18,45 @@ import { DeleteTownDto } from './dto/deleteTown.dto';
 export class UserResolver {
   constructor(private readonly userService: UserService) {}
 
+  // 내 위치에서 가까운 주변 동네 불러오기
   @Query(() => [String])
   getAroundTownList(@Args('myLocationDto') myLocationDto: MyLocationDto): Promise<string[]> {
     return this.userService.getAroundTownList(myLocationDto);
   }
 
+  // 동네 검색
   @Query(() => [String])
   getSearchTownList(@Args('area') area: string): Promise<string[]> {
     return this.userService.getSearchTownList(area);
   }
 
+  // 회원가입
   @Mutation(() => String)
   @UsePipes(ValidationPipe)
   join(@Args('joinUserDto') joinUserDto: JoinUserDto): Promise<string> {
     return this.userService.join(joinUserDto);
   }
 
+  // 로그인
   @Query(() => String)
   @UsePipes(ValidationPipe)
   login(@Args('loginUserDto') loginUserDto: LoginUserDto): Promise<string> {
     return this.userService.login(loginUserDto);
   }
 
+  // 인증번호 sms 보내기
   @Mutation(() => String)
   sendSMS(@Args('phoneNumber', PhoneNumberValidationPipe) phoneNumber: string): Promise<string> {
     return this.userService.sendSMS(phoneNumber);
   }
 
+  // 인증번호 확인
   @Query(() => String)
   checkSMS(@Args('phoneNumber', PhoneNumberValidationPipe) phoneNumber: string, @Args('inputNumber', InputNumberValidationPipe) inputNumber: string): Promise<string> {
     return this.userService.checkSMS(phoneNumber, inputNumber);
   }
 
+  // 프로필 설정
   @Mutation(() => User)
   @UseGuards(JwtAuthGuard)
   @UsePipes(ValidationPipe)
@@ -57,24 +64,28 @@ export class UserResolver {
     return this.userService.setProfile(phoneNumber, profileUserDto);
   }
 
+  // 설정된 동네 목록 불러오기
   @Query(() => [Location])
   @UseGuards(JwtAuthGuard)
   getMyTownList(@GetUser() user: User): Promise<Location[]> {
     return this.userService.getMyTownList(user);
   }
 
+  // 동네 선택 변경
   @Mutation(() => [Location])
   @UseGuards(JwtAuthGuard)
   updateTownSelection(@GetUser() user: User, @Args('eupMyeonDong') eupMyeonDong: string): Promise<Location[]> {
     return this.userService.updateTownSelection(user, eupMyeonDong);
   }
 
+  // 동네 추가
   @Mutation(() => [Location])
   @UseGuards(JwtAuthGuard)
   addTown(@GetUser() user: User, @Args('area') area: string): Promise<Location[]> {
     return this.userService.addTown(user, area);
   }
 
+  // 동네 삭제
   @Mutation(() => [Location])
   @UseGuards(JwtAuthGuard)
   deleteTown(@GetUser() user: User, @Args('deleteTownDto') deleteTownDto: DeleteTownDto): Promise<Location[]> {
