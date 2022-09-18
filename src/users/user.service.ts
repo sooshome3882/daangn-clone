@@ -13,6 +13,8 @@ import { JwtService } from '@nestjs/jwt';
 import { ProfileUserDto } from './dto/profile.dto';
 import { createWriteStream } from 'fs';
 import { v1 as uuid } from 'uuid';
+import { MyLocationDto } from './dto/mylocation.dto';
+import { ElasticsearchService } from '@nestjs/elasticsearch';
 
 const smsConfig: any = config.get('sms');
 const ACCESS_KEY_ID = smsConfig.access_key_id;
@@ -25,10 +27,41 @@ const FROM = smsConfig.from;
 export class UserService {
   constructor(
     @InjectRepository(UserRepository)
-    private userRepository: UserRepository,
+    private readonly userRepository: UserRepository,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
-    private jwtService: JwtService,
+    private readonly jwtService: JwtService,
+    private readonly esService: ElasticsearchService,
   ) {}
+
+  async getAroundTownList(myLocationDto: MyLocationDto): Promise<string[]> {
+    const { latitude, longitude, from, size } = myLocationDto;
+    const result = await this.esService.search({
+      index: 'coordinate',
+      body: {
+        sort: [
+          {
+            _geo_distance: {
+              location: {
+                lat: latitude,
+                lon: longitude,
+              },
+              order: 'asc',
+              unit: 'm',
+            },
+          },
+        ],
+      },
+      _source: ['시도', '시군구', '읍면동'],
+      from: from,
+      size: size,
+    });
+    const aroundTownList = [];
+    const hits = result.hits.hits;
+    hits.map(item => {
+      aroundTownList.push(`${item._source['시도']} ${item._source['시군구']} ${item._source['읍면동']}`);
+    });
+    return aroundTownList;
+  }
 
   async join(joinUserDto: JoinUserDto): Promise<string> {
     const marketingInfoAgree = joinUserDto.marketingInfoAgree;
