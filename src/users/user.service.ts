@@ -241,6 +241,11 @@ export class UserService {
       }
       await this.userRepository.setProfileUserName(phoneNumber, userName);
     }
+    const user = await this.userRepository.findOne(phoneNumber);
+    if (user.userName === null) {
+      throw new ConflictException(`처음 이름은 꼭 설정해야 합니다.`);
+    }
+
     if (profileImage) {
       const { createReadStream } = await profileImage;
       const newFileName = uuid();
