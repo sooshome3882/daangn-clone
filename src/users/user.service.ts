@@ -26,7 +26,7 @@ import { createWriteStream } from 'fs';
 import { v1 as uuid } from 'uuid';
 import { MyLocationDto } from './dto/mylocation.dto';
 import { ElasticsearchService } from '@nestjs/elasticsearch';
-import { Equal, getRepository, Not } from 'typeorm';
+import { EntityManager, Equal, getConnection, getRepository, Not } from 'typeorm';
 import { Location } from './location.entity';
 
 const smsConfig: any = config.get('sms');
@@ -274,12 +274,18 @@ export class UserService {
     if (location.isSelected) {
       throw new BadRequestException('이미 선택된 지역입니다.');
     }
-    location.isSelected = true;
-    await getRepository(Location).save(location);
-
-    const location2 = await getRepository(Location).findOne({ where: { user: user.phoneNumber, eupMyeonDong: Not(Equal(eupMyeonDong)) } });
-    location2.isSelected = false;
-    await getRepository(Location).save(location2);
+    await getConnection()
+      .transaction(async (manager: EntityManager) => {
+        location.isSelected = true;
+        await manager.save(location);
+        const location2 = await getRepository(Location).findOne({ where: { user: user.phoneNumber, eupMyeonDong: Not(Equal(eupMyeonDong)) } });
+        location2.isSelected = false;
+        await manager.save(location2);
+      })
+      .catch(err => {
+        console.error(err);
+        throw new InternalServerErrorException('동네 선택 수정에 실패하였습니다. 잠시후 다시 시도해주세요.');
+      });
     return await this.getMyTownList(user);
   }
 }
