@@ -57,10 +57,38 @@ export class UserService {
     });
     const aroundTownList = [];
     const hits = result.hits.hits;
+    if (hits.length === 0) {
+      throw new NotFoundException('검색결과가 없어요. 위치를 다시 설정해주세요!');
+    }
     hits.map(item => {
       aroundTownList.push(`${item._source['시도']} ${item._source['시군구']} ${item._source['읍면동']}`);
     });
     return aroundTownList;
+  }
+
+  async getSearchTownList(area: string): Promise<string[]> {
+    const result = await this.esService.search({
+      index: 'coordinate',
+      body: {
+        query: {
+          query_string: {
+            fields: ['시도', '시군구', '읍면동'],
+            query: `*${area}*`,
+          },
+        },
+      },
+      _source: ['시도', '시군구', '읍면동'],
+      size: 100,
+    });
+    const searchTownList = [];
+    const hits = result.hits.hits;
+    if (hits.length === 0) {
+      throw new NotFoundException('검색결과가 없어요. 동네이름을 다시 확인해주세요!');
+    }
+    hits.map(item => {
+      searchTownList.push(`${item._source['시도']} ${item._source['시군구']} ${item._source['읍면동']}`);
+    });
+    return searchTownList;
   }
 
   async join(joinUserDto: JoinUserDto): Promise<string> {

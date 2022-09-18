@@ -10,10 +10,7 @@ import { ProfileUserDto } from './dto/profile.dto';
 import { ProfileInputValidationPipe } from './validations/profile.pipe';
 import { JwtAuthGuard } from './guards/jwtAuth.guard';
 import { GetUser } from './validations/getUser.decorator';
-<<<<<<< HEAD
-=======
 import { MyLocationDto } from './dto/mylocation.dto';
->>>>>>> 1dac3da (Feat: 내 위치에서 가까운 동네 목록 가져오기)
 
 @Resolver(() => User)
 export class UserResolver {
@@ -22,6 +19,11 @@ export class UserResolver {
   @Query(() => [String])
   getAroundTownList(@Args('myLocationDto') myLocationDto: MyLocationDto): Promise<string[]> {
     return this.userService.getAroundTownList(myLocationDto);
+  }
+
+  @Query(() => [String])
+  getSearchTownList(@Args('area') area: string): Promise<string[]> {
+    return this.userService.getSearchTownList(area);
   }
 
   @Mutation(() => String)
