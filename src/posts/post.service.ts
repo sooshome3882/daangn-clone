@@ -1,5 +1,5 @@
 import { PostsViewDto } from './dto/addPostsView.dto';
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/user.entity';
 import { CreatePostDto } from './dto/createPost.dto';
@@ -15,7 +15,6 @@ import { PostsComplaint } from './postsComplaint.entity';
 import { UpdateDealStateDto } from './dto/updateDealState.dto';
 import { PostsLikeRecord } from './postsLikeRecord.entity';
 import { PostsLikeDto } from './dto/addPostsLike.dto';
-import { Transaction } from 'typeorm';
 import { PostsViewRecord } from './postsViewRecord.entity';
 
 @Injectable()
@@ -33,7 +32,7 @@ export class PostService {
   async updatePost(user: User, postId: number, updatePostDto: UpdatePostDto): Promise<Post> {
     const post = await this.getPostById(postId);
     if (JSON.stringify(post.user) !== JSON.stringify(user)) {
-      throw new BadRequestException(`본인이 작성한 게시글만 수정할 수 있습니다.`);
+      throw new ForbiddenException(`본인이 작성한 게시글만 수정할 수 있습니다.`);
     }
     if (!post) {
       throw new NotFoundException(`postId가 ${postId}인 것을 찾을 수 없습니다.`);
@@ -45,7 +44,7 @@ export class PostService {
   async deletePost(user: User, postId: number): Promise<string> {
     const post = await this.getPostById(postId);
     if (JSON.stringify(post.user) !== JSON.stringify(user)) {
-      throw new BadRequestException(`본인이 작성한 게시글만 삭제할 수 있습니다.`);
+      throw new ForbiddenException(`본인이 작성한 게시글만 삭제할 수 있습니다.`);
     }
     const result = await this.postRepository.delete(postId);
     if (result.affected === 0) {
