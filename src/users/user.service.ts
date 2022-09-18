@@ -104,45 +104,50 @@ export class UserService {
     return searchTownList;
   }
 
+  async verifyExistInData(area: string) {
+    const [siDo, siGunGu, eupMyeonDong] = area.split(' ');
+    if (!(siDo && siGunGu && eupMyeonDong)) {
+      throw new BadRequestException('지역 형식이 올바르지 않습니다.');
+    }
+    const result = await this.esService.search({
+      index: 'coordinate',
+      body: {
+        query: {
+          bool: {
+            must: [
+              {
+                match: {
+                  '시도.keyword': siDo,
+                },
+              },
+              {
+                match: {
+                  '시군구.keyword': siGunGu,
+                },
+              },
+              {
+                match: {
+                  '읍면동.keyword': eupMyeonDong,
+                },
+              },
+            ],
+          },
+        },
+      },
+      _source: ['시도', '시군구', '읍면동'],
+    });
+    const hits = result.hits.hits;
+    if (hits.length === 0) {
+      throw new BadRequestException('없는 지역입니다. 다시 확인해주세요.');
+    }
+    return { siDo, siGunGu, eupMyeonDong };
+  }
+
   async join(joinUserDto: JoinUserDto): Promise<string> {
     const { area, marketingInfoAgree, phoneNumber } = joinUserDto;
     const found = await this.getUserByPhoneNumber({ phoneNumber });
     if (!found) {
-      const [siDo, siGunGu, eupMyeonDong] = area.split(' ');
-      if (!(siDo && siGunGu && eupMyeonDong)) {
-        throw new BadRequestException('지역 형식이 올바르지 않습니다.');
-      }
-      const result = await this.esService.search({
-        index: 'coordinate',
-        body: {
-          query: {
-            bool: {
-              must: [
-                {
-                  match: {
-                    '시도.keyword': siDo,
-                  },
-                },
-                {
-                  match: {
-                    '시군구.keyword': siGunGu,
-                  },
-                },
-                {
-                  match: {
-                    '읍면동.keyword': eupMyeonDong,
-                  },
-                },
-              ],
-            },
-          },
-        },
-        _source: ['시도', '시군구', '읍면동'],
-      });
-      const hits = result.hits.hits;
-      if (hits.length === 0) {
-        throw new BadRequestException('지역 형식이 올바르지 않습니다.');
-      }
+      const { siDo, siGunGu, eupMyeonDong } = await this.verifyExistInData(area);
       await this.userRepository.joinTransaction(marketingInfoAgree, phoneNumber, siDo, siGunGu, eupMyeonDong);
     }
     const payload = { phoneNumber };
@@ -285,6 +290,30 @@ export class UserService {
       .catch(err => {
         console.error(err);
         throw new InternalServerErrorException('동네 선택 수정에 실패하였습니다. 잠시후 다시 시도해주세요.');
+      });
+    return await this.getMyTownList(user);
+  }
+
+  async addTown(user: User, area: string): Promise<Location[]> {
+    const { siDo, siGunGu, eupMyeonDong } = await this.verifyExistInData(area);
+    const count = await getRepository(Location).count({ where: { user: user.phoneNumber } });
+    if (count == 2) {
+      throw new BadRequestException('동네는 2개까지 등록이 가능합니다.');
+    }
+    const location = await getRepository(Location).findOne({ where: { user: user.phoneNumber, eupMyeonDong: eupMyeonDong } });
+    if (location) {
+      throw new ConflictException('이미 추가된 동네입니다.');
+    }
+    await getConnection()
+      .transaction(async (manager: EntityManager) => {
+        await this.userRepository.addLocation(manager, siDo, siGunGu, eupMyeonDong, user.phoneNumber);
+        const location2 = await getRepository(Location).findOne({ where: { user: user.phoneNumber, eupMyeonDong: Not(Equal(eupMyeonDong)) } });
+        location2.isSelected = false;
+        await manager.save(location2);
+      })
+      .catch(err => {
+        console.error(err);
+        throw new InternalServerErrorException('동네 추가에 실패하였습니다. 잠시후 다시 시도해주세요.');
       });
     return await this.getMyTownList(user);
   }

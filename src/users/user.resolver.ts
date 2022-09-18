@@ -67,4 +67,10 @@ export class UserResolver {
   updateTownSelection(@GetUser() user: User, @Args('eupMyeonDong') eupMyeonDong: string): Promise<Location[]> {
     return this.userService.updateTownSelection(user, eupMyeonDong);
   }
+
+  @Mutation(() => [Location])
+  @UseGuards(JwtAuthGuard)
+  addTown(@GetUser() user: User, @Args('area') area: string): Promise<Location[]> {
+    return this.userService.addTown(user, area);
+  }
 }
