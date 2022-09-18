@@ -1,4 +1,4 @@
-import { CacheInterceptor, CACHE_MANAGER, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, CacheInterceptor, CACHE_MANAGER, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException, UseInterceptors } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/user.entity';
 import { UserRepository } from './user.repository';
@@ -92,11 +92,46 @@ export class UserService {
   }
 
   async join(joinUserDto: JoinUserDto): Promise<string> {
-    const marketingInfoAgree = joinUserDto.marketingInfoAgree;
-    const phoneNumber = joinUserDto.phoneNumber;
+    const { area, marketingInfoAgree, phoneNumber } = joinUserDto;
     const found = await this.getUserByPhoneNumber({ phoneNumber });
     if (!found) {
+      const areaArr = area.split(' ');
+      if (areaArr.length !== 3) {
+        throw new BadRequestException('지역 형식이 올바르지 않습니다.');
+      }
+      const result = await this.esService.search({
+        index: 'coordinate',
+        body: {
+          query: {
+            bool: {
+              must: [
+                {
+                  match: {
+                    '시도.keyword': areaArr[0],
+                  },
+                },
+                {
+                  match: {
+                    '시군구.keyword': areaArr[1],
+                  },
+                },
+                {
+                  match: {
+                    '읍면동.keyword': areaArr[2],
+                  },
+                },
+              ],
+            },
+          },
+        },
+        _source: ['시도', '시군구', '읍면동'],
+      });
+      const hits = result.hits.hits;
+      if (hits.length === 0) {
+        throw new BadRequestException('지역 형식이 올바르지 않습니다.');
+      }
       await this.userRepository.join(marketingInfoAgree, phoneNumber);
+      await this.userRepository.addLocation(areaArr[0], areaArr[1], areaArr[2], phoneNumber);
     }
     const payload = { phoneNumber };
     const accessToken = this.jwtService.sign(payload);
