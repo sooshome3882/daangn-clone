@@ -3,7 +3,7 @@ import { UpdateDealStateDto } from './dto/updateDealState.dto';
 import { CreatePostsComplaintsDto } from './dto/createPostsComplaints.dto';
 import { AcceptOfferedPriceDto } from './dto/acceptOfferedPrice.dto';
 import { OfferPriceDto } from './dto/offerPrice.dto';
-import { EntityRepository, getConnection, getRepository, Repository } from 'typeorm';
+import { EntityManager, EntityRepository, getConnection, getRepository, Repository } from 'typeorm';
 import { CreatePostDto } from './dto/createPost.dto';
 import { SearchPostDto } from './dto/searchPost.dto';
 import { UpdatePostDto } from './dto/updatePost.dto';
@@ -145,15 +145,15 @@ export class PostRepository extends Repository<Post> {
     await getRepository(Post).createQueryBuilder('Post').update(Post).set({ dealState }).where('postId = :postId', { postId: postId }).execute();
   }
 
-  async addLikeToPost(user: User, postsLikeDto: PostsLikeDto) {
+  async addLikeToPost(manager: EntityManager, user: User, postsLikeDto: PostsLikeDto) {
     const { post } = postsLikeDto;
-    const query = await getRepository(PostsLikeRecord).createQueryBuilder('postsLikeRecord').insert().into(PostsLikeRecord).values({ post, user }).execute();
+    const query = await manager.getRepository(PostsLikeRecord).createQueryBuilder('postsLikeRecord').insert().into(PostsLikeRecord).values({ post, user }).execute();
     return query.raw.insertId;
   }
 
-  async addLikeCntToPost(post: Post, likes: number) {
+  async addLikeCntToPost(manager: EntityManager, post: Post, likes: number) {
     likes = likes + 1;
-    return await getRepository(Post).createQueryBuilder('post').update(Post).set({ likes }).where('postId = :postId', { postId: post }).execute();
+    return await manager.getRepository(Post).createQueryBuilder('post').update(Post).set({ likes }).where('postId = :postId', { postId: post }).execute();
   }
 
   async addLikeTransaction(user: User, postsLikeDto: PostsLikeDto, post: Post, likes: number) {
@@ -161,10 +161,8 @@ export class PostRepository extends Repository<Post> {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const insertId = await this.addLikeToPost(user, postsLikeDto);
-      const addLikeCntToPost = await this.addLikeCntToPost(post, likes);
-      await queryRunner.manager.save(insertId);
-      await queryRunner.manager.save(addLikeCntToPost);
+      const insertId = await this.addLikeToPost(queryRunner.manager, user, postsLikeDto);
+      await this.addLikeCntToPost(queryRunner.manager, post, likes);
       await queryRunner.commitTransaction();
       return insertId;
     } catch (err) {
@@ -176,8 +174,8 @@ export class PostRepository extends Repository<Post> {
     }
   }
 
-  async substractLikeToPost(user: User, postsLikeId: number) {
-    const result = await PostsLikeRecord.delete(postsLikeId);
+  async substractLikeToPost(manager: EntityManager, postsLikeId: number) {
+    const result = await manager.getRepository(PostsLikeRecord).createQueryBuilder().delete().from(PostsLikeRecord).where('postsLikeId = :postsLikeId', { postsLikeId }).execute();
     if (result.affected === 0) {
       throw new NotFoundException(`postsLikeId가 ${postsLikeId}인 것을 찾을 수 없습니다.`);
     } else {
@@ -185,10 +183,10 @@ export class PostRepository extends Repository<Post> {
     }
   }
 
-  async substractLikeCntToPost(post: Post, likes: number) {
+  async substractLikeCntToPost(manager: EntityManager, post: Post, likes: number) {
     if (likes > 0) {
       likes = likes - 1;
-      return await getRepository(Post).createQueryBuilder('post').update(Post).set({ likes }).where('postId = :postId', { postId: post }).execute();
+      return await manager.getRepository(Post).createQueryBuilder('post').update(Post).set({ likes }).where('postId = :postId', { postId: post }).execute();
     } else {
       return;
     }
@@ -199,10 +197,8 @@ export class PostRepository extends Repository<Post> {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const substractLikeToPost = await this.substractLikeToPost(user, postsLikeId);
-      const substractLikeCntToPost = await this.substractLikeCntToPost(post, likes);
-      await queryRunner.manager.save(substractLikeToPost);
-      await queryRunner.manager.save(substractLikeCntToPost);
+      const substractLikeToPost = await this.substractLikeToPost(queryRunner.manager, postsLikeId);
+      await this.substractLikeCntToPost(queryRunner.manager, post, likes);
       await queryRunner.commitTransaction();
       return substractLikeToPost;
     } catch (err) {
@@ -214,16 +210,15 @@ export class PostRepository extends Repository<Post> {
     }
   }
 
-  async addViewToPost(user: User, postsViewDto: PostsViewDto) {
+  async addViewToPost(manager: EntityManager, user: User, postsViewDto: PostsViewDto) {
     const { post } = postsViewDto;
-    const query = await getRepository(PostsViewRecord).createQueryBuilder('postsViewRecord').insert().into(PostsViewRecord).values({ post, user }).execute();
-
+    const query = await manager.getRepository(PostsViewRecord).createQueryBuilder('postsViewRecord').insert().into(PostsViewRecord).values({ post, user }).execute();
     return query.raw.insertId;
   }
 
-  async addViewCntToPost(post: Post, views: number) {
+  async addViewCntToPost(manager: EntityManager, post: Post, views: number) {
     views = views + 1;
-    return await getRepository(Post).createQueryBuilder('post').update(Post).set({ views }).where('postId = :postId', { postId: post }).execute();
+    return await manager.getRepository(Post).createQueryBuilder('post').update(Post).set({ views }).where('postId = :postId', { postId: post }).execute();
   }
 
   async addViewTransaction(user: User, postsViewDto: PostsViewDto, post: Post, views: number) {
@@ -231,16 +226,14 @@ export class PostRepository extends Repository<Post> {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const insertId = await this.addViewToPost(user, postsViewDto);
-      const addViewCntToPost = await this.addViewCntToPost(post, views);
-      await queryRunner.manager.save(insertId);
-      await queryRunner.manager.save(addViewCntToPost);
+      const insertId = await this.addViewToPost(queryRunner.manager, user, postsViewDto);
+      await this.addViewCntToPost(queryRunner.manager, post, views);
       await queryRunner.commitTransaction();
       return insertId;
     } catch (err) {
       await queryRunner.rollbackTransaction();
       console.error(err);
-      throw new InternalServerErrorException(`조회수 기록이 추가되지 않았습니다. 잠시후 다시 시도해주세요.`);
+      throw new InternalServerErrorException(`조회수 추가에 실패하였습니다. 잠시후 다시 시도해주세요.`);
     } finally {
       await queryRunner.release();
     }
