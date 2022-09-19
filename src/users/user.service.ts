@@ -435,32 +435,37 @@ export class UserService {
      */
     const { deleteDupMyeonDong, addArea } = deleteTownDto;
     const [locations, count] = await getRepository(Location).findAndCount({ where: { user: user.phoneNumber } });
-    await getConnection()
-      .transaction(async (manager: EntityManager) => {
-        if (count === 1) {
-          if (!addArea) {
-            throw new BadRequestException('동네는 1개이상 등록해야 합니다.');
-          }
-          const { siDo, siGunGu, eupMyeonDong } = await this.verifyExistInData(addArea);
-          locations.filter(location => {
-            if (location.eupMyeonDong === eupMyeonDong) throw new ConflictException('이미 추가된 동네입니다.');
-          });
-          await this.userRepository.addLocation(manager, siDo, siGunGu, eupMyeonDong, user.phoneNumber);
+    const queryRunner = getConnection().createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      if (count === 1) {
+        if (!addArea) {
+          throw new BadRequestException('동네는 1개이상 등록해야 합니다.');
         }
+        const { siDo, siGunGu, eupMyeonDong } = await this.verifyExistInData(addArea);
+        locations.filter(location => {
+          if (location.eupMyeonDong === eupMyeonDong) throw new ConflictException('이미 추가된 동네입니다.');
+        });
+        await this.userRepository.addLocation(queryRunner.manager, siDo, siGunGu, eupMyeonDong, user.phoneNumber);
+      } else {
         const location2 = await getRepository(Location).findOne({ where: { user: user.phoneNumber, eupMyeonDong: Not(Equal(deleteDupMyeonDong)) } });
         location2.isSelected = true;
-        await manager.save(location2);
-
-        const result = await manager.delete(Location, { user: user.phoneNumber, eupMyeonDong: deleteDupMyeonDong });
-        if (result.affected === 0) {
-          throw new NotFoundException(`등록된 적 없는 동네입니다.`);
-        }
-      })
-      .catch(err => {
-        console.error(err);
-        throw new InternalServerErrorException('동네 삭제에 실패하였습니다. 잠시후 다시 시도해주세요.');
-      });
-    return await this.getMyTownList(user);
+        await queryRunner.manager.save(location2);
+      }
+      const result = await queryRunner.manager.delete(Location, { user: user.phoneNumber, eupMyeonDong: deleteDupMyeonDong });
+      if (result.affected === 0) {
+        throw new NotFoundException(`등록된 적 없는 동네입니다.`);
+      }
+      await queryRunner.commitTransaction();
+      return await this.getMyTownList(user);
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      console.error(err);
+      throw new InternalServerErrorException('동네 삭제에 실패하였습니다. 잠시후 다시 시도해주세요.');
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   async setTownCertification(user: User, myLocationDto: MyLocationDto): Promise<string> {
