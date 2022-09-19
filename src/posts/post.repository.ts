@@ -1,4 +1,4 @@
-import { NotFoundException } from '@nestjs/common';
+import { InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { UpdateDealStateDto } from './dto/updateDealState.dto';
 import { CreatePostsComplaintsDto } from './dto/createPostsComplaints.dto';
 import { AcceptOfferedPriceDto } from './dto/acceptOfferedPrice.dto';
@@ -158,8 +158,9 @@ export class PostRepository extends Repository<Post> {
 
   async addLikeTransaction(user: User, postsLikeDto: PostsLikeDto, post: Post, likes: number) {
     const queryRunner = getConnection().createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
     try {
-      await queryRunner.startTransaction();
       const insertId = await this.addLikeToPost(user, postsLikeDto);
       const addLikeCntToPost = await this.addLikeCntToPost(post, likes);
       await queryRunner.manager.save(insertId);
@@ -168,6 +169,8 @@ export class PostRepository extends Repository<Post> {
       return insertId;
     } catch (err) {
       await queryRunner.rollbackTransaction();
+      console.error(err);
+      throw new InternalServerErrorException(`좋아요 기록이 추가되지 않았습니다. 잠시후 다시 시도해주세요.`);
     } finally {
       await queryRunner.release();
     }
@@ -193,8 +196,9 @@ export class PostRepository extends Repository<Post> {
 
   async substractLikeTransaction(user: User, postsLikeId: number, post: Post, likes: number) {
     const queryRunner = getConnection().createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
     try {
-      await queryRunner.startTransaction();
       const substractLikeToPost = await this.substractLikeToPost(user, postsLikeId);
       const substractLikeCntToPost = await this.substractLikeCntToPost(post, likes);
       await queryRunner.manager.save(substractLikeToPost);
@@ -202,8 +206,9 @@ export class PostRepository extends Repository<Post> {
       await queryRunner.commitTransaction();
       return substractLikeToPost;
     } catch (err) {
-      console.error(err);
       await queryRunner.rollbackTransaction();
+      console.error(err);
+      throw new InternalServerErrorException(`좋아요 취소 기록이 추가되지 않았습니다. 잠시후 다시 시도해주세요.`);
     } finally {
       await queryRunner.release();
     }
@@ -223,8 +228,9 @@ export class PostRepository extends Repository<Post> {
 
   async addViewTransaction(user: User, postsViewDto: PostsViewDto, post: Post, views: number) {
     const queryRunner = getConnection().createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
     try {
-      await queryRunner.startTransaction();
       const insertId = await this.addViewToPost(user, postsViewDto);
       const addViewCntToPost = await this.addViewCntToPost(post, views);
       await queryRunner.manager.save(insertId);
@@ -233,6 +239,8 @@ export class PostRepository extends Repository<Post> {
       return insertId;
     } catch (err) {
       await queryRunner.rollbackTransaction();
+      console.error(err);
+      throw new InternalServerErrorException(`조회수 기록이 추가되지 않았습니다. 잠시후 다시 시도해주세요.`);
     } finally {
       await queryRunner.release();
     }
