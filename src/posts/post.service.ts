@@ -18,6 +18,8 @@ import { PostsLikeDto } from './dto/addPostsLike.dto';
 import { PostsViewRecord } from './postsViewRecord.entity';
 import { v1 as uuid } from 'uuid';
 import { createWriteStream } from 'fs';
+import { getRepository } from 'typeorm';
+import { Location } from 'src/users/location.entity';
 
 @Injectable()
 export class PostService {
@@ -34,8 +36,13 @@ export class PostService {
      * @param {user, title, content, category, price, isOfferedPrice, townRange, dealState, images}
      *        로그인한 유저, 제목, 내용, 카테고리, 가격, 가격제안받기여부, 동네범위, 거래상태, 이미지
      * @return {Post} 게시글 반환
+     * @throws {ForbiddenException} 동네 인증을 하지 않았을 때 예외처리
      * @throws {InternalServerErrorException} 이미지 저장실패할 때 예외처리
      */
+    const location = await getRepository(Location).findOne({ where: { user: user.phoneNumber, isSelected: true } });
+    if (!location.isConfirmedPosition) {
+      throw new ForbiddenException('동네 인증을 해야 게시글을 작성할 수 있습니다.');
+    }
     const insertId = await this.postRepository.createPost(user, createPostDto);
     const { images } = createPostDto;
     if (images) {
