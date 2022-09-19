@@ -22,13 +22,13 @@ import { PostsViewRecord } from './postsViewRecord.entity';
 export class PostRepository extends Repository<Post> {
   async createPost(user: User, createPostDto: CreatePostDto): Promise<number> {
     const { title, content, category, price, isOfferedPrice, townRange, dealState } = createPostDto;
-    const query = await getRepository(Post).createQueryBuilder('Post').insert().into(Post).values({ user: user, title, content, price, isOfferedPrice, category, townRange, dealState }).execute();
+    const query = await getRepository(Post).createQueryBuilder('Post').insert().into(Post).values({ user, title, content, price, isOfferedPrice, category, townRange, dealState }).execute();
     return query.raw.insertId;
   }
 
   async updatePost(postId: number, updatePostDto: UpdatePostDto): Promise<void> {
     const { title, content, category, price, isOfferedPrice, townRange } = updatePostDto;
-    await getRepository(Post).createQueryBuilder('Post').update(Post).set({ title, content, price, isOfferedPrice, category, townRange }).where('postId = :postId', { postId: postId }).execute();
+    await getRepository(Post).createQueryBuilder('Post').update(Post).set({ title, content, price, isOfferedPrice, category, townRange }).where('postId = :postId', { postId }).execute();
   }
 
   async getPosts(searchPostDto: SearchPostDto): Promise<Post[]> {

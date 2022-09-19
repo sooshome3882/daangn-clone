@@ -25,27 +25,32 @@ import { PostsViewDto } from './dto/addPostsView.dto';
 export class PostResolver {
   constructor(private readonly postService: PostService) {}
 
+  // 게시글 작성
   @Mutation(() => Post)
   @UsePipes(ValidationPipe)
   createPost(@GetUser() user: User, @Args('createPostDto', PostImagesValidationPipe) createPostDto: CreatePostDto) {
     return this.postService.createPost(user, createPostDto);
   }
 
+  // 게시글 수정
   @Mutation(() => Post)
   updatePost(@GetUser() user: User, @Args('postId', ParseIntPipe) postId: number, @Args('updatePostDto', PostImagesValidationPipe) updatePostDto: UpdatePostDto) {
     return this.postService.updatePost(user, postId, updatePostDto);
   }
 
+  // 게시글 삭제
   @Mutation(() => String)
   deletePost(@GetUser() user: User, @Args('postId', ParseIntPipe) postId: number) {
     return this.postService.deletePost(user, postId);
   }
 
+  // 게시글 상세보기
   @Query(() => Post, { name: 'post' })
   getPostById(@Args('postId', ParseIntPipe) postId: number) {
     return this.postService.getPostById(postId);
   }
 
+  // 게시글 목록 가져오기 (게시글 검색 포함)
   @Query(() => [Post], { name: 'posts' })
   @UsePipes(ValidationPipe)
   getPosts(@Args('searchPostDto') searchPostDto: SearchPostDto) {

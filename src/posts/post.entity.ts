@@ -72,7 +72,7 @@ export class Post extends BaseEntity {
   @ManyToOne(type => Category, category => category.posts, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
   category!: Category;
 
-  @Field()
+  @Field(() => TownRange)
   @JoinColumn({ name: 'townRangeId' })
   @ManyToOne(type => TownRange, townRange => townRange.posts, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
   townRange!: TownRange;

@@ -18,9 +18,11 @@
     "seed:run": "ts-node ./node_modules/typeorm-seeding/dist/cli.js seed -n src/config/typeormMigration.config.ts"
   },
   "dependencies": {
+    "@elastic/elasticsearch": "^8.4.0",
     "@nestjs/apollo": "^10.0.22",
     "@nestjs/common": "^9.0.0",
     "@nestjs/core": "^9.0.0",
+    "@nestjs/elasticsearch": "^9.0.0",
     "@nestjs/graphql": "^10.0.22",
     "@nestjs/jwt": "^9.0.0",
     "@nestjs/passport": "^9.0.0",

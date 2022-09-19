@@ -8,10 +8,12 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtAuthGuard } from './guards/jwtAuth.guard';
+import { ElasticsearchModule } from '@nestjs/elasticsearch';
 
 const cacheConfig: any = config.get('cache');
 const jwtConfig: any = config.get('jwt');
 const passportConfig: any = config.get('passport');
+const elasticsearchConfig: any = config.get('elasticsearch');
 
 @Module({
   imports: [
@@ -26,6 +28,13 @@ const passportConfig: any = config.get('passport');
       },
     }),
     CacheModule.register({ ttl: cacheConfig.ttl, max: cacheConfig.max }),
+    ElasticsearchModule.register({
+      node: elasticsearchConfig.node,
+      maxRetries: elasticsearchConfig.maxRetries,
+      requestTimeout: elasticsearchConfig.requestTimeout,
+      pingTimeout: elasticsearchConfig.pingTimeout,
+      sniffOnStart: elasticsearchConfig.sniffOnStart,
+    }),
     TypeOrmModule.forFeature([UserRepository]),
   ],
   providers: [UserService, UserResolver, JwtStrategy, JwtAuthGuard],

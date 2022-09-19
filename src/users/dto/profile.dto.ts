@@ -6,7 +6,6 @@ import { Length } from 'class-validator';
 @InputType()
 export class ProfileUserDto {
   @Field(() => String, { nullable: true })
-  @Length(2, 10)
   userName?: string;
 
   @Field(() => GraphQLUpload, { nullable: true })

@@ -5,6 +5,7 @@ import { PurchaseHistory } from 'src/mypage/purchaseHistory.entity';
 import { BaseEntity, Column, CreateDateColumn, Entity, OneToMany, PrimaryColumn, UpdateDateColumn } from 'typeorm';
 import { Followings } from '../mypage/followings.entity';
 import { PostsViewRecord } from 'src/posts/postsViewRecord.entity';
+import { Location } from './location.entity';
 
 @Entity()
 @ObjectType()
@@ -62,4 +63,7 @@ export class User extends BaseEntity {
 
   @OneToMany(type => PurchaseHistory, purchaseHistory => purchaseHistory.user, { eager: false })
   purchaseHistory!: PurchaseHistory[];
+
+  @OneToMany(type => Location, location => location.user, { eager: false })
+  locations!: Location[];
 }
