@@ -17,6 +17,7 @@ import { PostsLikeRecord } from './postsLikeRecord.entity';
 import { PostsLikeDto } from './dto/addPostsLike.dto';
 import { PostsViewDto } from './dto/addPostsView.dto';
 import { PostsViewRecord } from './postsViewRecord.entity';
+import { PostImage } from './postImage.entity';
 
 @EntityRepository(Post)
 export class PostRepository extends Repository<Post> {
@@ -24,6 +25,14 @@ export class PostRepository extends Repository<Post> {
     const { title, content, category, price, isOfferedPrice, townRange, dealState } = createPostDto;
     const query = await getRepository(Post).createQueryBuilder('Post').insert().into(Post).values({ user, title, content, price, isOfferedPrice, category, townRange, dealState }).execute();
     return query.raw.insertId;
+  }
+
+  async deletePostImagePath(postId: number) {
+    await getRepository(PostImage).createQueryBuilder('PostImage').delete().from(PostImage).where('postId = :postId', { postId: postId }).execute();
+  }
+
+  async addPostImagePath(post: number, imagePath: string) {
+    await getRepository(PostImage).createQueryBuilder('PostImage').insert().into(PostImage).values({ imagePath, post }).execute();
   }
 
   async updatePost(postId: number, updatePostDto: UpdatePostDto): Promise<void> {
