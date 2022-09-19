@@ -18,7 +18,7 @@ export class MypageService {
 
   async getHiddenPostsList(user: User, page: number, perPage: number): Promise<Post[]> {
     /**
-     * 기능: 숨김 처리한 게시글 리스트 조회하기
+     * 숨김 처리한 게시글 리스트 조회하기
      *
      * @author 이승연(dltmddus1998)
      * @param {user, page, perPage} 로그인한 유저, 조회할 페이지, 한 페이지당 게시글 개수
@@ -29,7 +29,7 @@ export class MypageService {
 
   async buy(user: User, purchaseHistoryDto: PurchaseHistoryDto): Promise<PurchaseHistory> {
     /**
-     * 기능: 특정 게시글 물건 구매 처리하기
+     * 특정 게시글 물건 구매 처리하기
      *
      * @author 이승연(dltmddus1998)
      * @param {user, post} 로그인한 유저, 게시글
@@ -45,7 +45,7 @@ export class MypageService {
   }
   async getBuyingListsOfUser(user: User, page: number, perPage: number): Promise<PurchaseHistory[]> {
     /**
-     * 기능: 구매리스트 조회하기
+     * 구매리스트 조회하기
      *
      * @author 이승연(dltmddus1998)
      * @param {user, page, perPage} 로그인한 유저, 조회할 페이지, 한 페이지당 게시글 개수
@@ -57,7 +57,7 @@ export class MypageService {
   async getSellingListOfUser(user: User, page: number, perPage: number) {
     /**
      * TODO
-     * 기능: 판매리스트 조회하기
+     * 판매리스트 조회하기
      *
      * @author 이승연(dltmddus1998)
      * @param {user, page, perPage} 로그인한 유저, 조회할 페이지, 한 페이지당 게시글 개수
@@ -68,7 +68,7 @@ export class MypageService {
 
   async getWatchListOfUser(user: User, page: number, perPage: number): Promise<Post[]> {
     /**
-     * 기능: 관심목록 조회하기
+     * 관심목록 조회하기
      *
      * @author 이승연(dltmddus1998)
      * @param {user, page, perPage} 로그인한 유저, 조회할 페이지, 한 페이지당 게시글 개수
@@ -83,7 +83,7 @@ export class MypageService {
 
   async setMarketingInfoAgree(user: User, marketingInfoAgree: boolean) {
     /**
-     * 기능: 마켓팅 수신 동의 여부 변경
+     * 마켓팅 수신 동의 여부 변경
      *
      * @author 이승연(dltmddus1998)
      * @param {user, marketingInfoAgree} 로그인한 유저, 마켓팅 동의 여부
@@ -103,7 +103,7 @@ export class MypageService {
 
   async followUsers(user: User, followDto: FollowDto): Promise<Followings> {
     /**
-     * 기능: 다른 유저 팔로우하기
+     * 다른 유저 팔로우하기
      *
      * @author 이승연(dltmddus1998)
      * @param {user, followerUser} 로그인한 유저, 팔로우할 유저
@@ -131,7 +131,7 @@ export class MypageService {
 
   async deleteFollowUsers(user: User, followingId: number): Promise<String> {
     /**
-     * 기능: 팔로우 취소하기
+     * 팔로우 취소하기
      *
      * @author 이승연(dltmddus1998)
      * @param {user, followerUser} 로그인한 유저, 팔로우 번호 (팔로우 테이블에서)
@@ -152,7 +152,7 @@ export class MypageService {
 
   async seeFollowUsers(user: User, page: number, perPage: number): Promise<Followings[]> {
     /**
-     * 기능: 팔로잉 모아보기
+     * 팔로잉 모아보기
      *
      * @author 이승연(dltmddus1998)
      * @param {page, perPage} 조회할 페이지, 한 페이지당 게시글 개수
@@ -163,7 +163,7 @@ export class MypageService {
 
   async getMyProfile(user: User): Promise<Object> {
     /**
-     * 기능: 내 프로필 조회하기
+     * 내 프로필 조회하기
      *
      * @author 이승연(dltmddus1998)
      * @param {user}
@@ -183,7 +183,7 @@ export class MypageService {
 
   async getOtherProfile(getOtherProfileDto: GetOtherProfileDto): Promise<Object> {
     /**
-     * 기능: 다른 유저 프로필 조회하기
+     * 다른 유저 프로필 조회하기
      *
      * @author 이승연(dltmddus1998)
      * @param {getOtherProfileDto} 팔로우하고자 하는 유저 번호
