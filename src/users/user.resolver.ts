@@ -91,4 +91,11 @@ export class UserResolver {
   deleteTown(@GetUser() user: User, @Args('deleteTownDto') deleteTownDto: DeleteTownDto): Promise<Location[]> {
     return this.userService.deleteTown(user, deleteTownDto);
   }
+
+  // 동네 인증
+  @Mutation(() => String)
+  @UseGuards(JwtAuthGuard)
+  setTownCertification(@GetUser() user: User, @Args('myLocationDto') myLocationDto: MyLocationDto): Promise<string> {
+    return this.userService.setTownCertification(user, myLocationDto);
+  }
 }

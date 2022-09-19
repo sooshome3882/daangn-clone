@@ -462,4 +462,34 @@ export class UserService {
       });
     return await this.getMyTownList(user);
   }
+
+  async setTownCertification(user: User, myLocationDto: MyLocationDto): Promise<string> {
+    /**
+     * 동네 인증
+     * 선택되어있는 동네와 요청받은 위치 좌표와 같은 동네이면 인증
+     *
+     * @author 허정연(golgol22)
+     * @param {user, latitude, longitude, from, size} 로그인한 유저, 위도, 경도, offset, limit
+     * @return {Location[]} 저장된 위치 정보 반환
+     * @throws {BadRequestException} 이미 인증한 동네인 경우
+     * @throws {NotFoundException} 주변 지역에 대한 정보가 없을 때 예외처리
+     * @throws {InternalServerErrorException} 동네인증에 실패했을 때 예외처리
+     */
+    const location = await getRepository(Location).findOne({ where: { user: user.phoneNumber, isSelected: true } });
+    if (location.isConfirmedPosition) {
+      throw new BadRequestException('이미 인증된 동네입니다.');
+    }
+    myLocationDto.from = 0;
+    myLocationDto.size = 5;
+    const aroundTownList = await this.getAroundTownList(myLocationDto);
+    const exist = aroundTownList.filter(town => {
+      return town.split(' ')[2] === location.eupMyeonDong;
+    });
+    if (exist) {
+      location.isConfirmedPosition = true;
+      await getRepository(Location).save(location);
+      return `${location.eupMyeonDong} 인증되었습니다.`;
+    }
+    return `${location.eupMyeonDong} 인증에 실패하였습니다.`;
+  }
 }
