@@ -18,17 +18,18 @@ import { PostsLikeDto } from './dto/addPostsLike.dto';
 import { PostsViewDto } from './dto/addPostsView.dto';
 import { PostsViewRecord } from './postsViewRecord.entity';
 import { PostImage } from './postImage.entity';
+import { Location } from 'src/users/location.entity';
 
 @EntityRepository(Post)
 export class PostRepository extends Repository<Post> {
-  async createPost(user: User, createPostDto: CreatePostDto): Promise<number> {
+  async createPost(user: User, createPostDto: CreatePostDto, location: Location): Promise<number> {
     const { title, content, category, price, isOfferedPrice, townRange, dealState } = createPostDto;
-    const query = await getRepository(Post).createQueryBuilder('Post').insert().into(Post).values({ user, title, content, price, isOfferedPrice, category, townRange, dealState }).execute();
+    const query = await getRepository(Post).createQueryBuilder('Post').insert().into(Post).values({ user, title, content, price, isOfferedPrice, category, townRange, location, dealState }).execute();
     return query.raw.insertId;
   }
 
   async deletePostImagePath(postId: number) {
-    await getRepository(PostImage).createQueryBuilder('PostImage').delete().from(PostImage).where('postId = :postId', { postId: postId }).execute();
+    await getRepository(PostImage).createQueryBuilder('PostImage').delete().from(PostImage).where('postId = :postId', { postId }).execute();
   }
 
   async addPostImagePath(post: number, imagePath: string) {
@@ -42,7 +43,7 @@ export class PostRepository extends Repository<Post> {
 
   async getPosts(searchPostDto: SearchPostDto): Promise<Post[]> {
     const { search, minPrice, maxPrice, category, townRange, dealState, perPage, page } = searchPostDto;
-    const queryBuilder = await getRepository(Post)
+    const queryBuilder = getRepository(Post)
       .createQueryBuilder('post')
       .innerJoinAndSelect('post.category', 'category')
       .innerJoinAndSelect('post.townRange', 'townRange')

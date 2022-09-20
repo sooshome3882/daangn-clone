@@ -43,7 +43,7 @@ export class PostService {
     if (!location.isConfirmedPosition) {
       throw new ForbiddenException('동네 인증을 해야 게시글을 작성할 수 있습니다.');
     }
-    const insertId = await this.postRepository.createPost(user, createPostDto);
+    const insertId = await this.postRepository.createPost(user, createPostDto, location);
     const { images } = createPostDto;
     if (images) {
       for (const image of images) {

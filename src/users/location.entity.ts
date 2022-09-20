@@ -35,9 +35,10 @@ export class Location extends BaseEntity {
   @CreateDateColumn({ type: 'datetime' })
   createdAt!: Date;
 
-  @Field()
-  @DeleteDateColumn({ type: 'datetime' })
-  deletedAt!: Date;
+  @Field({ nullable: true })
+  @Column({ type: 'datetime', nullable: true })
+  // @DeleteDateColumn({ type: 'datetime' })
+  deletedAt: Date;
 
   @Field(() => User)
   @JoinColumn({ name: 'phoneNumber' })
