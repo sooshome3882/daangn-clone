@@ -106,10 +106,17 @@ export class UserResolver {
     return this.userService.setTownRange(user, townRange);
   }
 
-  // 동네 범위에 따른 개수
-  @Query(() => String)
+  // 동네 범위에 따른 동네 개수
+  @Query(() => Number)
   @UseGuards(JwtAuthGuard)
-  getTownCount(@GetUser() user: User, @Args('townRange', ParseIntPipe) townRange: number): Promise<number> {
-    return this.userService.getTownCount(user, townRange);
+  getTownCountByTownRange(@GetUser() user: User, @Args('townRange', ParseIntPipe) townRange: number): Promise<number> {
+    return this.userService.getTownCountByTownRange(user, townRange);
+  }
+
+  // 동네 범위에 따른 동네 목록
+  @Query(() => [String])
+  @UseGuards(JwtAuthGuard)
+  getTownListByTownRange(@GetUser() user: User, @Args('townRange', ParseIntPipe) townRange: number): Promise<string[]> {
+    return this.userService.getTownListByTownRange(user, townRange);
   }
 }

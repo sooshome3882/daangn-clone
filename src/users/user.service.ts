@@ -30,6 +30,7 @@ import { EntityManager, Equal, getConnection, getRepository, Not } from 'typeorm
 import { Location } from './location.entity';
 import { DeleteTownDto } from './dto/deleteTown.dto';
 import { TownRange } from 'src/townRanges/townRange.entity';
+import { SearchHit } from '@elastic/elasticsearch/lib/api/types';
 
 const smsConfig: any = config.get('sms');
 const ACCESS_KEY_ID = smsConfig.access_key_id;
@@ -526,58 +527,57 @@ export class UserService {
     return `동네 범위가 ${townRange}으로 변경되었습니다.`;
   }
 
-  async getTownCount(user: User, townRange: number): Promise<number> {
+  async townRangeEqual1(location: Location) {
     /**
-     * 동네 범위에 따른 개수
-     * 선택되어있는 동네의 동네 범위에 따른 동네 개수
+     * 동네 범위가 1일 때 동네 목록 조회
+     * 동네 범위가 1일때는 같은 동만 조회가능 (ex. 논현1동 -> 논현동, 논현1동, 논현2동)
      *
      * @author 허정연(golgol22)
-     * @param {user, townRange} 로그인한 유저, 동네 범위
-     * @return {number} 동네 개수
-     * @throws {NotFoundException} 없는 동네 범위를 설정하려고 할 때 예외 처리
+     * @param {location} 위치 정보
+     * @return {SearchHit[]} 해당하는 동 목록
+     */
+    const commonEupMyeonDong = location.eupMyeonDong.replace(/[0-9]/g, '').replace('동', '');
+    const eupMyeonDong = await this.esService.search({
+      index: 'coordinate',
+      body: {
+        query: {
+          bool: {
+            must: [
+              {
+                match: {
+                  '시도.keyword': location.siDo,
+                },
+              },
+              {
+                match: {
+                  '시군구.keyword': location.siGunGu,
+                },
+              },
+              {
+                query_string: {
+                  default_field: '읍면동',
+                  query: `${commonEupMyeonDong}*`,
+                },
+              },
+            ],
+          },
+        },
+      },
+      _source: ['읍면동'],
+    });
+    return eupMyeonDong.hits.hits;
+  }
+
+  async getCoordinateByTown(location: Location) {
+    /**
+     * DB에 저장된 위치 정보에 대한 위도, 경도 좌표값
+     *
+     * @author 허정연(golgol22)
+     * @param {location} 위치 정보
+     * @return {SearchHit[]} 좌표값
      * @throws {InternalServerErrorException} 데이터가 없는 지역에 대한 예외 처리
      * (Location데이터를 추가할 때 데이터가 존재하는지 확인하고 추가하기 때문에 해당 에러가 나올 경우가 없지만, 위치 데이터가 변경되었을 경우 에러가 생길 수 있어서 예최처리)
      */
-    const possibleTownRange = await getRepository(TownRange).find();
-    const exist = possibleTownRange.filter(town => {
-      return town.townRangeId === townRange;
-    });
-    if (exist.length == 0) {
-      throw new NotFoundException('확인할 수 없는 동네 범위입니다.');
-    }
-    const location = await getRepository(Location).findOne({ where: { user: user.phoneNumber, isSelected: true } });
-    if (townRange === 1) {
-      const commonEupMyeonDong = location.eupMyeonDong.replace(/[0-9]/g, '').replace('동', '');
-      const eupMyeonDong = await this.esService.search({
-        index: 'coordinate',
-        body: {
-          query: {
-            bool: {
-              must: [
-                {
-                  match: {
-                    '시도.keyword': location.siDo,
-                  },
-                },
-                {
-                  match: {
-                    '시군구.keyword': location.siGunGu,
-                  },
-                },
-                {
-                  query_string: {
-                    default_field: '읍면동',
-                    query: `${commonEupMyeonDong}*`,
-                  },
-                },
-              ],
-            },
-          },
-        },
-        _source: ['읍면동'],
-      });
-      return eupMyeonDong.hits.hits.length;
-    }
     const coordinate = await this.esService.search({
       index: 'coordinate',
       body: {
@@ -610,7 +610,18 @@ export class UserService {
     if (coordinateHits.length === 0) {
       throw new InternalServerErrorException('지역이 잘못되었습니다. 관리자에게 문의해주세요.');
     }
-    const result = await this.esService.search({
+    return coordinateHits;
+  }
+
+  async getTownListByCoordinate(location: Location, coordinate: SearchHit[]) {
+    /**
+     * 좌표에서 설정된 동네 범위안에 있는 동 목록 조회
+     *
+     * @author 허정연(golgol22)
+     * @param {location, coordinate} 위치 정보, 좌표 정보
+     * @return {SearchHit[]} 동 목록
+     */
+    const townListByCoordinate = await this.esService.search({
       index: 'coordinate',
       body: {
         query: {
@@ -622,8 +633,8 @@ export class UserService {
               geo_distance: {
                 distance: `${location.townRange.townRange}km`,
                 location: {
-                  lat: coordinateHits[0]._source['위도'],
-                  lon: coordinateHits[0]._source['경도'],
+                  lat: coordinate[0]._source['위도'],
+                  lon: coordinate[0]._source['경도'],
                 },
               },
             },
@@ -633,6 +644,67 @@ export class UserService {
       _source: ['읍면동'],
       size: 10000,
     });
-    return result.hits.hits.length;
+    return townListByCoordinate.hits.hits;
+  }
+
+  async getTownCountByTownRange(user: User, townRange: number): Promise<number> {
+    /**
+     * 동네 범위에 따른 동네 개수
+     * 선택되어있는 동네의 동네 범위에 따른 동네 개수
+     *
+     * @author 허정연(golgol22)
+     * @param {user, townRange} 로그인한 유저, 동네 범위
+     * @return {number} 동네 개수
+     * @throws {NotFoundException} 없는 동네 범위를 설정하려고 할 때 예외 처리
+     */
+    const possibleTownRange = await getRepository(TownRange).find();
+    const exist = possibleTownRange.filter(town => {
+      return town.townRangeId === townRange;
+    });
+    if (exist.length === 0) {
+      throw new NotFoundException('확인할 수 없는 동네 범위입니다.');
+    }
+    const location = await getRepository(Location).findOne({ where: { user: user.phoneNumber, isSelected: true } });
+    if (townRange === 1) {
+      const townRangeEqual1 = await this.townRangeEqual1(location);
+      return townRangeEqual1.length;
+    }
+    const coordinate = await this.getCoordinateByTown(location);
+    const getTownListByCoordinate = await this.getTownListByCoordinate(location, coordinate);
+    return getTownListByCoordinate.length;
+  }
+
+  async getTownListByTownRange(user: User, townRange: number): Promise<string[]> {
+    /**
+     * 동네 범위에 따른 동네 목록 개수
+     * 선택되어있는 동네의 동네 범위에 따른 동네 목록
+     *
+     * @author 허정연(golgol22)
+     * @param {user, townRange} 로그인한 유저, 동네 범위
+     * @return {string[]} 동네 목록
+     * @throws {NotFoundException} 없는 동네 범위를 설정하려고 할 때 예외 처리
+     */
+    const possibleTownRange = await getRepository(TownRange).find();
+    const exist = possibleTownRange.filter(town => {
+      return town.townRangeId === townRange;
+    });
+    if (exist.length === 0) {
+      throw new NotFoundException('확인할 수 없는 동네 범위입니다.');
+    }
+    const location = await getRepository(Location).findOne({ where: { user: user.phoneNumber, isSelected: true } });
+    const result = [];
+    if (townRange === 1) {
+      const townRangeEqual1 = await this.townRangeEqual1(location);
+      townRangeEqual1.map(item => {
+        result.push(item._source['읍면동']);
+      });
+      return result;
+    }
+    const coordinate = await this.getCoordinateByTown(location);
+    const townListByCoordinate = await this.getTownListByCoordinate(location, coordinate);
+    townListByCoordinate.map(item => {
+      result.push(item._source['읍면동']);
+    });
+    return result;
   }
 }
