@@ -1,4 +1,4 @@
-import { UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import { ParseIntPipe, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
 import { JoinUserDto } from './dto/joinUser.dto';
 import { InputNumberValidationPipe } from './validations/inputNumber.pipe';
@@ -97,5 +97,12 @@ export class UserResolver {
   @UseGuards(JwtAuthGuard)
   setTownCertification(@GetUser() user: User, @Args('myLocationDto') myLocationDto: MyLocationDto): Promise<string> {
     return this.userService.setTownCertification(user, myLocationDto);
+  }
+
+  // 동네 범위 변경
+  @Mutation(() => String)
+  @UseGuards(JwtAuthGuard)
+  setTownRange(@GetUser() user: User, @Args('townRange', ParseIntPipe) townRange: number): Promise<string> {
+    return this.userService.setTownRange(user, townRange);
   }
 }

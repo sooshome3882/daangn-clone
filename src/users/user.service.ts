@@ -29,6 +29,7 @@ import { ElasticsearchService } from '@nestjs/elasticsearch';
 import { EntityManager, Equal, getConnection, getRepository, Not } from 'typeorm';
 import { Location } from './location.entity';
 import { DeleteTownDto } from './dto/deleteTown.dto';
+import { TownRange } from 'src/townRanges/townRange.entity';
 
 const smsConfig: any = config.get('sms');
 const ACCESS_KEY_ID = smsConfig.access_key_id;
@@ -471,7 +472,7 @@ export class UserService {
   async setTownCertification(user: User, myLocationDto: MyLocationDto): Promise<string> {
     /**
      * 동네 인증
-     * 선택되어있는 동네와 요청받은 위치 좌표와 같은 동네이면 인증
+     * 선택되어있는 동네와 요청받은 위치 좌표가 같은 동네이면 인증
      *
      * @author 허정연(golgol22)
      * @param {user, latitude, longitude, from, size} 로그인한 유저, 위도, 경도, offset, limit
@@ -496,5 +497,32 @@ export class UserService {
       return `${location.eupMyeonDong} 인증되었습니다.`;
     }
     return `${location.eupMyeonDong} 인증에 실패하였습니다.`;
+  }
+
+  async setTownRange(user: User, townRange: number): Promise<string> {
+    /**
+     * 동네 범위 변경
+     * 선택되어있는 동네의 동네 범위 변경
+     *
+     * @author 허정연(golgol22)
+     * @param {user, townRange} 로그인한 유저, 지정할 동네 범위
+     * @return {string} 설정되었다는 문구
+     * @throws {BadRequestException} 이미 설정된 동네 범위를 설정하하려고 할 때 예외처리
+     * @throws {NotFoundException} 없는 동네 범위를 설정하려고 할 때 예외 처리
+     */
+    const location = await getRepository(Location).findOne({ where: { user: user.phoneNumber, isSelected: true } });
+    if (location.townRange.townRangeId === townRange) {
+      throw new BadRequestException('이미 설정된 동네 범위입니다.');
+    }
+    const possibleTownRange = await getRepository(TownRange).find();
+    const exist = possibleTownRange.filter(town => {
+      return town.townRangeId === townRange;
+    });
+    if (exist.length == 0) {
+      throw new NotFoundException('지정할 수 없는 값입니다.');
+    }
+    location.townRange.townRangeId = townRange;
+    await getRepository(Location).save(location);
+    return `동네 범위가 ${townRange}으로 변경되었습니다.`;
   }
 }
