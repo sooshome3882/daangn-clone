@@ -525,4 +525,114 @@ export class UserService {
     await getRepository(Location).save(location);
     return `동네 범위가 ${townRange}으로 변경되었습니다.`;
   }
+
+  async getTownCount(user: User, townRange: number): Promise<number> {
+    /**
+     * 동네 범위에 따른 개수
+     * 선택되어있는 동네의 동네 범위에 따른 동네 개수
+     *
+     * @author 허정연(golgol22)
+     * @param {user, townRange} 로그인한 유저, 동네 범위
+     * @return {number} 동네 개수
+     * @throws {NotFoundException} 없는 동네 범위를 설정하려고 할 때 예외 처리
+     * @throws {InternalServerErrorException} 데이터가 없는 지역에 대한 예외 처리
+     * (Location데이터를 추가할 때 데이터가 존재하는지 확인하고 추가하기 때문에 해당 에러가 나올 경우가 없지만, 위치 데이터가 변경되었을 경우 에러가 생길 수 있어서 예최처리)
+     */
+    const possibleTownRange = await getRepository(TownRange).find();
+    const exist = possibleTownRange.filter(town => {
+      return town.townRangeId === townRange;
+    });
+    if (exist.length == 0) {
+      throw new NotFoundException('확인할 수 없는 동네 범위입니다.');
+    }
+    const location = await getRepository(Location).findOne({ where: { user: user.phoneNumber, isSelected: true } });
+    if (townRange === 1) {
+      const commonEupMyeonDong = location.eupMyeonDong.replace(/[0-9]/g, '').replace('동', '');
+      const eupMyeonDong = await this.esService.search({
+        index: 'coordinate',
+        body: {
+          query: {
+            bool: {
+              must: [
+                {
+                  match: {
+                    '시도.keyword': location.siDo,
+                  },
+                },
+                {
+                  match: {
+                    '시군구.keyword': location.siGunGu,
+                  },
+                },
+                {
+                  query_string: {
+                    default_field: '읍면동',
+                    query: `${commonEupMyeonDong}*`,
+                  },
+                },
+              ],
+            },
+          },
+        },
+        _source: ['읍면동'],
+      });
+      return eupMyeonDong.hits.hits.length;
+    }
+    const coordinate = await this.esService.search({
+      index: 'coordinate',
+      body: {
+        query: {
+          bool: {
+            must: [
+              {
+                match: {
+                  '시도.keyword': location.siDo,
+                },
+              },
+              {
+                match: {
+                  '시군구.keyword': location.siGunGu,
+                },
+              },
+              {
+                match: {
+                  '읍면동.keyword': location.eupMyeonDong,
+                },
+              },
+            ],
+          },
+        },
+      },
+      _source: ['위도', '경도'],
+      size: 1,
+    });
+    const coordinateHits = coordinate.hits.hits;
+    if (coordinateHits.length === 0) {
+      throw new InternalServerErrorException('지역이 잘못되었습니다. 관리자에게 문의해주세요.');
+    }
+    const result = await this.esService.search({
+      index: 'coordinate',
+      body: {
+        query: {
+          bool: {
+            must: {
+              match_all: {},
+            },
+            filter: {
+              geo_distance: {
+                distance: `${location.townRange.townRange}km`,
+                location: {
+                  lat: coordinateHits[0]._source['위도'],
+                  lon: coordinateHits[0]._source['경도'],
+                },
+              },
+            },
+          },
+        },
+      },
+      _source: ['읍면동'],
+      size: 10000,
+    });
+    return result.hits.hits.length;
+  }
 }

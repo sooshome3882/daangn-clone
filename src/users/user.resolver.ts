@@ -105,4 +105,11 @@ export class UserResolver {
   setTownRange(@GetUser() user: User, @Args('townRange', ParseIntPipe) townRange: number): Promise<string> {
     return this.userService.setTownRange(user, townRange);
   }
+
+  // 동네 범위에 따른 개수
+  @Query(() => String)
+  @UseGuards(JwtAuthGuard)
+  getTownCount(@GetUser() user: User, @Args('townRange', ParseIntPipe) townRange: number): Promise<number> {
+    return this.userService.getTownCount(user, townRange);
+  }
 }
