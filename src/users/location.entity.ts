@@ -1,5 +1,5 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { TownRange } from 'src/townRanges/townRange.entity';
 import { User } from './user.entity';
 import { Post } from 'src/posts/post.entity';
@@ -37,7 +37,6 @@ export class Location extends BaseEntity {
 
   @Field({ nullable: true })
   @Column({ type: 'datetime', nullable: true })
-  // @DeleteDateColumn({ type: 'datetime' })
   deletedAt: Date;
 
   @Field(() => User)
