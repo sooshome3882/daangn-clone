@@ -104,12 +104,12 @@ export class UserService {
       body: {
         query: {
           query_string: {
-            fields: ['시도', '시군구', '읍면동'],
+            fields: ['시도', '시군구', '읍면동', '하위'],
             query: `*${area}*`,
           },
         },
       },
-      _source: ['시도', '시군구', '읍면동'],
+      _source: ['시도', '시군구', '읍면동', '하위'],
       size: 100,
     });
     const searchTownList = [];
