@@ -9,6 +9,7 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtAuthGuard } from './guards/jwtAuth.guard';
 import { ElasticsearchModule } from '@nestjs/elasticsearch';
+import * as redisStore from 'cache-manager-redis-store';
 
 const cacheConfig: any = config.get('cache');
 const jwtConfig: any = config.get('jwt');
@@ -27,7 +28,13 @@ const elasticsearchConfig: any = config.get('elasticsearch');
         expiresIn: jwtConfig.expiresIn,
       },
     }),
-    CacheModule.register({ ttl: cacheConfig.ttl, max: cacheConfig.max }),
+    CacheModule.register({
+      store: redisStore,
+      host: cacheConfig.host,
+      port: cacheConfig.port,
+      ttl: cacheConfig.ttl,
+      max: cacheConfig.max,
+    }),
     ElasticsearchModule.register({
       node: elasticsearchConfig.node,
       maxRetries: elasticsearchConfig.maxRetries,
