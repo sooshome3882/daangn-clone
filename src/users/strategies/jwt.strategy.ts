@@ -9,6 +9,13 @@ import { Payload } from '../models/payload.model';
 
 const jwtConfig: any = config.get('jwt');
 
+/**
+ * payload에 저장된 값을 기반으로 user 정보 조회
+ *
+ * @author 허정연(golgol22)
+ * @return {user} payload에 저장된 정보로 조회한 유저 정보를 jwtAuth.guards에 반환
+ * @throws {UnauthorizedException} payload에 저장된 정보로 조회했을 때 user 정보가 없을 경우 예외처리
+ */
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
