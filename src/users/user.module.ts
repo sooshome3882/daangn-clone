@@ -45,6 +45,6 @@ const elasticsearchConfig: any = config.get('elasticsearch');
     TypeOrmModule.forFeature([UserRepository]),
   ],
   providers: [UserService, UserResolver, JwtStrategy, JwtAuthGuard],
-  exports: [JwtStrategy, PassportModule, JwtAuthGuard],
+  exports: [UserService, JwtStrategy, PassportModule, JwtAuthGuard],
 })
 export class UserModule {}

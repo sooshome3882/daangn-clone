@@ -13,6 +13,7 @@ import { GetUser } from './validations/getUser.decorator';
 import { MyLocationDto } from './dto/mylocation.dto';
 import { Location } from './location.entity';
 import { DeleteTownDto } from './dto/deleteTown.dto';
+import { getRepository } from 'typeorm';
 
 @Resolver(() => User)
 export class UserResolver {
@@ -109,14 +110,16 @@ export class UserResolver {
   // 동네 범위에 따른 동네 개수
   @Query(() => Number)
   @UseGuards(JwtAuthGuard)
-  getTownCountByTownRange(@GetUser() user: User, @Args('townRange', ParseIntPipe) townRange: number): Promise<number> {
-    return this.userService.getTownCountByTownRange(user, townRange);
+  async getTownCountByTownRange(@GetUser() user: User, @Args('townRange', ParseIntPipe) townRange: number): Promise<number> {
+    const location = await getRepository(Location).findOne({ where: { user: user.phoneNumber, isSelected: true } });
+    return this.userService.getTownCountByTownRange(user, location, townRange);
   }
 
   // 동네 범위에 따른 동네 목록
   @Query(() => [String])
   @UseGuards(JwtAuthGuard)
-  getTownListByTownRange(@GetUser() user: User, @Args('townRange', ParseIntPipe) townRange: number): Promise<string[]> {
-    return this.userService.getTownListByTownRange(user, townRange);
+  async getTownListByTownRange(@GetUser() user: User, @Args('townRange', ParseIntPipe) townRange: number): Promise<string[]> {
+    const location = await getRepository(Location).findOne({ where: { user: user.phoneNumber, isSelected: true } });
+    return this.userService.getTownListByTownRange(user, location, townRange);
   }
 }

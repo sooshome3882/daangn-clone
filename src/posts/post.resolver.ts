@@ -53,8 +53,8 @@ export class PostResolver {
   // 게시글 목록 가져오기 (게시글 검색 포함)
   @Query(() => [Post], { name: 'posts' })
   @UsePipes(ValidationPipe)
-  getPosts(@Args('searchPostDto') searchPostDto: SearchPostDto) {
-    return this.postService.getPosts(searchPostDto);
+  getPosts(@GetUser() user: User, @Args('searchPostDto') searchPostDto: SearchPostDto) {
+    return this.postService.getPosts(user, searchPostDto);
   }
 
   // 게시글 끌올

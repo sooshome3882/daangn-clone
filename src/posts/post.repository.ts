@@ -42,12 +42,15 @@ export class PostRepository extends Repository<Post> {
   }
 
   async getPosts(searchPostDto: SearchPostDto): Promise<Post[]> {
-    const { search, minPrice, maxPrice, category, townRange, dealState, perPage, page } = searchPostDto;
+    const { search, minPrice, maxPrice, category, dealState, perPage, page } = searchPostDto;
     const queryBuilder = getRepository(Post)
       .createQueryBuilder('post')
       .innerJoinAndSelect('post.category', 'category')
       .innerJoinAndSelect('post.townRange', 'townRange')
       .innerJoinAndSelect('post.dealState', 'dealState')
+      .innerJoinAndSelect('post.location', 'location')
+      .leftJoinAndSelect('post.postImages', 'postImage')
+      .innerJoinAndSelect('post.user', 'user')
       .where('isHidden = :isHidden', { isHidden: false })
       .andWhere('reportHandling = :reportHandling', { reportHandling: false })
       .andWhere('price >= :minPrice', { minPrice: minPrice })
@@ -55,10 +58,9 @@ export class PostRepository extends Repository<Post> {
       .offset((page - 1) * perPage)
       .limit(perPage);
     if (search) queryBuilder.andWhere('title like :title', { title: `%${search}%` });
-    if (maxPrice !== -1) queryBuilder.andWhere('price <= :maxPrice', { maxPrice: maxPrice });
-    if (category) queryBuilder.andWhere('category.categoryId = :category', { category: category });
-    if (townRange) queryBuilder.andWhere('townRange.townRangeId = :townRange', { townRange: townRange });
-    if (dealState) queryBuilder.andWhere('dealState.dealStateId = :dealState', { dealState: dealState });
+    if (maxPrice !== -1) queryBuilder.andWhere('price <= :maxPrice', { maxPrice });
+    if (category) queryBuilder.andWhere('category.categoryId = :category', { category });
+    if (dealState) queryBuilder.andWhere('dealState.dealStateId = :dealState', { dealState });
     return queryBuilder.getMany();
   }
 

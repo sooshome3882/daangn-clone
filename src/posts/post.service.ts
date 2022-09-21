@@ -20,12 +20,14 @@ import { v1 as uuid } from 'uuid';
 import { createWriteStream } from 'fs';
 import { getRepository } from 'typeorm';
 import { Location } from 'src/users/location.entity';
+import { UserService } from 'src/users/user.service';
 
 @Injectable()
 export class PostService {
   constructor(
     @InjectRepository(PostRepository)
     private postRepository: PostRepository,
+    private readonly userService: UserService,
   ) {}
 
   async createPost(user: User, createPostDto: CreatePostDto): Promise<Post> {
@@ -142,16 +144,30 @@ export class PostService {
     return found;
   }
 
-  async getPosts(searchPostDto: SearchPostDto): Promise<Post[]> {
+  async getPosts(user: User, searchPostDto: SearchPostDto): Promise<Post[]> {
     /**
      * 게시글 목록 및 검색
+     * 게시글은 post.location 지역의 post.townrange 범위에 있는 사람들까지 보여준다.
+     * 유저는 location.isSelected = true인 위치의 location.townRage 범위 또는 검색 조건으로 받은 townRange 범위에 있는 게시글까지 볼 수 있다.
      *
      * @author 허정연(golgol22)
      * @param {search, minPrice, maxPrice, category, townRange, dealState, perPage, page}
      *        검색어, 최소가격, 최대가격, 카테고리, 동네범위, 거래상태, 한 페이지당 게시글 개수, 페이지
      * @return {Post[]} 게시글 목록 반환
      */
-    return this.postRepository.getPosts(searchPostDto);
+    const { townRange } = searchPostDto;
+    const location = await getRepository(Location).findOne({ where: { user: user.phoneNumber, isSelected: true } });
+    const searchTownRange = townRange ? townRange : location.townRange.townRangeId;
+    const userAvailableTownList = await this.userService.getTownListByTownRange(user, location, searchTownRange);
+    const posts = await this.postRepository.getPosts(searchPostDto);
+    const filteredPosts = posts.reduce(async (result, post) => {
+      const postAvailableTownList = await this.userService.getTownListByTownRange(user, post.location, post.townRange.townRangeId);
+      if (postAvailableTownList.filter(x => userAvailableTownList.includes(x)).length > 0) {
+        (await result).push(post);
+      }
+      return Promise.resolve(result);
+    }, Promise.resolve([]));
+    return filteredPosts;
   }
 
   async pullUpPost(postId: number) {

@@ -19,13 +19,13 @@ export class SearchPostDto {
   maxPrice?: number;
 
   @Field(() => Number, { nullable: true })
-  category?: Category;
+  category?: number;
 
   @Field(() => Number, { nullable: true })
-  townRange?: TownRange;
+  townRange?: number;
 
   @Field(() => Number, { nullable: true })
-  dealState?: DealState;
+  dealState?: number;
 
   @Field({ nullable: true, defaultValue: 10 })
   @IsNumber()
