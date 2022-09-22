@@ -31,6 +31,7 @@ import { DeleteTownDto } from './dto/deleteTown.dto';
 import { TownRange } from 'src/townRanges/townRange.entity';
 import { SearchHit } from '@elastic/elasticsearch/lib/api/types';
 import * as AWS from 'aws-sdk';
+import { FileUpload } from './models/fileUpload.model';
 
 const smsConfig: any = config.get('sms');
 const ACCESS_KEY_ID = smsConfig.access_key_id;
@@ -40,12 +41,12 @@ const FROM = smsConfig.from;
 
 const s3Config: any = config.get('S3');
 const AWS_S3_BUCKET_NAME = s3Config.AWS_S3_BUCKET_NAME;
-AWS.config.update({
+const s3 = new AWS.S3({
   region: s3Config.AWS_S3_REGION,
   credentials: {
     accessKeyId: s3Config.AWS_ACCESS_KEY_ID,
     secretAccessKey: s3Config.AWS_SECRET_ACCESS_KEY,
-  },
+  }
 });
 
 @Injectable()
@@ -327,7 +328,6 @@ export class UserService {
      * @return {User} 유저 반환
      * @throws {ConflictException} 이미 사용중인 사용자이름일 때 예외처리
      * @throws {BadRequestException} 회원가입 후 첫 사용자 이름 설정인 경우 반드시 이름을 설정해야한다는 예외처리
-     * @throws {InternalServerErrorException} 프로필 이미지 저장 실패할 때 예외처리
      */
     const { userName, profileImage } = profileUserDto;
     if (userName) {
@@ -341,26 +341,44 @@ export class UserService {
     if (user.userName === null) {
       throw new BadRequestException(`처음 이름은 꼭 설정해야 합니다.`);
     }
-
     if (profileImage) {
-      const { encoding, mimetype, createReadStream } = await profileImage;
-      try {
-        await new AWS.S3()
-          .putObject({
-            Key: `${uuid()}.png`,
-            Body: createReadStream(),
-            Bucket: `${AWS_S3_BUCKET_NAME}/profile`,
-            ContentEncoding: encoding,
-            ContentType: mimetype,
-            ContentLength: createReadStream().readableLength,
-          })
-          .promise();
-        await this.userRepository.setProfileImage(phoneNumber, `${AWS_S3_BUCKET_NAME}/profile/${uuid()}.png`);
-      } catch (err) {
-        throw new InternalServerErrorException('이미지 저장에 실패하였습니다.');
-      }
+      await this.imageDeleteFromS3(user.profileImage);
+      await this.imageUploadToS3(user.phoneNumber, profileImage);
     }
     return await this.getUserByPhoneNumber(phoneNumber);
+  }
+
+  async imageUploadToS3(phoneNumber: string, profileImage: Promise<FileUpload>) {
+    const { encoding, mimetype, createReadStream } = await profileImage;
+    try {
+      const newFileName = uuid();
+      await s3
+        .putObject({
+          Key: `${newFileName}.png`,
+          Body: createReadStream(),
+          Bucket: `${AWS_S3_BUCKET_NAME}/profile`,
+          ContentEncoding: encoding,
+          ContentType: mimetype,
+          ContentLength: createReadStream().readableLength,
+        })
+        .promise();
+      await this.userRepository.setProfileImage(phoneNumber, `${newFileName}.png`);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async imageDeleteFromS3(profileImage: string) {
+    try {
+      await s3
+        .deleteObject({
+          Key: profileImage,
+          Bucket: `${AWS_S3_BUCKET_NAME}/profile`,
+        })
+        .promise();
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   async getMyTownList(user: User): Promise<Location[]> {
