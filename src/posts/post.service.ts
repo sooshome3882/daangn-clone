@@ -1,5 +1,5 @@
 import { PostsViewDto } from './dto/addPostsView.dto';
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/user.entity';
 import { CreatePostDto } from './dto/createPost.dto';
@@ -16,12 +16,18 @@ import { UpdateDealStateDto } from './dto/updateDealState.dto';
 import { PostsLikeRecord } from './postsLikeRecord.entity';
 import { PostsLikeDto } from './dto/addPostsLike.dto';
 import { PostsViewRecord } from './postsViewRecord.entity';
+import { v1 as uuid } from 'uuid';
+import { createWriteStream } from 'fs';
+import { getRepository } from 'typeorm';
+import { Location } from 'src/users/location.entity';
+import { UserService } from 'src/users/user.service';
 
 @Injectable()
 export class PostService {
   constructor(
     @InjectRepository(PostRepository)
     private postRepository: PostRepository,
+    private readonly userService: UserService,
   ) {}
 
   async createPost(user: User, createPostDto: CreatePostDto): Promise<Post> {
@@ -32,8 +38,31 @@ export class PostService {
      * @param {user, title, content, category, price, isOfferedPrice, townRange, dealState, images}
      *        로그인한 유저, 제목, 내용, 카테고리, 가격, 가격제안받기여부, 동네범위, 거래상태, 이미지
      * @return {Post} 게시글 반환
+     * @throws {ForbiddenException} 동네 인증을 하지 않았을 때 예외처리
+     * @throws {InternalServerErrorException} 이미지 저장실패할 때 예외처리
      */
-    const insertId = await this.postRepository.createPost(user, createPostDto);
+    const location = await getRepository(Location).findOne({ where: { user: user.phoneNumber, isSelected: true } });
+    if (!location.isConfirmedPosition) {
+      throw new ForbiddenException('동네 인증을 해야 게시글을 작성할 수 있습니다.');
+    }
+    const insertId = await this.postRepository.createPost(user, createPostDto, location);
+    const { images } = createPostDto;
+    if (images) {
+      for (const image of images) {
+        const { createReadStream } = await image;
+        const imagePath = `./src/posts/uploads/${uuid()}.png`;
+        const isImageStored: boolean = await new Promise<boolean>(async (resolve, reject) =>
+          createReadStream()
+            .pipe(createWriteStream(imagePath))
+            .on('finish', () => resolve(true))
+            .on('error', () => resolve(false)),
+        );
+        if (!isImageStored) {
+          throw new InternalServerErrorException('이미지 저장에 실패하였습니다.');
+        }
+        await this.postRepository.addPostImagePath(insertId, imagePath);
+      }
+    }
     return await this.getPostById(insertId);
   }
 
@@ -47,6 +76,7 @@ export class PostService {
      * @return {Post} 게시글 반환
      * @throws {ForbiddenException} 권한없는 사용자의 수정 요청 예외처리
      * @throws {NotFoundException} 해당 게시글이 없을 때 예외 처리
+     * @throws {InternalServerErrorException} 이미지 저장실패할 때 예외처리
      */
     const post = await this.getPostById(postId);
     if (JSON.stringify(post.user) !== JSON.stringify(user)) {
@@ -56,6 +86,24 @@ export class PostService {
       throw new NotFoundException(`postId가 ${postId}인 것을 찾을 수 없습니다.`);
     }
     await this.postRepository.updatePost(postId, updatePostDto);
+    await this.postRepository.deletePostImagePath(postId);
+    const { images } = updatePostDto;
+    if (images) {
+      for (const image of images) {
+        const { createReadStream } = await image;
+        const imagePath = `./src/posts/uploads/${uuid()}.png`;
+        const isImageStored: boolean = await new Promise<boolean>(async (resolve, reject) =>
+          createReadStream()
+            .pipe(createWriteStream(imagePath))
+            .on('finish', () => resolve(true))
+            .on('error', () => resolve(false)),
+        );
+        if (!isImageStored) {
+          throw new InternalServerErrorException('이미지 저장에 실패하였습니다.');
+        }
+        await this.postRepository.addPostImagePath(postId, imagePath);
+      }
+    }
     return await this.getPostById(postId);
   }
 
@@ -96,16 +144,30 @@ export class PostService {
     return found;
   }
 
-  async getPosts(searchPostDto: SearchPostDto): Promise<Post[]> {
+  async getPosts(user: User, searchPostDto: SearchPostDto): Promise<Post[]> {
     /**
      * 게시글 목록 및 검색
+     * 게시글은 post.location 지역의 post.townrange 범위에 있는 사람들까지 보여준다.
+     * 유저는 location.isSelected = true인 위치의 location.townRage 범위 또는 검색 조건으로 받은 townRange 범위에 있는 게시글까지 볼 수 있다.
      *
      * @author 허정연(golgol22)
      * @param {search, minPrice, maxPrice, category, townRange, dealState, perPage, page}
      *        검색어, 최소가격, 최대가격, 카테고리, 동네범위, 거래상태, 한 페이지당 게시글 개수, 페이지
      * @return {Post[]} 게시글 목록 반환
      */
-    return this.postRepository.getPosts(searchPostDto);
+    const { townRange } = searchPostDto;
+    const location = await getRepository(Location).findOne({ where: { user: user.phoneNumber, isSelected: true } });
+    const searchTownRange = townRange ? townRange : location.townRange.townRangeId;
+    const userAvailableTownList = await this.userService.getTownListByTownRange(user, location, searchTownRange);
+    const posts = await this.postRepository.getPosts(searchPostDto);
+    const filteredPosts = posts.reduce(async (result, post) => {
+      const postAvailableTownList = await this.userService.getTownListByTownRange(user, post.location, post.townRange.townRangeId);
+      if (postAvailableTownList.filter(x => userAvailableTownList.includes(x)).length > 0) {
+        (await result).push(post);
+      }
+      return Promise.resolve(result);
+    }, Promise.resolve([]));
+    return filteredPosts;
   }
 
   async pullUpPost(postId: number) {

@@ -34,15 +34,14 @@ export class CreatePostDto {
   @IsBoolean()
   isOfferedPrice!: boolean;
 
-  @Field(() => Number)
-  @IsNotEmpty()
+  @Field(() => Number, { nullable: true, defaultValue: 4 })
   @IsNumber()
-  townRange!: TownRange;
+  townRange?: TownRange;
 
-  @Field(() => Number)
+  @Field(() => Number, { nullable: true, defaultValue: 1 })
   @IsNotEmpty()
   @IsNumber()
-  dealState!: DealState;
+  dealState?: DealState;
 
   @Field(() => [GraphQLUpload], { nullable: true })
   images?: Promise<FileUpload>[];

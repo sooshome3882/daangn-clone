@@ -26,9 +26,11 @@ import { createWriteStream } from 'fs';
 import { v1 as uuid } from 'uuid';
 import { MyLocationDto } from './dto/mylocation.dto';
 import { ElasticsearchService } from '@nestjs/elasticsearch';
-import { EntityManager, Equal, getConnection, getRepository, Not } from 'typeorm';
+import { EntityManager, Equal, getConnection, getRepository, IsNull, Not } from 'typeorm';
 import { Location } from './location.entity';
 import { DeleteTownDto } from './dto/deleteTown.dto';
+import { TownRange } from 'src/townRanges/townRange.entity';
+import { SearchHit } from '@elastic/elasticsearch/lib/api/types';
 
 const smsConfig: any = config.get('sms');
 const ACCESS_KEY_ID = smsConfig.access_key_id;
@@ -102,12 +104,12 @@ export class UserService {
       body: {
         query: {
           query_string: {
-            fields: ['시도', '시군구', '읍면동'],
+            fields: ['시도', '시군구', '읍면동', '하위'],
             query: `*${area}*`,
           },
         },
       },
-      _source: ['시도', '시군구', '읍면동'],
+      _source: ['시도', '시군구', '읍면동', '하위'],
       size: 100,
     });
     const searchTownList = [];
@@ -355,7 +357,7 @@ export class UserService {
      * @param {user} 로그인한 유저
      * @return {Location[]} 저장된 위치 정보 반환
      */
-    return await getRepository(Location).find({ where: { user: user.phoneNumber } });
+    return await getRepository(Location).find({ where: { user: user.phoneNumber, deletedAt: IsNull() } });
   }
 
   async updateTownSelection(user: User, eupMyeonDong: string): Promise<Location[]> {
@@ -390,6 +392,7 @@ export class UserService {
   async addTown(user: User, area: string): Promise<Location[]> {
     /**
      * 동네 추가
+     * 이미 추가되었지만 삭제된 경우 복원하고, 추가된 적 없을 경우 새로 추가
      *
      * @author 허정연(golgol22)
      * @param {user, area} 로그인한 유저, 추가할 동네 정보
@@ -399,18 +402,36 @@ export class UserService {
      * @throws {InternalServerErrorException} 동네 추가에 실패할 때 예외처리
      */
     const { siDo, siGunGu, eupMyeonDong } = await this.verifyExistInData(area);
-    const count = await getRepository(Location).count({ where: { user: user.phoneNumber } });
+    const count = await getRepository(Location).count({ where: { user: user.phoneNumber, deletedAt: IsNull() } });
     if (count === 2) {
       throw new BadRequestException('동네는 2개까지 등록이 가능합니다.');
     }
     const location = await getRepository(Location).findOne({ where: { user: user.phoneNumber, eupMyeonDong: eupMyeonDong } });
     if (location) {
-      throw new ConflictException('이미 추가된 동네입니다.');
+      if (location.deletedAt === null) {
+        throw new ConflictException('이미 추가된 동네입니다.');
+      }
+      // 이미 추가되었지만 삭제된 경우 복원
+      await getConnection()
+        .transaction(async (manager: EntityManager) => {
+          location.isSelected = true;
+          location.deletedAt = null;
+          await manager.save(location);
+          const location2 = await getRepository(Location).findOne({ where: { user: user.phoneNumber, eupMyeonDong: Not(Equal(eupMyeonDong)), deletedAt: IsNull() } });
+          location2.isSelected = false;
+          await manager.save(location2);
+        })
+        .catch(err => {
+          console.error(err);
+          throw new InternalServerErrorException('동네 추가에 실패하였습니다. 잠시후 다시 시도해주세요.');
+        });
+      return await this.getMyTownList(user);
     }
+    // 추가된 적 없을 경우 새로 추가
     await getConnection()
       .transaction(async (manager: EntityManager) => {
         await this.userRepository.addLocation(manager, siDo, siGunGu, eupMyeonDong, user.phoneNumber);
-        const location2 = await getRepository(Location).findOne({ where: { user: user.phoneNumber, eupMyeonDong: Not(Equal(eupMyeonDong)) } });
+        const location2 = await getRepository(Location).findOne({ where: { user: user.phoneNumber, eupMyeonDong: Not(Equal(eupMyeonDong)), deletedAt: IsNull() } });
         location2.isSelected = false;
         await manager.save(location2);
       })
@@ -424,49 +445,89 @@ export class UserService {
   async deleteTown(user: User, deleteTownDto: DeleteTownDto): Promise<Location[]> {
     /**
      * 동네 삭제
+     * 기존 게시글이 1개인 경우 추가를 해야 삭제가 가능하도록 구현
+     * deleteAt를 현재 남짜로 수정 (위치를 삭제해도 게시글의 위치 정보를 남겨두는데 softDelate는 삭제된 정보를 조회할 수 없기 때문에 softDelete를 사용하지 않음)
+     * 동네 인증이 되지 않은 지역은 삭제, 인증이 된 지역은  deletedAt 상태 변경
      *
      * @author 허정연(golgol22)
      * @param {user, deleteDupMyeonDong, addArea} 로그인한 유저, 삭제할 읍변동 정보, 추가할 동네 정보
      * @return {Location[]} 저장된 위치 정보 반환
+     * @throws {NotFoundException} 등록된 적 없는 동네를 삭제하려고 할 때 예외처리
+     * @throws {BadRequestException} 삭제하려는 동네가 이미 삭제 처리된 동네일 때 예외처리
      * @throws {BadRequestException} 1개 저장된 동네를 삭제하려고 하는데 추가할 동네정보를 입력하지 않았을 때 예외처리
      * @throws {ConflictException} 추가하려는 동네가 이미 추가된 동네일 때 예외처리
-     * @throws {NotFoundException} 등록된 적 없는 동네를 삭제하려고 할 때 예외처리
      * @throws {InternalServerErrorException} 동네 삭제에 실패할 때 예외처리
      */
     const { deleteDupMyeonDong, addArea } = deleteTownDto;
-    const [locations, count] = await getRepository(Location).findAndCount({ where: { user: user.phoneNumber } });
-    await getConnection()
-      .transaction(async (manager: EntityManager) => {
-        if (count === 1) {
-          if (!addArea) {
-            throw new BadRequestException('동네는 1개이상 등록해야 합니다.');
-          }
-          const { siDo, siGunGu, eupMyeonDong } = await this.verifyExistInData(addArea);
-          locations.filter(location => {
-            if (location.eupMyeonDong === eupMyeonDong) throw new ConflictException('이미 추가된 동네입니다.');
-          });
-          await this.userRepository.addLocation(manager, siDo, siGunGu, eupMyeonDong, user.phoneNumber);
-        }
-        const location2 = await getRepository(Location).findOne({ where: { user: user.phoneNumber, eupMyeonDong: Not(Equal(deleteDupMyeonDong)) } });
-        location2.isSelected = true;
-        await manager.save(location2);
-
-        const result = await manager.delete(Location, { user: user.phoneNumber, eupMyeonDong: deleteDupMyeonDong });
-        if (result.affected === 0) {
-          throw new NotFoundException(`등록된 적 없는 동네입니다.`);
-        }
-      })
-      .catch(err => {
-        console.error(err);
-        throw new InternalServerErrorException('동네 삭제에 실패하였습니다. 잠시후 다시 시도해주세요.');
+    const locations = await getRepository(Location).find({ where: { user: user.phoneNumber } });
+    const exist = locations.filter(location => location.eupMyeonDong === deleteDupMyeonDong);
+    if (exist.length === 0) {
+      throw new NotFoundException('등록된 적 없는 동네입니다.');
+    }
+    locations.filter(location => {
+      if (location.deletedAt !== null && location.eupMyeonDong === deleteDupMyeonDong) throw new BadRequestException('이미 삭제된 동네입니다.');
+    });
+    const notDeleted = locations.filter(location => location.deletedAt === null);
+    if (notDeleted.length === 1) {
+      if (!addArea) {
+        throw new BadRequestException('동네는 1개이상 등록해야 합니다.');
+      }
+      const { siDo, siGunGu, eupMyeonDong } = await this.verifyExistInData(addArea);
+      locations.map(location => {
+        if (location.eupMyeonDong === eupMyeonDong && location.deletedAt === null) throw new ConflictException('이미 추가된 동네입니다.');
       });
+      await getConnection()
+        .transaction(async (manager: EntityManager) => {
+          const deleted = locations.filter(location => location.eupMyeonDong === eupMyeonDong);
+          if (deleted.length === 0) {
+            await this.userRepository.addLocation(manager, siDo, siGunGu, eupMyeonDong, user.phoneNumber);
+          } else {
+            deleted[0].isSelected = true;
+            deleted[0].deletedAt = null;
+            await manager.save(deleted[0]);
+          }
+
+          const deleteLocation = await getRepository(Location).findOne({ where: { user: user.phoneNumber, eupMyeonDong: deleteDupMyeonDong } });
+          if (deleteLocation.isConfirmedPosition) {
+            deleteLocation.isSelected = false;
+            deleteLocation.deletedAt = new Date();
+            await manager.save(deleteLocation);
+          } else {
+            await manager.delete(Location, deleteLocation);
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          throw new InternalServerErrorException('동네 삭제에 실패하였습니다. 잠시후 다시 시도해주세요.');
+        });
+    } else {
+      await getConnection()
+        .transaction(async (manager: EntityManager) => {
+          const location2 = await getRepository(Location).findOne({ where: { user: user.phoneNumber, eupMyeonDong: Not(Equal(deleteDupMyeonDong)), deletedAt: IsNull() } });
+          location2.isSelected = true;
+          await manager.save(location2);
+
+          const deleteLocation = await getRepository(Location).findOne({ where: { user: user.phoneNumber, eupMyeonDong: deleteDupMyeonDong } });
+          if (deleteLocation.isConfirmedPosition) {
+            deleteLocation.isSelected = false;
+            deleteLocation.deletedAt = new Date();
+            await manager.save(deleteLocation);
+          } else {
+            await manager.delete(Location, { locationId: deleteLocation.locationId });
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          throw new InternalServerErrorException('동네 삭제에 실패하였습니다. 잠시후 다시 시도해주세요.');
+        });
+    }
     return await this.getMyTownList(user);
   }
 
   async setTownCertification(user: User, myLocationDto: MyLocationDto): Promise<string> {
     /**
      * 동네 인증
-     * 선택되어있는 동네와 요청받은 위치 좌표와 같은 동네이면 인증
+     * 선택되어있는 동네와 요청받은 위치 좌표가 같은 동네이면 인증
      *
      * @author 허정연(golgol22)
      * @param {user, latitude, longitude, from, size} 로그인한 유저, 위도, 경도, offset, limit
@@ -491,5 +552,211 @@ export class UserService {
       return `${location.eupMyeonDong} 인증되었습니다.`;
     }
     return `${location.eupMyeonDong} 인증에 실패하였습니다.`;
+  }
+
+  async setTownRange(user: User, townRange: number): Promise<string> {
+    /**
+     * 동네 범위 변경
+     * 선택되어있는 동네의 동네 범위 변경
+     *
+     * @author 허정연(golgol22)
+     * @param {user, townRange} 로그인한 유저, 지정할 동네 범위
+     * @return {string} 설정되었다는 문구
+     * @throws {BadRequestException} 이미 설정된 동네 범위를 설정하하려고 할 때 예외처리
+     * @throws {NotFoundException} 없는 동네 범위를 설정하려고 할 때 예외 처리
+     */
+    const location = await getRepository(Location).findOne({ where: { user: user.phoneNumber, isSelected: true } });
+    if (location.townRange.townRangeId === townRange) {
+      throw new BadRequestException('이미 설정된 동네 범위입니다.');
+    }
+    const possibleTownRange = await getRepository(TownRange).find();
+    const exist = possibleTownRange.filter(town => {
+      return town.townRangeId === townRange;
+    });
+    if (exist.length == 0) {
+      throw new NotFoundException('지정할 수 없는 값입니다.');
+    }
+    location.townRange.townRangeId = townRange;
+    await getRepository(Location).save(location);
+    return `동네 범위가 ${townRange}으로 변경되었습니다.`;
+  }
+
+  async townRangeEqual1(location: Location) {
+    /**
+     * 동네 범위가 1일 때 동네 목록 조회
+     * 동네 범위가 1일때는 같은 동만 조회가능 (ex. 논현1동 -> 논현동, 논현1동, 논현2동)
+     *
+     * @author 허정연(golgol22)
+     * @param {location} 위치 정보
+     * @return {SearchHit[]} 해당하는 동 목록
+     */
+    const commonEupMyeonDong = location.eupMyeonDong.replace(/[0-9]/g, '').replace('동', '');
+    const eupMyeonDong = await this.esService.search({
+      index: 'coordinate',
+      body: {
+        query: {
+          bool: {
+            must: [
+              {
+                match: {
+                  '시도.keyword': location.siDo,
+                },
+              },
+              {
+                match: {
+                  '시군구.keyword': location.siGunGu,
+                },
+              },
+              {
+                query_string: {
+                  default_field: '읍면동',
+                  query: `${commonEupMyeonDong}*`,
+                },
+              },
+            ],
+          },
+        },
+      },
+      _source: ['읍면동'],
+    });
+    return eupMyeonDong.hits.hits;
+  }
+
+  async getCoordinateByTown(location: Location) {
+    /**
+     * DB에 저장된 위치 정보에 대한 위도, 경도 좌표값
+     *
+     * @author 허정연(golgol22)
+     * @param {location} 위치 정보
+     * @return {SearchHit[]} 좌표값
+     * @throws {InternalServerErrorException} 데이터가 없는 지역에 대한 예외 처리
+     * (Location데이터를 추가할 때 데이터가 존재하는지 확인하고 추가하기 때문에 해당 에러가 나올 경우가 없지만, 위치 데이터가 변경되었을 경우 에러가 생길 수 있어서 예최처리)
+     */
+    const coordinate = await this.esService.search({
+      index: 'coordinate',
+      body: {
+        query: {
+          bool: {
+            must: [
+              {
+                match: {
+                  '시도.keyword': location.siDo,
+                },
+              },
+              {
+                match: {
+                  '시군구.keyword': location.siGunGu,
+                },
+              },
+              {
+                match: {
+                  '읍면동.keyword': location.eupMyeonDong,
+                },
+              },
+            ],
+          },
+        },
+      },
+      _source: ['위도', '경도'],
+      size: 1,
+    });
+    const coordinateHits = coordinate.hits.hits;
+    if (coordinateHits.length === 0) {
+      throw new InternalServerErrorException('지역이 잘못되었습니다. 관리자에게 문의해주세요.');
+    }
+    return coordinateHits;
+  }
+
+  async getTownListByCoordinate(townRange: number, coordinate: SearchHit[]) {
+    /**
+     * 좌표에서 설정된 동네 범위안에 있는 동 목록 조회
+     *
+     * @author 허정연(golgol22)
+     * @param {location, coordinate} 위치 정보, 좌표 정보
+     * @return {SearchHit[]} 동 목록
+     */
+    const townListByCoordinate = await this.esService.search({
+      index: 'coordinate',
+      body: {
+        query: {
+          bool: {
+            must: {
+              match_all: {},
+            },
+            filter: {
+              geo_distance: {
+                distance: `${townRange}km`,
+                location: {
+                  lat: coordinate[0]._source['위도'],
+                  lon: coordinate[0]._source['경도'],
+                },
+              },
+            },
+          },
+        },
+      },
+      _source: ['읍면동'],
+      size: 10000,
+    });
+    return townListByCoordinate.hits.hits;
+  }
+
+  async getTownCountByTownRange(user: User, location: Location, townRange: number): Promise<number> {
+    /**
+     * 동네 범위에 따른 동네 개수
+     * 동네와 동네 범위에 따른 동네 개수
+     *
+     * @author 허정연(golgol22)
+     * @param {user, townRange} 로그인한 유저, 동네 범위
+     * @return {number} 동네 개수
+     * @throws {NotFoundException} 없는 동네 범위를 설정하려고 할 때 예외 처리
+     */
+    const possibleTownRange = await getRepository(TownRange).find();
+    const exist = possibleTownRange.filter(town => {
+      return town.townRangeId === townRange;
+    });
+    if (exist.length === 0) {
+      throw new NotFoundException('확인할 수 없는 동네 범위입니다.');
+    }
+    if (townRange === 1) {
+      const townRangeEqual1 = await this.townRangeEqual1(location);
+      return townRangeEqual1.length;
+    }
+    const coordinate = await this.getCoordinateByTown(location);
+    const townListByCoordinate = await this.getTownListByCoordinate(townRange, coordinate);
+    return townListByCoordinate.length;
+  }
+
+  async getTownListByTownRange(user: User, location: Location, townRange: number): Promise<string[]> {
+    /**
+     * 동네 범위에 따른 동네 목록
+     * 동네와 동네 범위애 따른 동네 목록
+     *
+     * @author 허정연(golgol22)
+     * @param {user, townRange} 로그인한 유저, 동네 범위
+     * @return {string[]} 동네 목록
+     * @throws {NotFoundException} 없는 동네 범위를 설정하려고 할 때 예외 처리
+     */
+    const possibleTownRange = await getRepository(TownRange).find();
+    const exist = possibleTownRange.filter(town => {
+      return town.townRangeId === townRange;
+    });
+    if (exist.length === 0) {
+      throw new NotFoundException('확인할 수 없는 동네 범위입니다.');
+    }
+    const result = [];
+    if (townRange === 1) {
+      const townRangeEqual1 = await this.townRangeEqual1(location);
+      townRangeEqual1.map(item => {
+        result.push(item._source['읍면동']);
+      });
+      return result;
+    }
+    const coordinate = await this.getCoordinateByTown(location);
+    const townListByCoordinate = await this.getTownListByCoordinate(townRange, coordinate);
+    townListByCoordinate.map(item => {
+      result.push(item._source['읍면동']);
+    });
+    return result;
   }
 }

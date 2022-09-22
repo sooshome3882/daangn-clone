@@ -17,13 +17,23 @@ import { PostsLikeRecord } from './postsLikeRecord.entity';
 import { PostsLikeDto } from './dto/addPostsLike.dto';
 import { PostsViewDto } from './dto/addPostsView.dto';
 import { PostsViewRecord } from './postsViewRecord.entity';
+import { PostImage } from './postImage.entity';
+import { Location } from 'src/users/location.entity';
 
 @EntityRepository(Post)
 export class PostRepository extends Repository<Post> {
-  async createPost(user: User, createPostDto: CreatePostDto): Promise<number> {
+  async createPost(user: User, createPostDto: CreatePostDto, location: Location): Promise<number> {
     const { title, content, category, price, isOfferedPrice, townRange, dealState } = createPostDto;
-    const query = await getRepository(Post).createQueryBuilder('Post').insert().into(Post).values({ user, title, content, price, isOfferedPrice, category, townRange, dealState }).execute();
+    const query = await getRepository(Post).createQueryBuilder('Post').insert().into(Post).values({ user, title, content, price, isOfferedPrice, category, townRange, location, dealState }).execute();
     return query.raw.insertId;
+  }
+
+  async deletePostImagePath(postId: number) {
+    await getRepository(PostImage).createQueryBuilder('PostImage').delete().from(PostImage).where('postId = :postId', { postId }).execute();
+  }
+
+  async addPostImagePath(post: number, imagePath: string) {
+    await getRepository(PostImage).createQueryBuilder('PostImage').insert().into(PostImage).values({ imagePath, post }).execute();
   }
 
   async updatePost(postId: number, updatePostDto: UpdatePostDto): Promise<void> {
@@ -32,12 +42,15 @@ export class PostRepository extends Repository<Post> {
   }
 
   async getPosts(searchPostDto: SearchPostDto): Promise<Post[]> {
-    const { search, minPrice, maxPrice, category, townRange, dealState, perPage, page } = searchPostDto;
-    const queryBuilder = await getRepository(Post)
+    const { search, minPrice, maxPrice, category, dealState, perPage, page } = searchPostDto;
+    const queryBuilder = getRepository(Post)
       .createQueryBuilder('post')
       .innerJoinAndSelect('post.category', 'category')
       .innerJoinAndSelect('post.townRange', 'townRange')
       .innerJoinAndSelect('post.dealState', 'dealState')
+      .innerJoinAndSelect('post.location', 'location')
+      .leftJoinAndSelect('post.postImages', 'postImage')
+      .innerJoinAndSelect('post.user', 'user')
       .where('isHidden = :isHidden', { isHidden: false })
       .andWhere('reportHandling = :reportHandling', { reportHandling: false })
       .andWhere('price >= :minPrice', { minPrice: minPrice })
@@ -45,10 +58,9 @@ export class PostRepository extends Repository<Post> {
       .offset((page - 1) * perPage)
       .limit(perPage);
     if (search) queryBuilder.andWhere('title like :title', { title: `%${search}%` });
-    if (maxPrice !== -1) queryBuilder.andWhere('price <= :maxPrice', { maxPrice: maxPrice });
-    if (category) queryBuilder.andWhere('category.categoryId = :category', { category: category });
-    if (townRange) queryBuilder.andWhere('townRange.townRangeId = :townRange', { townRange: townRange });
-    if (dealState) queryBuilder.andWhere('dealState.dealStateId = :dealState', { dealState: dealState });
+    if (maxPrice !== -1) queryBuilder.andWhere('price <= :maxPrice', { maxPrice });
+    if (category) queryBuilder.andWhere('category.categoryId = :category', { category });
+    if (dealState) queryBuilder.andWhere('dealState.dealStateId = :dealState', { dealState });
     return queryBuilder.getMany();
   }
 

@@ -1,4 +1,4 @@
-import { Field, ObjectType, Int } from '@nestjs/graphql';
+import { Field, ObjectType } from '@nestjs/graphql';
 import { Category } from 'src/categories/category.entity';
 import { DealState } from 'src/dealStates/dealState.entity';
 import { TownRange } from 'src/townRanges/townRange.entity';
@@ -10,6 +10,7 @@ import { PostsLikeRecord } from './postsLikeRecord.entity';
 import { PostImage } from './postImage.entity';
 import { PurchaseHistory } from '../mypage/purchaseHistory.entity';
 import { PostsViewRecord } from './postsViewRecord.entity';
+import { Location } from 'src/users/location.entity';
 
 @Entity()
 @ObjectType()
@@ -74,8 +75,14 @@ export class Post extends BaseEntity {
 
   @Field(() => TownRange)
   @JoinColumn({ name: 'townRangeId' })
+  @Column({ type: 'int', default: 4 })
   @ManyToOne(type => TownRange, townRange => townRange.posts, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
   townRange!: TownRange;
+
+  @Field(() => Location)
+  @JoinColumn({ name: 'locationId' })
+  @ManyToOne(type => Location, location => location.posts, { eager: true, onUpdate: 'RESTRICT', onDelete: 'RESTRICT' })
+  location!: Location;
 
   @Field()
   @JoinColumn({ name: 'dealStateId' })
