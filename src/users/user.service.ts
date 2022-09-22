@@ -22,7 +22,6 @@ import { JoinUserDto } from './dto/joinUser.dto';
 import { LoginUserDto } from './dto/loginUser.dto';
 import { JwtService } from '@nestjs/jwt';
 import { ProfileUserDto } from './dto/profile.dto';
-import { createWriteStream } from 'fs';
 import { v1 as uuid } from 'uuid';
 import { MyLocationDto } from './dto/mylocation.dto';
 import { ElasticsearchService } from '@nestjs/elasticsearch';
@@ -42,7 +41,7 @@ const FROM = smsConfig.from;
 const s3Config: any = config.get('S3');
 const AWS_S3_BUCKET_NAME = s3Config.AWS_S3_BUCKET_NAME;
 AWS.config.update({
-  region: 'ap-northeast-2',
+  region: s3Config.AWS_S3_REGION,
   credentials: {
     accessKeyId: s3Config.AWS_ACCESS_KEY_ID,
     secretAccessKey: s3Config.AWS_SECRET_ACCESS_KEY,

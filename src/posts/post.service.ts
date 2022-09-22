@@ -21,6 +21,19 @@ import { createWriteStream } from 'fs';
 import { getRepository } from 'typeorm';
 import { Location } from 'src/users/location.entity';
 import { UserService } from 'src/users/user.service';
+import * as config from 'config';
+import * as AWS from 'aws-sdk';
+import { FileUpload } from 'src/users/models/fileUpload.model';
+
+const s3Config: any = config.get('S3');
+const AWS_S3_BUCKET_NAME = s3Config.AWS_S3_BUCKET_NAME;
+AWS.config.update({
+  region: s3Config.AWS_S3_REGION,
+  credentials: {
+    accessKeyId: s3Config.AWS_ACCESS_KEY_ID,
+    secretAccessKey: s3Config.AWS_SECRET_ACCESS_KEY,
+  },
+});
 
 @Injectable()
 export class PostService {
@@ -48,22 +61,37 @@ export class PostService {
     const insertId = await this.postRepository.createPost(user, createPostDto, location);
     const { images } = createPostDto;
     if (images) {
-      for (const image of images) {
-        const { createReadStream } = await image;
-        const imagePath = `./src/posts/uploads/${uuid()}.png`;
-        const isImageStored: boolean = await new Promise<boolean>(async (resolve, reject) =>
-          createReadStream()
-            .pipe(createWriteStream(imagePath))
-            .on('finish', () => resolve(true))
-            .on('error', () => resolve(false)),
-        );
-        if (!isImageStored) {
-          throw new InternalServerErrorException('이미지 저장에 실패하였습니다.');
-        }
-        await this.postRepository.addPostImagePath(insertId, imagePath);
-      }
+      await this.imagesUploadToS3(insertId, images);
     }
     return await this.getPostById(insertId);
+  }
+
+  async imagesUploadToS3(insertId: number, images: Promise<FileUpload>[]) {
+    /**
+     * 게시글 이미지 저장
+     *
+     * @author 허정연(golgol22)
+     * @param {insertId, images} 이미지 저장할 게시글 ID, 업로드할 이미지
+     * @throws {InternalServerErrorException} 이미지 저장실패할 때 예외처리
+     */
+    for (const image of images) {
+      const { encoding, mimetype, createReadStream } = await image;
+      try {
+        await new AWS.S3()
+          .putObject({
+            Key: `${uuid()}.png`,
+            Body: createReadStream(),
+            Bucket: `${AWS_S3_BUCKET_NAME}/post`,
+            ContentEncoding: encoding,
+            ContentType: mimetype,
+            ContentLength: createReadStream().readableLength,
+          })
+          .promise();
+        await this.postRepository.addPostImagePath(insertId, `${AWS_S3_BUCKET_NAME}/post/${uuid()}.png`);
+      } catch (err) {
+        console.error(err);
+      }
+    }
   }
 
   async updatePost(user: User, postId: number, updatePostDto: UpdatePostDto): Promise<Post> {
@@ -89,20 +117,7 @@ export class PostService {
     await this.postRepository.deletePostImagePath(postId);
     const { images } = updatePostDto;
     if (images) {
-      for (const image of images) {
-        const { createReadStream } = await image;
-        const imagePath = `./src/posts/uploads/${uuid()}.png`;
-        const isImageStored: boolean = await new Promise<boolean>(async (resolve, reject) =>
-          createReadStream()
-            .pipe(createWriteStream(imagePath))
-            .on('finish', () => resolve(true))
-            .on('error', () => resolve(false)),
-        );
-        if (!isImageStored) {
-          throw new InternalServerErrorException('이미지 저장에 실패하였습니다.');
-        }
-        await this.postRepository.addPostImagePath(postId, imagePath);
-      }
+      await this.imagesUploadToS3(postId, images);
     }
     return await this.getPostById(postId);
   }
@@ -110,6 +125,7 @@ export class PostService {
   async deletePost(user: User, postId: number): Promise<string> {
     /**
      * 게시글 삭제
+     * 게시글 삭제시 DB에 저장된 게시글 이미지 자동 삭제 (Cascade)
      *
      * @author 허정연(golgol22)
      * @param {user, postId} 로그인한 유저, 게시글 ID
