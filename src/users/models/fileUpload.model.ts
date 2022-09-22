@@ -1,8 +1,8 @@
-import { Stream } from 'stream';
+import { ReadStream } from 'fs';
 
 export interface FileUpload {
-  filename?: string;
-  mimetype?: string;
-  encoding?: string;
-  createReadStream?: () => Stream;
+  filename: string;
+  mimetype: string;
+  encoding: string;
+  createReadStream: () => ReadStream;
 }
