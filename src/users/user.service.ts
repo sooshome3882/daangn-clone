@@ -328,6 +328,7 @@ export class UserService {
      * @return {User} 유저 반환
      * @throws {ConflictException} 이미 사용중인 사용자이름일 때 예외처리
      * @throws {BadRequestException} 회원가입 후 첫 사용자 이름 설정인 경우 반드시 이름을 설정해야한다는 예외처리
+     * @throws {InternalServerErrorException} 프로필 수정 실패할 때 예외처리
      */
     const { userName, profileImage } = profileUserDto;
     if (userName) {
@@ -335,20 +336,30 @@ export class UserService {
       if (found) {
         throw new ConflictException(`${userName}은 이미 사용중인 이름입니다.`);
       }
-      await this.userRepository.setProfileUserName(phoneNumber, userName);
     }
     const user = await this.userRepository.findOne(phoneNumber);
     if (user.userName === null) {
       throw new BadRequestException(`처음 이름은 꼭 설정해야 합니다.`);
     }
-    if (profileImage) {
-      await this.imageDeleteFromS3(user.profileImage);
-      await this.imageUploadToS3(user.phoneNumber, profileImage);
-    }
+    await getConnection()
+      .transaction(async (manager: EntityManager) => {
+        if (userName) {
+          await this.userRepository.setProfileUserName(manager, phoneNumber, userName);
+        }
+        if (profileImage) {
+          await this.imageDeleteFromS3(user.profileImage);
+          await this.imageUploadToS3(manager, user.phoneNumber, profileImage);
+        }
+        throw new InternalServerErrorException();
+      })
+      .catch(err => {
+        console.error(err);
+        throw new InternalServerErrorException('유저 프로필 수정에 실패하였습니다. 잠시후 다시 시도해주세요.');
+      });
     return await this.getUserByPhoneNumber(phoneNumber);
   }
 
-  async imageUploadToS3(phoneNumber: string, profileImage: Promise<FileUpload>) {
+  async imageUploadToS3(manager: EntityManager, phoneNumber: string, profileImage: Promise<FileUpload>) {
     /**
      * S3에 프로필 이미지 저장
      *
@@ -368,7 +379,7 @@ export class UserService {
           ContentLength: createReadStream().readableLength,
         })
         .promise();
-      await this.userRepository.setProfileImage(phoneNumber, `${newFileName}.png`);
+      await this.userRepository.setProfileImage(manager, phoneNumber, `${newFileName}.png`);
     } catch (err) {
       console.error(err);
     }
