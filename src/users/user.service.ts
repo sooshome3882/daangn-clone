@@ -31,12 +31,23 @@ import { Location } from './location.entity';
 import { DeleteTownDto } from './dto/deleteTown.dto';
 import { TownRange } from 'src/townRanges/townRange.entity';
 import { SearchHit } from '@elastic/elasticsearch/lib/api/types';
+import * as AWS from 'aws-sdk';
 
 const smsConfig: any = config.get('sms');
 const ACCESS_KEY_ID = smsConfig.access_key_id;
 const SECRET_KEY = smsConfig.secret_key;
 const SERVICE_ID = smsConfig.service_id;
 const FROM = smsConfig.from;
+
+const s3Config: any = config.get('S3');
+const AWS_S3_BUCKET_NAME = s3Config.AWS_S3_BUCKET_NAME;
+AWS.config.update({
+  region: 'ap-northeast-2',
+  credentials: {
+    accessKeyId: s3Config.AWS_ACCESS_KEY_ID,
+    secretAccessKey: s3Config.AWS_SECRET_ACCESS_KEY,
+  },
+});
 
 @Injectable()
 @UseInterceptors(CacheInterceptor)
@@ -333,18 +344,22 @@ export class UserService {
     }
 
     if (profileImage) {
-      const { createReadStream } = await profileImage;
-      const newFileName = uuid();
-      const isImageStored: boolean = await new Promise<boolean>(async (resolve, reject) =>
-        createReadStream()
-          .pipe(createWriteStream(`./src/users/uploads/${newFileName}.png`))
-          .on('finish', () => resolve(true))
-          .on('error', () => resolve(false)),
-      );
-      if (!isImageStored) {
+      const { encoding, mimetype, createReadStream } = await profileImage;
+      try {
+        await new AWS.S3()
+          .putObject({
+            Key: `${uuid()}.png`,
+            Body: createReadStream(),
+            Bucket: `${AWS_S3_BUCKET_NAME}/profile`,
+            ContentEncoding: encoding,
+            ContentType: mimetype,
+            ContentLength: createReadStream().readableLength,
+          })
+          .promise();
+        await this.userRepository.setProfileImage(phoneNumber, `${AWS_S3_BUCKET_NAME}/profile/${uuid()}.png`);
+      } catch (err) {
         throw new InternalServerErrorException('이미지 저장에 실패하였습니다.');
       }
-      await this.userRepository.setProfileImage(phoneNumber, `./src/users/uploads/${newFileName}.png`);
     }
     return await this.getUserByPhoneNumber(phoneNumber);
   }
