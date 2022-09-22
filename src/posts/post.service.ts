@@ -27,8 +27,7 @@ import { PostImage } from './postImage.entity';
 
 const s3Config: any = config.get('S3');
 const AWS_S3_BUCKET_NAME = s3Config.AWS_S3_BUCKET_NAME;
-const s3 = new AWS.S3();
-AWS.config.update({
+const s3 = new AWS.S3({
   region: s3Config.AWS_S3_REGION,
   credentials: {
     accessKeyId: s3Config.AWS_ACCESS_KEY_ID,
@@ -46,7 +45,7 @@ export class PostService {
 
   async imagesUploadToS3(insertId: number, images: Promise<FileUpload>[]) {
     /**
-     * S3에서 게시글 이미지 저장
+     * S3에 게시글 이미지 저장
      *
      * @author 허정연(golgol22)
      * @param {insertId, images} 이미지 저장할 게시글 ID, 업로드할 이미지

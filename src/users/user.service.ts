@@ -46,7 +46,7 @@ const s3 = new AWS.S3({
   credentials: {
     accessKeyId: s3Config.AWS_ACCESS_KEY_ID,
     secretAccessKey: s3Config.AWS_SECRET_ACCESS_KEY,
-  }
+  },
 });
 
 @Injectable()
@@ -349,6 +349,12 @@ export class UserService {
   }
 
   async imageUploadToS3(phoneNumber: string, profileImage: Promise<FileUpload>) {
+    /**
+     * S3에 프로필 이미지 저장
+     *
+     * @author 허정연(golgol22)
+     * @param {phoneNumber, profileImage} 프로필 이미지 설정할 유저, 업로드할 프로필 이미지
+     */
     const { encoding, mimetype, createReadStream } = await profileImage;
     try {
       const newFileName = uuid();
@@ -369,6 +375,12 @@ export class UserService {
   }
 
   async imageDeleteFromS3(profileImage: string) {
+    /**
+     * S3에서 프로필 이미지 삭제
+     *
+     * @author 허정연(golgol22)
+     * @param {profileImage} 삭제할 프로필 이미지명
+     */
     try {
       await s3
         .deleteObject({
