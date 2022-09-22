@@ -354,7 +354,7 @@ export class UserService {
       })
       .catch(err => {
         console.error(err);
-        throw new InternalServerErrorException('유저 프로필 수정에 실패하였습니다. 잠시후 다시 시도해주세요.');
+        throw new InternalServerErrorException('유저 프로필 설정에 실패하였습니다. 잠시후 다시 시도해주세요.');
       });
     return await this.getUserByPhoneNumber(phoneNumber);
   }

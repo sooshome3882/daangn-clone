@@ -22,18 +22,24 @@ import { Location } from 'src/users/location.entity';
 
 @EntityRepository(Post)
 export class PostRepository extends Repository<Post> {
-  async createPost(user: User, createPostDto: CreatePostDto, location: Location): Promise<number> {
+  async createPost(manager: EntityManager, user: User, createPostDto: CreatePostDto, location: Location): Promise<number> {
     const { title, content, category, price, isOfferedPrice, townRange, dealState } = createPostDto;
-    const query = await getRepository(Post).createQueryBuilder('Post').insert().into(Post).values({ user, title, content, price, isOfferedPrice, category, townRange, location, dealState }).execute();
+    const query = await manager
+      .getRepository(Post)
+      .createQueryBuilder('Post')
+      .insert()
+      .into(Post)
+      .values({ user, title, content, price, isOfferedPrice, category, townRange, location, dealState })
+      .execute();
     return query.raw.insertId;
   }
 
-  async deletePostImagePath(postId: number) {
-    await getRepository(PostImage).createQueryBuilder('PostImage').delete().from(PostImage).where('postId = :postId', { postId }).execute();
+  async deletePostImagePath(manager: EntityManager, postId: number) {
+    await manager.getRepository(PostImage).createQueryBuilder('PostImage').delete().from(PostImage).where('postId = :postId', { postId }).execute();
   }
 
-  async addPostImagePath(post: number, imagePath: string) {
-    await getRepository(PostImage).createQueryBuilder('PostImage').insert().into(PostImage).values({ imagePath, post }).execute();
+  async addPostImagePath(manager: EntityManager, post: number, imagePath: string) {
+    await manager.getRepository(PostImage).createQueryBuilder('PostImage').insert().into(PostImage).values({ imagePath, post }).execute();
   }
 
   async updatePost(postId: number, updatePostDto: UpdatePostDto): Promise<void> {
