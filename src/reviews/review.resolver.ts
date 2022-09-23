@@ -5,6 +5,7 @@ import { User } from 'src/users/user.entity';
 import { GetUser } from 'src/users/validations/getUser.decorator';
 import { ReviewDto } from './dto/review.dto';
 import { MannerItem } from './entities/mannerItem.entity';
+import { ScoreItem } from './entities/scoreItem.entity';
 import { SellerReview } from './entities/sellerReview.entity';
 import { ReviewService } from './review.service';
 
@@ -12,6 +13,13 @@ import { ReviewService } from './review.service';
 @UseGuards(JwtAuthGuard)
 export class ReviewResolver {
   constructor(private readonly reviewService: ReviewService) {}
+
+  // scoreItem 데이터 조회
+  @Query(() => [ScoreItem])
+  @UsePipes(ValidationPipe)
+  getScoreItemData(): Promise<ScoreItem[]> {
+    return this.reviewService.getScoreItemData();
+  }
 
   // mannerItem 데이터 조회
   @Query(() => [MannerItem])

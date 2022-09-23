@@ -5,6 +5,7 @@ import { User } from 'src/users/user.entity';
 import { EntityManager, getConnection, getRepository } from 'typeorm';
 import { ReviewDto } from './dto/review.dto';
 import { MannerItem } from './entities/mannerItem.entity';
+import { ScoreItem } from './entities/scoreItem.entity';
 import { SellerReview } from './entities/sellerReview.entity';
 import { ReviewRepository } from './review.repository';
 
@@ -15,9 +16,19 @@ export class ReviewService {
     private reviewRepository: ReviewRepository,
   ) {}
 
+  async getScoreItemData(): Promise<ScoreItem[]> {
+    /**
+     * 거래후기 작성 항목 중 ScoreItem(전체적인 거래 후기)에 대한 static data 조회
+     *
+     * @author 허정연(golgol22)
+     * @return {ScoreItem[]} 전체적인 거래 후기 항목 목록 반환
+     */
+    return await getRepository(ScoreItem).find();
+  }
+
   async getMannerItemData(): Promise<MannerItem[]> {
     /**
-     * 거래후기 작성 항목 중 mannerItem에 대한 static data 조회
+     * 거래후기 작성 항목 중 mannerItem(각가의 매너 항목)에 대한 static data 조회
      *
      * @author 허정연(golgol22)
      * @return {MannerItem[]} 매너항목 목록 반환
