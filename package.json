@@ -27,8 +27,10 @@
     "@nestjs/jwt": "^9.0.0",
     "@nestjs/passport": "^9.0.0",
     "@nestjs/platform-express": "^9.0.0",
+    "@nestjs/platform-socket.io": "^9.1.1",
     "@nestjs/swagger": "^6.0.5",
     "@nestjs/typeorm": "^8.0.2",
+    "@nestjs/websockets": "^9.1.1",
     "@types/passport-jwt": "^3.0.6",
     "apollo-server-express": "^3.10.1",
     "aws-sdk": "^2.1221.0",
@@ -44,6 +46,7 @@
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.2.0",
+    "socket.io": "^4.5.2",
     "typeorm": "^0.2.41",
     "typeorm-seeding": "^1.6.1",
     "uuid": "^9.0.0"

@@ -15,8 +15,8 @@ import { Followings } from 'src/mypage/followings.entity';
 import { PostImage } from 'src/posts/postImage.entity';
 import { PurchaseHistory } from 'src/mypage/purchaseHistory.entity';
 import { Location } from 'src/users/location.entity';
-import { SellerReview } from 'src/reviews/entities/sellerReview.entity';
-import { MannerItem } from 'src/reviews/entities/mannerItem.entity';
+import { ChatRoom } from 'src/chats/chatRoom.entity';
+import { Chat } from 'src/chats/chat.entity';
 
 const dbConfig: any = config.get('db');
 
@@ -43,8 +43,8 @@ export const typeORMConfig: TypeOrmModuleOptions = {
     PostImage,
     PurchaseHistory,
     Location,
-    SellerReview,
-    MannerItem,
+    ChatRoom,
+    Chat,
   ],
   synchronize: dbConfig.synchronize,
   timezone: dbConfig.timezone,

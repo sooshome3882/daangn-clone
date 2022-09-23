@@ -6,6 +6,8 @@ import { BaseEntity, Column, CreateDateColumn, Entity, OneToMany, PrimaryColumn,
 import { Followings } from '../mypage/followings.entity';
 import { PostsViewRecord } from 'src/posts/postsViewRecord.entity';
 import { Location } from './location.entity';
+import { ChatRoom } from 'src/chats/chatRoom.entity';
+import { Chat } from 'src/chats/chat.entity';
 
 @Entity()
 @ObjectType()
@@ -39,6 +41,10 @@ export class User extends BaseEntity {
   suspensionOfUse!: boolean;
 
   @Field()
+  @Column({ default: false })
+  reportHandling!: boolean; // 채팅 관련 신고 여부
+
+  @Field()
   @CreateDateColumn({ type: 'datetime' })
   createdAt!: Date;
 
@@ -66,4 +72,10 @@ export class User extends BaseEntity {
 
   @OneToMany(type => Location, location => location.user, { eager: false })
   locations!: Location[];
+
+  @OneToMany(type => User, user => user.chatRoom, { eager: false })
+  chatRoom!: ChatRoom[];
+
+  @OneToMany(type => User, user => user.chat, { eager: false })
+  chat!: Chat[];
 }

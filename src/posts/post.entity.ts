@@ -10,6 +10,7 @@ import { PostsLikeRecord } from './postsLikeRecord.entity';
 import { PostImage } from './postImage.entity';
 import { PurchaseHistory } from '../mypage/purchaseHistory.entity';
 import { PostsViewRecord } from './postsViewRecord.entity';
+import { ChatRoom } from 'src/chats/chatRoom.entity';
 import { Location } from 'src/users/location.entity';
 
 @Entity()
@@ -107,4 +108,7 @@ export class Post extends BaseEntity {
 
   @OneToMany(type => PurchaseHistory, purchaseHistory => purchaseHistory.post, { eager: false })
   purchaseHistory!: PurchaseHistory[];
+
+  @OneToMany(type => ChatRoom, chatRoom => chatRoom.post, { eager: false })
+  chatRoom!: ChatRoom[];
 }
