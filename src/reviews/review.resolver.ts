@@ -19,4 +19,11 @@ export class ReviewResolver {
   getMannerItemData(): Promise<MannerItem[]> {
     return this.reviewService.getMannerItemData();
   }
+
+  // 판매자에 대한 리뷰 생성
+  @Mutation(() => SellerReview)
+  @UsePipes(ValidationPipe)
+  createSellerReview(@GetUser() user: User, @Args('reviewDto') reviewDto: ReviewDto): Promise<SellerReview> {
+    return this.reviewService.createSellerReview(user, reviewDto);
+  }
 }

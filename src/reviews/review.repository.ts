@@ -1,5 +1,17 @@
-import { EntityRepository, Repository } from 'typeorm';
+import { EntityManager, EntityRepository, Repository } from 'typeorm';
+import { ReviewDto } from './dto/review.dto';
+import { SelectedMannerItemToSeller } from './entities/selectedMannerItemToSeller.entity';
 import { SellerReview } from './entities/sellerReview.entity';
 
 @EntityRepository(SellerReview)
-export class ReviewRepository extends Repository<SellerReview> {}
+export class ReviewRepository extends Repository<SellerReview> {
+  async createSellerReview(manager: EntityManager, reviewDto: ReviewDto) {
+    const { post, score, review, retransaction } = reviewDto;
+    const query = await manager.getRepository(SellerReview).createQueryBuilder('SellerReview').insert().into(SellerReview).values({ post, score, review, retransaction }).execute();
+    return query.raw.insertId;
+  }
+  async setSelectedMannerItem(manager: EntityManager, sellerReview: number, selectedMannerItems: number[]) {
+    for (const mannerItem of selectedMannerItems)
+      await manager.getRepository(SelectedMannerItemToSeller).createQueryBuilder('SelectedMannerItemToSeller').insert().into(SelectedMannerItemToSeller).values({ sellerReview, mannerItem }).execute();
+  }
+}
