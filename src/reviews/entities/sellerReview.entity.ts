@@ -36,7 +36,7 @@ export class SellerReview extends BaseEntity {
   post!: Post;
 
   @Field(() => MannerItem)
-  @JoinColumn({ name: 'sellerReviewId' })
+  @JoinColumn({ name: 'score' })
   @ManyToOne(type => MannerItem, mannerItem => mannerItem.sellerReview, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
   score!: MannerItem;
 }
