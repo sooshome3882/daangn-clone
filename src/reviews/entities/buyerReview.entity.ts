@@ -1,7 +1,6 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { Post } from 'src/posts/post.entity';
 import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-import { MannerItem } from './mannerItem.entity';
 import { ScoreItem } from './scoreItem.entity';
 import { SelectedMannerItemToBuyer } from './selectedMannerItemToBuyer.entity';
 
@@ -24,7 +23,7 @@ export class BuyerReview extends BaseEntity {
   @CreateDateColumn({ type: 'datetime' })
   createdAt!: Date;
 
-  @Field({ nullable: true })
+  @Field()
   @UpdateDateColumn({ type: 'datetime' })
   updatedAt?: Date;
 
@@ -35,12 +34,12 @@ export class BuyerReview extends BaseEntity {
   @Field(() => Post)
   @JoinColumn({ name: 'postId' })
   @OneToOne(type => Post, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
-  post!: Post;
+  post!: number;
 
   @Field(() => ScoreItem)
   @JoinColumn({ name: 'score' })
   @ManyToOne(type => ScoreItem, scoreItem => scoreItem.buyerReview, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
-  score!: MannerItem;
+  score!: number;
 
   @Field(() => [SelectedMannerItemToBuyer])
   @OneToMany(type => SelectedMannerItemToBuyer, selectedMannerItemToBuyer => selectedMannerItemToBuyer.buyerReview, { eager: true })

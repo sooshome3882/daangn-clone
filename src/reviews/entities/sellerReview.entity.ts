@@ -23,7 +23,7 @@ export class SellerReview extends BaseEntity {
   @CreateDateColumn({ type: 'datetime' })
   createdAt!: Date;
 
-  @Field({ nullable: true })
+  @Field()
   @UpdateDateColumn({ type: 'datetime' })
   updatedAt?: Date;
 

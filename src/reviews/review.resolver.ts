@@ -4,6 +4,7 @@ import { JwtAuthGuard } from 'src/users/guards/jwtAuth.guard';
 import { User } from 'src/users/user.entity';
 import { GetUser } from 'src/users/validations/getUser.decorator';
 import { ReviewDto } from './dto/review.dto';
+import { BuyerReview } from './entities/buyerReview.entity';
 import { MannerItem } from './entities/mannerItem.entity';
 import { ScoreItem } from './entities/scoreItem.entity';
 import { SellerReview } from './entities/sellerReview.entity';
@@ -33,5 +34,12 @@ export class ReviewResolver {
   @UsePipes(ValidationPipe)
   createSellerReview(@GetUser() user: User, @Args('reviewDto') reviewDto: ReviewDto): Promise<SellerReview> {
     return this.reviewService.createSellerReview(user, reviewDto);
+  }
+
+  // 구매자에 대한 리뷰 생성
+  @Mutation(() => BuyerReview)
+  @UsePipes(ValidationPipe)
+  createBuyerReview(@GetUser() user: User, @Args('reviewDto') reviewDto: ReviewDto): Promise<BuyerReview> {
+    return this.reviewService.createBuyerReview(user, reviewDto);
   }
 }

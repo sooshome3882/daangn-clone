@@ -11,13 +11,13 @@ export class SelectedMannerItemToBuyer extends BaseEntity {
   selectedMannerItemId!: number;
 
   @Field(() => BuyerReview)
-  @JoinColumn({ name: 'sellerReviewId' })
+  @JoinColumn({ name: 'buyerReviewId' })
   @ManyToOne(type => BuyerReview, buyerReview => buyerReview.selectedMannerItems, { eager: false, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
   buyerReview!: number;
 
   @Field(() => MannerItem)
   @JoinColumn({ name: 'mannerItemId' })
-  @ManyToOne(type => MannerItem, mannerItem => mannerItem.selectedMannerItem, { eager: false, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
+  @ManyToOne(type => MannerItem, mannerItem => mannerItem.mannerItemToBuyer, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
   mannerItem!: number;
 
   @Field()

@@ -17,7 +17,7 @@ export class SelectedMannerItemToSeller extends BaseEntity {
 
   @Field(() => MannerItem)
   @JoinColumn({ name: 'mannerItemId' })
-  @ManyToOne(type => MannerItem, mannerItem => mannerItem.selectedMannerItem, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
+  @ManyToOne(type => MannerItem, mannerItem => mannerItem.mannerItemToSeller, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
   mannerItem!: number;
 
   @Field()
