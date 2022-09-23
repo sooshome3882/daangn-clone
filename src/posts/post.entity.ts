@@ -11,7 +11,6 @@ import { PostImage } from './postImage.entity';
 import { PurchaseHistory } from '../mypage/purchaseHistory.entity';
 import { PostsViewRecord } from './postsViewRecord.entity';
 import { Location } from 'src/users/location.entity';
-import { SellerReview } from 'src/reviews/entities/sellerReview.entity';
 
 @Entity()
 @ObjectType()
