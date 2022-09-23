@@ -17,6 +17,6 @@ export class TownRange extends BaseEntity {
   @OneToMany(type => Post, post => post.townRange, { eager: false })
   posts!: Post[];
 
-  @OneToMany(type => Location, location => location.townRangeId, { eager: false })
+  @OneToMany(type => Location, location => location.townRange, { eager: false })
   locations!: Location[];
 }

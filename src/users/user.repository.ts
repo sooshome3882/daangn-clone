@@ -30,11 +30,11 @@ export class UserRepository extends Repository<User> {
     }
   }
 
-  async setProfileUserName(phoneNumber: string, userName: string) {
-    await getRepository(User).createQueryBuilder('User').update(User).set({ userName }).where('phoneNumber = :phoneNumber', { phoneNumber }).execute();
+  async setProfileUserName(manager: EntityManager, phoneNumber: string, userName: string) {
+    await manager.getRepository(User).createQueryBuilder('User').update(User).set({ userName }).where('phoneNumber = :phoneNumber', { phoneNumber }).execute();
   }
 
-  async setProfileImage(phoneNumber: string, profileImage: string) {
-    await getRepository(User).createQueryBuilder('User').update(User).set({ profileImage }).where('phoneNumber = :phoneNumber', { phoneNumber }).execute();
+  async setProfileImage(manager: EntityManager, phoneNumber: string, profileImage: string) {
+    await manager.getRepository(User).createQueryBuilder('User').update(User).set({ profileImage }).where('phoneNumber = :phoneNumber', { phoneNumber }).execute();
   }
 }
