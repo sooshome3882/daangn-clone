@@ -22,7 +22,6 @@ import { JoinUserDto } from './dto/joinUser.dto';
 import { LoginUserDto } from './dto/loginUser.dto';
 import { JwtService } from '@nestjs/jwt';
 import { ProfileUserDto } from './dto/profile.dto';
-import { createWriteStream } from 'fs';
 import { v1 as uuid } from 'uuid';
 import { MyLocationDto } from './dto/mylocation.dto';
 import { ElasticsearchService } from '@nestjs/elasticsearch';
@@ -31,12 +30,24 @@ import { Location } from './location.entity';
 import { DeleteTownDto } from './dto/deleteTown.dto';
 import { TownRange } from 'src/townRanges/townRange.entity';
 import { SearchHit } from '@elastic/elasticsearch/lib/api/types';
+import * as AWS from 'aws-sdk';
+import { FileUpload } from './models/fileUpload.model';
 
 const smsConfig: any = config.get('sms');
 const ACCESS_KEY_ID = smsConfig.access_key_id;
 const SECRET_KEY = smsConfig.secret_key;
 const SERVICE_ID = smsConfig.service_id;
 const FROM = smsConfig.from;
+
+const s3Config: any = config.get('S3');
+const AWS_S3_BUCKET_NAME = s3Config.AWS_S3_BUCKET_NAME;
+const s3 = new AWS.S3({
+  region: s3Config.AWS_S3_REGION,
+  credentials: {
+    accessKeyId: s3Config.AWS_ACCESS_KEY_ID,
+    secretAccessKey: s3Config.AWS_SECRET_ACCESS_KEY,
+  },
+});
 
 @Injectable()
 @UseInterceptors(CacheInterceptor)
@@ -317,7 +328,7 @@ export class UserService {
      * @return {User} 유저 반환
      * @throws {ConflictException} 이미 사용중인 사용자이름일 때 예외처리
      * @throws {BadRequestException} 회원가입 후 첫 사용자 이름 설정인 경우 반드시 이름을 설정해야한다는 예외처리
-     * @throws {InternalServerErrorException} 프로필 이미지 저장 실패할 때 예외처리
+     * @throws {InternalServerErrorException} 프로필 수정 실패할 때 예외처리
      */
     const { userName, profileImage } = profileUserDto;
     if (userName) {
@@ -325,28 +336,72 @@ export class UserService {
       if (found) {
         throw new ConflictException(`${userName}은 이미 사용중인 이름입니다.`);
       }
-      await this.userRepository.setProfileUserName(phoneNumber, userName);
     }
     const user = await this.userRepository.findOne(phoneNumber);
     if (user.userName === null) {
       throw new BadRequestException(`처음 이름은 꼭 설정해야 합니다.`);
     }
-
-    if (profileImage) {
-      const { createReadStream } = await profileImage;
-      const newFileName = uuid();
-      const isImageStored: boolean = await new Promise<boolean>(async (resolve, reject) =>
-        createReadStream()
-          .pipe(createWriteStream(`./src/users/uploads/${newFileName}.png`))
-          .on('finish', () => resolve(true))
-          .on('error', () => resolve(false)),
-      );
-      if (!isImageStored) {
-        throw new InternalServerErrorException('이미지 저장에 실패하였습니다.');
-      }
-      await this.userRepository.setProfileImage(phoneNumber, `./src/users/uploads/${newFileName}.png`);
-    }
+    await getConnection()
+      .transaction(async (manager: EntityManager) => {
+        if (userName) {
+          await this.userRepository.setProfileUserName(manager, phoneNumber, userName);
+        }
+        if (profileImage) {
+          await this.imageDeleteFromS3(user.profileImage);
+          await this.imageUploadToS3(manager, user.phoneNumber, profileImage);
+        }
+        throw new InternalServerErrorException();
+      })
+      .catch(err => {
+        console.error(err);
+        throw new InternalServerErrorException('유저 프로필 설정에 실패하였습니다. 잠시후 다시 시도해주세요.');
+      });
     return await this.getUserByPhoneNumber(phoneNumber);
+  }
+
+  async imageUploadToS3(manager: EntityManager, phoneNumber: string, profileImage: Promise<FileUpload>) {
+    /**
+     * S3에 프로필 이미지 저장
+     *
+     * @author 허정연(golgol22)
+     * @param {phoneNumber, profileImage} 프로필 이미지 설정할 유저, 업로드할 프로필 이미지
+     */
+    const { encoding, mimetype, createReadStream } = await profileImage;
+    try {
+      const newFileName = uuid();
+      await s3
+        .putObject({
+          Key: `${newFileName}.png`,
+          Body: createReadStream(),
+          Bucket: `${AWS_S3_BUCKET_NAME}/profile`,
+          ContentEncoding: encoding,
+          ContentType: mimetype,
+          ContentLength: createReadStream().readableLength,
+        })
+        .promise();
+      await this.userRepository.setProfileImage(manager, phoneNumber, `${newFileName}.png`);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async imageDeleteFromS3(profileImage: string) {
+    /**
+     * S3에서 프로필 이미지 삭제
+     *
+     * @author 허정연(golgol22)
+     * @param {profileImage} 삭제할 프로필 이미지명
+     */
+    try {
+      await s3
+        .deleteObject({
+          Key: profileImage,
+          Bucket: `${AWS_S3_BUCKET_NAME}/profile`,
+        })
+        .promise();
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   async getMyTownList(user: User): Promise<Location[]> {

@@ -17,10 +17,23 @@ import { PostsLikeRecord } from './postsLikeRecord.entity';
 import { PostsLikeDto } from './dto/addPostsLike.dto';
 import { PostsViewRecord } from './postsViewRecord.entity';
 import { v1 as uuid } from 'uuid';
-import { createWriteStream } from 'fs';
-import { getRepository } from 'typeorm';
+import { EntityManager, getConnection, getRepository } from 'typeorm';
 import { Location } from 'src/users/location.entity';
 import { UserService } from 'src/users/user.service';
+import * as config from 'config';
+import * as AWS from 'aws-sdk';
+import { FileUpload } from 'src/users/models/fileUpload.model';
+import { PostImage } from './postImage.entity';
+
+const s3Config: any = config.get('S3');
+const AWS_S3_BUCKET_NAME = s3Config.AWS_S3_BUCKET_NAME;
+const s3 = new AWS.S3({
+  region: s3Config.AWS_S3_REGION,
+  credentials: {
+    accessKeyId: s3Config.AWS_ACCESS_KEY_ID,
+    secretAccessKey: s3Config.AWS_SECRET_ACCESS_KEY,
+  },
+});
 
 @Injectable()
 export class PostService {
@@ -29,6 +42,55 @@ export class PostService {
     private postRepository: PostRepository,
     private readonly userService: UserService,
   ) {}
+
+  async imagesUploadToS3(manager: EntityManager, insertId: number, images: Promise<FileUpload>[]) {
+    /**
+     * S3에 게시글 이미지 저장
+     *
+     * @author 허정연(golgol22)
+     * @param {insertId, images} 이미지 저장할 게시글 ID, 업로드할 이미지
+     */
+    for (const image of images) {
+      const { encoding, mimetype, createReadStream } = await image;
+      try {
+        const newFileName = uuid();
+        await s3
+          .putObject({
+            Key: `${newFileName}.png`,
+            Body: createReadStream(),
+            Bucket: `${AWS_S3_BUCKET_NAME}/post`,
+            ContentEncoding: encoding,
+            ContentType: mimetype,
+            ContentLength: createReadStream().readableLength,
+          })
+          .promise();
+        await this.postRepository.addPostImagePath(manager, insertId, `${newFileName}.png`);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  }
+
+  async imageDeleteFromS3(postImages: PostImage[]) {
+    /**
+     * S3에서 게시글 이미지 삭제
+     *
+     * @author 허정연(golgol22)
+     * @param {postImages} 삭제할 게시글 이미지
+     */
+    for (const file of postImages) {
+      try {
+        await s3
+          .deleteObject({
+            Key: file.imagePath,
+            Bucket: `${AWS_S3_BUCKET_NAME}/post`,
+          })
+          .promise();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  }
 
   async createPost(user: User, createPostDto: CreatePostDto): Promise<Post> {
     /**
@@ -39,30 +101,25 @@ export class PostService {
      *        로그인한 유저, 제목, 내용, 카테고리, 가격, 가격제안받기여부, 동네범위, 거래상태, 이미지
      * @return {Post} 게시글 반환
      * @throws {ForbiddenException} 동네 인증을 하지 않았을 때 예외처리
-     * @throws {InternalServerErrorException} 이미지 저장실패할 때 예외처리
+     * @throws {InternalServerErrorException} 게시글 생성 실패할 때 예외처리
      */
     const location = await getRepository(Location).findOne({ where: { user: user.phoneNumber, isSelected: true } });
     if (!location.isConfirmedPosition) {
       throw new ForbiddenException('동네 인증을 해야 게시글을 작성할 수 있습니다.');
     }
-    const insertId = await this.postRepository.createPost(user, createPostDto, location);
-    const { images } = createPostDto;
-    if (images) {
-      for (const image of images) {
-        const { createReadStream } = await image;
-        const imagePath = `./src/posts/uploads/${uuid()}.png`;
-        const isImageStored: boolean = await new Promise<boolean>(async (resolve, reject) =>
-          createReadStream()
-            .pipe(createWriteStream(imagePath))
-            .on('finish', () => resolve(true))
-            .on('error', () => resolve(false)),
-        );
-        if (!isImageStored) {
-          throw new InternalServerErrorException('이미지 저장에 실패하였습니다.');
+    let insertId = -1;
+    await getConnection()
+      .transaction(async (manager: EntityManager) => {
+        insertId = await this.postRepository.createPost(manager, user, createPostDto, location);
+        const { images } = createPostDto;
+        if (images) {
+          await this.imagesUploadToS3(manager, insertId, images);
         }
-        await this.postRepository.addPostImagePath(insertId, imagePath);
-      }
-    }
+      })
+      .catch(err => {
+        console.error(err);
+        throw new InternalServerErrorException('게시글 생성에 실패하였습니다. 잠시후 다시 시도해주세요.');
+      });
     return await this.getPostById(insertId);
   }
 
@@ -74,57 +131,62 @@ export class PostService {
      * @param {user, postId, title, content, category, price, isOfferedPrice, townRange, images}
      *        로그인한 유저, 게시글 ID, 제목, 내용, 카테고리, 가격, 가격제안받기여부, 동네범위, 이미지
      * @return {Post} 게시글 반환
-     * @throws {ForbiddenException} 권한없는 사용자의 수정 요청 예외처리
      * @throws {NotFoundException} 해당 게시글이 없을 때 예외 처리
-     * @throws {InternalServerErrorException} 이미지 저장실패할 때 예외처리
+     * @throws {ForbiddenException} 권한없는 사용자의 수정 요청 예외처리
+     * @throws {InternalServerErrorException} 게시글 수정 실패할 때 예외처리
      */
     const post = await this.getPostById(postId);
-    if (JSON.stringify(post.user) !== JSON.stringify(user)) {
-      throw new ForbiddenException(`본인이 작성한 게시글만 수정할 수 있습니다.`);
-    }
     if (!post) {
       throw new NotFoundException(`postId가 ${postId}인 것을 찾을 수 없습니다.`);
     }
-    await this.postRepository.updatePost(postId, updatePostDto);
-    await this.postRepository.deletePostImagePath(postId);
-    const { images } = updatePostDto;
-    if (images) {
-      for (const image of images) {
-        const { createReadStream } = await image;
-        const imagePath = `./src/posts/uploads/${uuid()}.png`;
-        const isImageStored: boolean = await new Promise<boolean>(async (resolve, reject) =>
-          createReadStream()
-            .pipe(createWriteStream(imagePath))
-            .on('finish', () => resolve(true))
-            .on('error', () => resolve(false)),
-        );
-        if (!isImageStored) {
-          throw new InternalServerErrorException('이미지 저장에 실패하였습니다.');
-        }
-        await this.postRepository.addPostImagePath(postId, imagePath);
-      }
+    if (JSON.stringify(post.user) !== JSON.stringify(user)) {
+      throw new ForbiddenException(`본인이 작성한 게시글만 수정할 수 있습니다.`);
     }
+    await getConnection()
+      .transaction(async (manager: EntityManager) => {
+        await this.postRepository.updatePost(postId, updatePostDto);
+        const { images } = updatePostDto;
+        if (images) {
+          await this.imageDeleteFromS3(post.postImages);
+          await this.postRepository.deletePostImagePath(manager, postId);
+          await this.imagesUploadToS3(manager, postId, images);
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        throw new InternalServerErrorException('게시글 수정에 실패하였습니다. 잠시후 다시 시도해주세요.');
+      });
     return await this.getPostById(postId);
   }
 
   async deletePost(user: User, postId: number): Promise<string> {
     /**
      * 게시글 삭제
+     * 게시글 삭제시 DB에 저장된 게시글 이미지 경로 자동 삭제 (Cascade)
      *
      * @author 허정연(golgol22)
      * @param {user, postId} 로그인한 유저, 게시글 ID
      * @return {string} 삭제되었습니다.
-     * @throws {ForbiddenException} 권한없는 사용자의 삭제 요청 예외처리
      * @throws {NotFoundException} 해당 게시글이 없을 때 예외 처리
+     * @throws {ForbiddenException} 권한없는 사용자의 삭제 요청 예외처리
+     * @throws {InternalServerErrorException} 게시글 삭제 실패할 때 예외처리
      */
     const post = await this.getPostById(postId);
+    if (!post) {
+      throw new NotFoundException(`postId가 ${postId}인 것을 찾을 수 없습니다.`);
+    }
     if (JSON.stringify(post.user) !== JSON.stringify(user)) {
       throw new ForbiddenException(`본인이 작성한 게시글만 삭제할 수 있습니다.`);
     }
-    const result = await this.postRepository.delete(postId);
-    if (result.affected === 0) {
-      throw new NotFoundException(`postId가 ${postId}인 것을 찾을 수 없습니다.`);
-    }
+    await getConnection()
+      .transaction(async (manager: EntityManager) => {
+        await this.imageDeleteFromS3(post.postImages);
+        await this.postRepository.delete(postId);
+      })
+      .catch(err => {
+        console.error(err);
+        throw new InternalServerErrorException('게시글 삭제에 실패하였습니다. 잠시후 다시 시도해주세요.');
+      });
     return '삭제되었습니다.';
   }
 
