@@ -1,15 +1,16 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { Post } from 'src/posts/post.entity';
 import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { MannerItem } from './mannerItem.entity';
 import { ScoreItem } from './scoreItem.entity';
-import { SelectedMannerItemToSeller } from './selectedMannerItemToSeller.entity';
+import { SelectedMannerItemToBuyer } from './selectedMannerItemToBuyer.entity';
 
 @Entity()
 @ObjectType()
-export class SellerReview extends BaseEntity {
+export class BuyerReview extends BaseEntity {
   @Field(() => Number)
   @PrimaryGeneratedColumn({ type: 'int' })
-  sellerReviewId!: number;
+  buyerReviewId!: number;
 
   @Field({ nullable: true })
   @Column({ type: 'text' })
@@ -34,14 +35,14 @@ export class SellerReview extends BaseEntity {
   @Field(() => Post)
   @JoinColumn({ name: 'postId' })
   @OneToOne(type => Post, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
-  post!: number;
+  post!: Post;
 
   @Field(() => ScoreItem)
   @JoinColumn({ name: 'score' })
-  @ManyToOne(type => ScoreItem, scoreItem => scoreItem.sellerReview, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
-  score!: number;
+  @ManyToOne(type => ScoreItem, scoreItem => scoreItem.buyerReview, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
+  score!: MannerItem;
 
-  @Field(() => [SelectedMannerItemToSeller])
-  @OneToMany(type => SelectedMannerItemToSeller, selectedMannerItemToSeller => selectedMannerItemToSeller.sellerReview, { eager: true })
-  selectedMannerItems!: SelectedMannerItemToSeller[];
+  @Field(() => [SelectedMannerItemToBuyer])
+  @OneToMany(type => SelectedMannerItemToBuyer, selectedMannerItemToBuyer => selectedMannerItemToBuyer.buyerReview, { eager: true })
+  selectedMannerItems!: SelectedMannerItemToBuyer[];
 }

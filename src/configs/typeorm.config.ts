@@ -17,6 +17,12 @@ import { PurchaseHistory } from 'src/mypage/purchaseHistory.entity';
 import { Location } from 'src/users/location.entity';
 import { ChatRoom } from 'src/chats/chatRoom.entity';
 import { Chat } from 'src/chats/chat.entity';
+import { SellerReview } from 'src/reviews/entities/sellerReview.entity';
+import { MannerItem } from 'src/reviews/entities/mannerItem.entity';
+import { SelectedMannerItemToSeller } from 'src/reviews/entities/selectedMannerItemToSeller.entity';
+import { BuyerReview } from 'src/reviews/entities/buyerReview.entity';
+import { ScoreItem } from 'src/reviews/entities/scoreItem.entity';
+import { SelectedMannerItemToBuyer } from 'src/reviews/entities/selectedMannerItemToBuyer.entity';
 
 const dbConfig: any = config.get('db');
 
@@ -45,6 +51,12 @@ export const typeORMConfig: TypeOrmModuleOptions = {
     Location,
     ChatRoom,
     Chat,
+    SellerReview,
+    BuyerReview,
+    ScoreItem,
+    MannerItem,
+    SelectedMannerItemToSeller,
+    SelectedMannerItemToBuyer,
   ],
   synchronize: dbConfig.synchronize,
   timezone: dbConfig.timezone,
