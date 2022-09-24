@@ -58,7 +58,7 @@ export class Post extends BaseEntity {
 
   @Field()
   @UpdateDateColumn({ type: 'datetime' })
-  updatedAt: Date;
+  updatedAt!: Date;
 
   @Field()
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })

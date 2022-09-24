@@ -11,9 +11,9 @@ export class BuyerReview extends BaseEntity {
   @PrimaryGeneratedColumn({ type: 'int' })
   buyerReviewId!: number;
 
-  @Field({ nullable: true })
+  @Field()
   @Column({ type: 'text' })
-  review?: string;
+  review!: string;
 
   @Field()
   @Column({ type: 'boolean' })

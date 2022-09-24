@@ -17,8 +17,8 @@ export class ReviewDto {
   @IsNotEmpty()
   selectedMannerItems!: number[];
 
-  @Field(() => String, { nullable: true })
-  review?: string;
+  @Field(() => String)
+  review!: string;
 
   @Field(() => Boolean)
   @IsNotEmpty()
