@@ -62,6 +62,13 @@ export class ReviewService {
   }
 
   async mannerTempCal(manager: EntityManager, user: User, score: number, selectedMannerItems: any[]) {
+    /**
+     * 리뷰에 따른 매너 온도 계산
+     *
+     * @author 허정연(golgol22)
+     * @param {manager, user, score, selectedMannerItems} 트랜잭션 매니저, 매너 온도 변경해야 하는 유저, 매너 온도+/-, 선택된  매너 항목
+     * @return {user} 리뷰 온도 변경된 유저 반환
+     */
     if (score === 1 || score === 2) {
       user.mannerTemp = user.mannerTemp * 1 + 0.1 * selectedMannerItems.length;
     } else {
