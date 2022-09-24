@@ -1,4 +1,4 @@
-import { UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import { ParseIntPipe, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { JwtAuthGuard } from 'src/users/guards/jwtAuth.guard';
 import { User } from 'src/users/user.entity';
@@ -29,17 +29,24 @@ export class ReviewResolver {
     return this.reviewService.getMannerItemData();
   }
 
-  // 판매자에 대한 리뷰 생성
+  // 판매자에 대한 거래후기 생성
   @Mutation(() => SellerReview)
   @UsePipes(ValidationPipe)
   createSellerReview(@GetUser() user: User, @Args('reviewDto') reviewDto: ReviewDto): Promise<SellerReview> {
     return this.reviewService.createSellerReview(user, reviewDto);
   }
 
-  // 구매자에 대한 리뷰 생성
+  // 구매자에 대한 거래후기 생성
   @Mutation(() => BuyerReview)
   @UsePipes(ValidationPipe)
   createBuyerReview(@GetUser() user: User, @Args('reviewDto') reviewDto: ReviewDto): Promise<BuyerReview> {
     return this.reviewService.createBuyerReview(user, reviewDto);
+  }
+
+  // 판매자에 대한 거래후기 수정
+  @Mutation(() => SellerReview)
+  @UsePipes(ValidationPipe)
+  updateSellerReview(@GetUser() user: User, @Args('reviewDto') reviewDto: ReviewDto): Promise<SellerReview> {
+    return this.reviewService.updateSellerReview(user, reviewDto);
   }
 }

@@ -1,5 +1,5 @@
 import { Field, InputType } from '@nestjs/graphql';
-import { IsBoolean, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsNumber } from 'class-validator';
 
 @InputType()
 export class ReviewDto {
@@ -18,8 +18,6 @@ export class ReviewDto {
   selectedMannerItems!: number[];
 
   @Field(() => String, { nullable: true })
-  @IsNotEmpty()
-  @IsString()
   review?: string;
 
   @Field(() => Boolean)
