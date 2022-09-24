@@ -1,6 +1,7 @@
 import { EntityManager, EntityRepository, Repository } from 'typeorm';
 import { ReviewDto } from './dto/review.dto';
 import { BuyerReview } from './entities/buyerReview.entity';
+import { MannerItem } from './entities/mannerItem.entity';
 import { SelectedMannerItemToBuyer } from './entities/selectedMannerItemToBuyer.entity';
 import { SelectedMannerItemToSeller } from './entities/selectedMannerItemToSeller.entity';
 import { SellerReview } from './entities/sellerReview.entity';
@@ -13,7 +14,7 @@ export class ReviewRepository extends Repository<SellerReview> {
     return query.raw.insertId;
   }
 
-  async setSelectedMannerItemToSeller(manager: EntityManager, sellerReview: number, selectedMannerItems: number[]) {
+  async setSelectedMannerItemToSeller(manager: EntityManager, sellerReview: number, selectedMannerItems: MannerItem[]) {
     for (const mannerItem of selectedMannerItems)
       await manager.getRepository(SelectedMannerItemToSeller).createQueryBuilder('SelectedMannerItemToSeller').insert().into(SelectedMannerItemToSeller).values({ sellerReview, mannerItem }).execute();
   }
@@ -24,7 +25,7 @@ export class ReviewRepository extends Repository<SellerReview> {
     return query.raw.insertId;
   }
 
-  async setSelectedMannerItemToBuyer(manager: EntityManager, buyerReview: number, selectedMannerItems: number[]) {
+  async setSelectedMannerItemToBuyer(manager: EntityManager, buyerReview: number, selectedMannerItems: MannerItem[]) {
     for (const mannerItem of selectedMannerItems)
       await manager.getRepository(SelectedMannerItemToBuyer).createQueryBuilder('SelectedMannerItemToBuyer').insert().into(SelectedMannerItemToBuyer).values({ buyerReview, mannerItem }).execute();
   }

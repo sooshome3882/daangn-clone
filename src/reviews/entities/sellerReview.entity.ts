@@ -34,12 +34,12 @@ export class SellerReview extends BaseEntity {
   @Field(() => Post)
   @JoinColumn({ name: 'postId' })
   @OneToOne(type => Post, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
-  post!: number;
+  post!: Post;
 
   @Field(() => ScoreItem)
   @JoinColumn({ name: 'score' })
   @ManyToOne(type => ScoreItem, scoreItem => scoreItem.sellerReview, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
-  score!: number;
+  score!: ScoreItem;
 
   @Field(() => [SelectedMannerItemToSeller])
   @OneToMany(type => SelectedMannerItemToSeller, selectedMannerItemToSeller => selectedMannerItemToSeller.sellerReview, { eager: true })

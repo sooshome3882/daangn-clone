@@ -39,7 +39,7 @@ export class ReviewService {
     return await getRepository(MannerItem).find();
   }
 
-  async getSellerReviewById(sellerReviewId: number): Promise<SellerReview> {
+  async getSellerReviewById(sellerReviewId: number) {
     /**
      * 판매자에 대한 거래후기 조회
      *
@@ -108,7 +108,7 @@ export class ReviewService {
       .transaction(async (manager: EntityManager) => {
         insertId = await this.reviewRepository.createSellerReview(manager, reviewDto);
         await this.reviewRepository.setSelectedMannerItemToSeller(manager, insertId, selectedMannerItems);
-        await this.mannerTempCal(manager, purchase.post.user, score, selectedMannerItems);
+        await this.mannerTempCal(manager, purchase.post.user, score.scoreItemId, selectedMannerItems);
       })
       .catch(err => {
         console.error(err);
@@ -147,7 +147,7 @@ export class ReviewService {
       .transaction(async (manager: EntityManager) => {
         insertId = await this.reviewRepository.createBuyerReview(manager, reviewDto);
         await this.reviewRepository.setSelectedMannerItemToBuyer(manager, insertId, selectedMannerItems);
-        await this.mannerTempCal(manager, purchase.user, score, selectedMannerItems);
+        await this.mannerTempCal(manager, purchase.user, score.scoreItemId, selectedMannerItems);
       })
       .catch(err => {
         console.error(err);
@@ -183,14 +183,14 @@ export class ReviewService {
     }
     await getConnection()
       .transaction(async (manager: EntityManager) => {
-        const userMannerTempReset = await this.mannerTempCal(manager, purchase.post.user, sellerReview.score === 3 ? 1 : 3, sellerReview.selectedMannerItems);
+        const userMannerTempReset = await this.mannerTempCal(manager, purchase.post.user, sellerReview.score.scoreItemId === 3 ? 1 : 3, sellerReview.selectedMannerItems);
         sellerReview.score = score;
         sellerReview.review = review;
         sellerReview.retransaction = retransaction;
         await manager.save(sellerReview);
         await getRepository(SelectedMannerItemToSeller).delete({ sellerReview: sellerReview.sellerReviewId });
         await this.reviewRepository.setSelectedMannerItemToSeller(manager, sellerReview.sellerReviewId, selectedMannerItems);
-        await this.mannerTempCal(manager, userMannerTempReset, score, selectedMannerItems);
+        await this.mannerTempCal(manager, userMannerTempReset, score.scoreItemId, selectedMannerItems);
       })
       .catch(err => {
         console.error(err);
@@ -226,14 +226,14 @@ export class ReviewService {
     }
     await getConnection()
       .transaction(async (manager: EntityManager) => {
-        const userMannerTempReset = await this.mannerTempCal(manager, purchase.post.user, buyerReview.score === 3 ? 1 : 3, buyerReview.selectedMannerItems);
+        const userMannerTempReset = await this.mannerTempCal(manager, purchase.post.user, buyerReview.score.scoreItemId === 3 ? 1 : 3, buyerReview.selectedMannerItems);
         buyerReview.score = score;
         buyerReview.review = review;
         buyerReview.retransaction = retransaction;
         await manager.save(buyerReview);
         await getRepository(SelectedMannerItemToBuyer).delete({ buyerReview: buyerReview.buyerReviewId });
         await this.reviewRepository.setSelectedMannerItemToBuyer(manager, buyerReview.buyerReviewId, selectedMannerItems);
-        await this.mannerTempCal(manager, userMannerTempReset, score, selectedMannerItems);
+        await this.mannerTempCal(manager, userMannerTempReset, score.scoreItemId, selectedMannerItems);
       })
       .catch(err => {
         console.error(err);
@@ -268,7 +268,7 @@ export class ReviewService {
     }
     await getConnection()
       .transaction(async (manager: EntityManager) => {
-        await this.mannerTempCal(manager, purchase.post.user, sellerReview.score === 3 ? 1 : 3, sellerReview.selectedMannerItems);
+        await this.mannerTempCal(manager, purchase.post.user, sellerReview.score.scoreItemId === 3 ? 1 : 3, sellerReview.selectedMannerItems);
         await manager.delete(SellerReview, { post });
       })
       .catch(err => {
@@ -304,7 +304,7 @@ export class ReviewService {
     }
     await getConnection()
       .transaction(async (manager: EntityManager) => {
-        await this.mannerTempCal(manager, purchase.post.user, buyerReview.score === 3 ? 1 : 3, buyerReview.selectedMannerItems);
+        await this.mannerTempCal(manager, purchase.post.user, buyerReview.score.scoreItemId === 3 ? 1 : 3, buyerReview.selectedMannerItems);
         await manager.delete(BuyerReview, { post });
       })
       .catch(err => {
