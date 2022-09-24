@@ -49,4 +49,11 @@ export class ReviewResolver {
   updateSellerReview(@GetUser() user: User, @Args('reviewDto') reviewDto: ReviewDto): Promise<SellerReview> {
     return this.reviewService.updateSellerReview(user, reviewDto);
   }
+
+  // 구매자에 대한 거래후기 수정
+  @Mutation(() => BuyerReview)
+  @UsePipes(ValidationPipe)
+  updateBuyerReview(@GetUser() user: User, @Args('reviewDto') reviewDto: ReviewDto): Promise<BuyerReview> {
+    return this.reviewService.updateBuyerReview(user, reviewDto);
+  }
 }

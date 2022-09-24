@@ -177,4 +177,45 @@ export class ReviewService {
       });
     return await this.getSellerReviewById(sellerReview.sellerReviewId);
   }
+
+  async updateBuyerReview(user: User, reviewDto: ReviewDto): Promise<BuyerReview> {
+    /**
+     * 구매자에 대한 거래후기 수정
+     *
+     * @author 허정연(golgol22)
+     * @param {user, post, score, selectedMannerItems, review, retransaction}
+     *        로그인한 유저, 작성한 리뷰의 게시글 ID, 전체적인 평가, 선택된 매너항목들, 후기, 재거래 희망 여부
+     * @return {SellerReview} 판매자에 대한 리뷰 반환
+     * @throws {NotFoundException} 구매자 정보가 등록되지 않은 게시글일 때 예외처리
+     * @throws {ForbiddenException} 로그인한 유저가 작성한 거래 후기가 아닐 때 예외처리
+     * @throws {BadRequestException} 작성된 리뷰가 없을 때 예외처리
+     * @throws {InternalServerErrorException} 거래 후기 수정 실패할 때 예외처리
+     */
+    const { post, score, selectedMannerItems, review, retransaction } = reviewDto;
+    const purchase = await getRepository(PurchaseHistory).findOne({ where: { post } });
+    if (!purchase) {
+      throw new NotFoundException('아직 구매되지 않은 게시글입니다.');
+    }
+    if (JSON.stringify(purchase.post.user) !== JSON.stringify(user)) {
+      throw new ForbiddenException('본인이 작성한 거래후기만 수정할 수 있습니다.');
+    }
+    const buyerReview = await getRepository(BuyerReview).findOne({ where: { post } });
+    if (!buyerReview) {
+      throw new NotFoundException('작성된 거래후기가 없습니다.');
+    }
+    await getConnection()
+      .transaction(async (manager: EntityManager) => {
+        buyerReview.score = score;
+        buyerReview.review = review;
+        buyerReview.retransaction = retransaction;
+        await manager.save(buyerReview);
+        await getRepository(SelectedMannerItemToBuyer).delete({ buyerReview: buyerReview.buyerReviewId });
+        await this.reviewRepository.setSelectedMannerItemToBuyer(manager, buyerReview.buyerReviewId, selectedMannerItems);
+      })
+      .catch(err => {
+        console.error(err);
+        throw new InternalServerErrorException('거래 후기 수정에 실패하였습니다. 잠시후 다시 시도해주세요.');
+      });
+    return await this.getBuyerReviewById(buyerReview.buyerReviewId);
+  }
 }
