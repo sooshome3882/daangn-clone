@@ -6,9 +6,9 @@ import { SelectedMannerItemToSeller } from './selectedMannerItemToSeller.entity'
 @Entity()
 @ObjectType()
 export class MannerItem extends BaseEntity {
-  @Field(() => Number)
-  @PrimaryColumn({ type: 'int' })
-  mannerItemId!: number;
+  @Field(() => String)
+  @PrimaryColumn({ type: 'varchar' })
+  mannerItemId!: string;
 
   @Field()
   @Column({ type: 'text' })

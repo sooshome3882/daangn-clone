@@ -16,7 +16,7 @@ export class ReviewDto {
   @IsNumber()
   score!: ScoreItem;
 
-  @Field(() => [Number])
+  @Field(() => [String])
   @IsNotEmpty()
   selectedMannerItems!: MannerItem[];
 

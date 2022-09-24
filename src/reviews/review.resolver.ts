@@ -8,6 +8,7 @@ import { BuyerReview } from './entities/buyerReview.entity';
 import { MannerItem } from './entities/mannerItem.entity';
 import { ScoreItem } from './entities/scoreItem.entity';
 import { SellerReview } from './entities/sellerReview.entity';
+import { ReviewInputValidationPipe } from './pipes/review.pipe';
 import { ReviewService } from './review.service';
 
 @Resolver()
@@ -17,14 +18,12 @@ export class ReviewResolver {
 
   // scoreItem 데이터 조회
   @Query(() => [ScoreItem])
-  @UsePipes(ValidationPipe)
   getScoreItemData(): Promise<ScoreItem[]> {
     return this.reviewService.getScoreItemData();
   }
 
   // mannerItem 데이터 조회
   @Query(() => [MannerItem])
-  @UsePipes(ValidationPipe)
   getMannerItemData(): Promise<MannerItem[]> {
     return this.reviewService.getMannerItemData();
   }
@@ -32,28 +31,28 @@ export class ReviewResolver {
   // 판매자에 대한 거래후기 생성
   @Mutation(() => SellerReview)
   @UsePipes(ValidationPipe)
-  createSellerReview(@GetUser() user: User, @Args('reviewDto') reviewDto: ReviewDto): Promise<SellerReview> {
+  createSellerReview(@GetUser() user: User, @Args('reviewDto', ReviewInputValidationPipe) reviewDto: ReviewDto): Promise<SellerReview> {
     return this.reviewService.createSellerReview(user, reviewDto);
   }
 
   // 구매자에 대한 거래후기 생성
   @Mutation(() => BuyerReview)
   @UsePipes(ValidationPipe)
-  createBuyerReview(@GetUser() user: User, @Args('reviewDto') reviewDto: ReviewDto): Promise<BuyerReview> {
+  createBuyerReview(@GetUser() user: User, @Args('reviewDto', ReviewInputValidationPipe) reviewDto: ReviewDto): Promise<BuyerReview> {
     return this.reviewService.createBuyerReview(user, reviewDto);
   }
 
   // 판매자에 대한 거래후기 수정
   @Mutation(() => SellerReview)
   @UsePipes(ValidationPipe)
-  updateSellerReview(@GetUser() user: User, @Args('reviewDto') reviewDto: ReviewDto): Promise<SellerReview> {
+  updateSellerReview(@GetUser() user: User, @Args('reviewDto', ReviewInputValidationPipe) reviewDto: ReviewDto): Promise<SellerReview> {
     return this.reviewService.updateSellerReview(user, reviewDto);
   }
 
   // 구매자에 대한 거래후기 수정
   @Mutation(() => BuyerReview)
   @UsePipes(ValidationPipe)
-  updateBuyerReview(@GetUser() user: User, @Args('reviewDto') reviewDto: ReviewDto): Promise<BuyerReview> {
+  updateBuyerReview(@GetUser() user: User, @Args('reviewDto', ReviewInputValidationPipe) reviewDto: ReviewDto): Promise<BuyerReview> {
     return this.reviewService.updateBuyerReview(user, reviewDto);
   }
 
