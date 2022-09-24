@@ -224,10 +224,11 @@ export class ReviewService {
      * 판매자에 대한 거래후기 삭제 (구매자가 삭제)
      *
      * @author 허정연(golgol22)
-     * @param {user, post} 로그인한 유저, 삭제할 리뷰를 적은 판매자의 게시글 ID
+     * @param {user, post} 로그인한 유저, 삭제할 리뷰를 적은 게시글 ID
      * @return {string} 거래후기가 삭제되었습니다 반환
      * @throws {NotFoundException} 구매자 정보가 등록되지 않은 게시글일 때 예외처리
      * @throws {ForbiddenException} 로그인한 유저가 작성한 거래 후기가 아닐 때 예외처리
+     * @throws {NotFoundException} 작성된 거래후기가 없을 때 예외처리
      * @throws {InternalServerErrorException} 거래 후기 수정 실패할 때 예외처리
      */
     const purchase = await getRepository(PurchaseHistory).findOne({ where: { post } });
@@ -243,6 +244,38 @@ export class ReviewService {
     }
     try {
       await getRepository(SellerReview).delete({ post });
+      return '거래후기가 삭제되었습니다';
+    } catch (err) {
+      console.error(err);
+      throw new InternalServerErrorException('거래 후기 삭제에 실패하였습니다. 잠시후 다시 시도해주세요.');
+    }
+  }
+
+  async deleteBuyerReview(user: User, post: number): Promise<string> {
+    /**
+     * 구매자에 대한 거래후기 삭제 (판매자가 삭제)
+     *
+     * @author 허정연(golgol22)
+     * @param {user, post} 로그인한 유저, 삭제할 리뷰를 적은 게시글 ID
+     * @return {string} 거래후기가 삭제되었습니다 반환
+     * @throws {NotFoundException} 구매자 정보가 등록되지 않은 게시글일 때 예외처리
+     * @throws {ForbiddenException} 로그인한 유저가 작성한 거래 후기가 아닐 때 예외처리
+     * @throws {NotFoundException} 작성된 거래후기가 없을 때 예외처리
+     * @throws {InternalServerErrorException} 거래 후기 수정 실패할 때 예외처리
+     */
+    const purchase = await getRepository(PurchaseHistory).findOne({ where: { post } });
+    if (!purchase) {
+      throw new NotFoundException('아직 구매되지 않은 게시글입니다.');
+    }
+    if (JSON.stringify(purchase.post.user) !== JSON.stringify(user)) {
+      throw new ForbiddenException('본인이 작성한 거래후기만 수정할 수 있습니다.');
+    }
+    const buyerReview = await getRepository(BuyerReview).findOne({ where: { post } });
+    if (!buyerReview) {
+      throw new NotFoundException('작성된 거래후기가 없습니다.');
+    }
+    try {
+      await getRepository(BuyerReview).delete({ post });
       return '거래후기가 삭제되었습니다';
     } catch (err) {
       console.error(err);
