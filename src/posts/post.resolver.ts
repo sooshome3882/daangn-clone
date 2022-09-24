@@ -19,11 +19,18 @@ import { JwtAuthGuard } from 'src/users/guards/jwtAuth.guard';
 import { PostImagesValidationPipe } from './pipes/postImages.pipe';
 import { PostsViewRecord } from './postsViewRecord.entity';
 import { PostsViewDto } from './dto/addPostsView.dto';
+import { Category } from 'src/categories/category.entity';
 
 @Resolver(() => Post)
 @UseGuards(JwtAuthGuard)
 export class PostResolver {
   constructor(private readonly postService: PostService) {}
+
+  // 게시글 카테고리 조회
+  @Query(() => [Category])
+  getCategoryItem(): Promise<Category[]> {
+    return this.postService.getCategoryItem();
+  }
 
   // 게시글 작성
   @Mutation(() => Post)
