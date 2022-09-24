@@ -61,6 +61,16 @@ export class ReviewService {
     return await getRepository(BuyerReview).findOne(buyerReviewId);
   }
 
+  async mannerTempCal(manager: EntityManager, user: User, score: number, selectedMannerItems: any[]) {
+    if (score === 1 || score === 2) {
+      user.mannerTemp = user.mannerTemp * 1 + 0.1 * selectedMannerItems.length;
+    } else {
+      user.mannerTemp = user.mannerTemp * 1 - 0.1 * selectedMannerItems.length;
+    }
+    await manager.save(user);
+    return user;
+  }
+
   async createSellerReview(user: User, reviewDto: ReviewDto): Promise<SellerReview> {
     /**
      * 판매자에 대한 거래후기 작성 (구매자가 작성)
@@ -74,7 +84,7 @@ export class ReviewService {
      * @throws {BadRequestException} 이미 리뷰를 작성하였을 때 예외처리
      * @throws {InternalServerErrorException} 거래 후기 저장 실패할 때 예외처리
      */
-    const { post, selectedMannerItems } = reviewDto;
+    const { post, score, selectedMannerItems } = reviewDto;
     const purchase = await getRepository(PurchaseHistory).findOne({ where: { post } });
     if (!purchase) {
       throw new NotFoundException('아직 구매되지 않은 게시글입니다.');
@@ -91,6 +101,7 @@ export class ReviewService {
       .transaction(async (manager: EntityManager) => {
         insertId = await this.reviewRepository.createSellerReview(manager, reviewDto);
         await this.reviewRepository.setSelectedMannerItemToSeller(manager, insertId, selectedMannerItems);
+        await this.mannerTempCal(manager, purchase.post.user, score, selectedMannerItems);
       })
       .catch(err => {
         console.error(err);
@@ -112,7 +123,7 @@ export class ReviewService {
      * @throws {BadRequestException} 이미 리뷰를 작성하였을 때 예외처리
      * @throws {InternalServerErrorException} 거래 후기 저장 실패할 때 예외처리
      */
-    const { post, selectedMannerItems } = reviewDto;
+    const { post, score, selectedMannerItems } = reviewDto;
     const purchase = await getRepository(PurchaseHistory).findOne({ where: { post } });
     if (!purchase) {
       throw new NotFoundException('아직 구매되지 않은 게시글입니다.');
@@ -129,6 +140,7 @@ export class ReviewService {
       .transaction(async (manager: EntityManager) => {
         insertId = await this.reviewRepository.createBuyerReview(manager, reviewDto);
         await this.reviewRepository.setSelectedMannerItemToBuyer(manager, insertId, selectedMannerItems);
+        await this.mannerTempCal(manager, purchase.user, score, selectedMannerItems);
       })
       .catch(err => {
         console.error(err);
@@ -164,12 +176,14 @@ export class ReviewService {
     }
     await getConnection()
       .transaction(async (manager: EntityManager) => {
+        const userMannerTempReset = await this.mannerTempCal(manager, purchase.post.user, sellerReview.score === 3 ? 1 : 3, sellerReview.selectedMannerItems);
         sellerReview.score = score;
         sellerReview.review = review;
         sellerReview.retransaction = retransaction;
         await manager.save(sellerReview);
         await getRepository(SelectedMannerItemToSeller).delete({ sellerReview: sellerReview.sellerReviewId });
         await this.reviewRepository.setSelectedMannerItemToSeller(manager, sellerReview.sellerReviewId, selectedMannerItems);
+        await this.mannerTempCal(manager, userMannerTempReset, score, selectedMannerItems);
       })
       .catch(err => {
         console.error(err);
@@ -205,12 +219,14 @@ export class ReviewService {
     }
     await getConnection()
       .transaction(async (manager: EntityManager) => {
+        const userMannerTempReset = await this.mannerTempCal(manager, purchase.post.user, buyerReview.score === 3 ? 1 : 3, buyerReview.selectedMannerItems);
         buyerReview.score = score;
         buyerReview.review = review;
         buyerReview.retransaction = retransaction;
         await manager.save(buyerReview);
         await getRepository(SelectedMannerItemToBuyer).delete({ buyerReview: buyerReview.buyerReviewId });
         await this.reviewRepository.setSelectedMannerItemToBuyer(manager, buyerReview.buyerReviewId, selectedMannerItems);
+        await this.mannerTempCal(manager, userMannerTempReset, score, selectedMannerItems);
       })
       .catch(err => {
         console.error(err);
@@ -222,6 +238,7 @@ export class ReviewService {
   async deleteSellerReview(user: User, post: number): Promise<string> {
     /**
      * 판매자에 대한 거래후기 삭제 (구매자가 삭제)
+     * 선택된 매너 항목은 거래 후기가 삭제되면 자동으로 삭제 (Cascade)
      *
      * @author 허정연(golgol22)
      * @param {user, post} 로그인한 유저, 삭제할 리뷰를 적은 게시글 ID
@@ -242,18 +259,22 @@ export class ReviewService {
     if (!sellerReview) {
       throw new NotFoundException('작성된 거래후기가 없습니다.');
     }
-    try {
-      await getRepository(SellerReview).delete({ post });
-      return '거래후기가 삭제되었습니다';
-    } catch (err) {
-      console.error(err);
-      throw new InternalServerErrorException('거래 후기 삭제에 실패하였습니다. 잠시후 다시 시도해주세요.');
-    }
+    await getConnection()
+      .transaction(async (manager: EntityManager) => {
+        await this.mannerTempCal(manager, purchase.post.user, sellerReview.score === 3 ? 1 : 3, sellerReview.selectedMannerItems);
+        await manager.delete(SellerReview, { post });
+      })
+      .catch(err => {
+        console.error(err);
+        throw new InternalServerErrorException('거래 후기 삭제에 실패하였습니다. 잠시후 다시 시도해주세요.');
+      });
+    return '거래후기가 삭제되었습니다';
   }
 
   async deleteBuyerReview(user: User, post: number): Promise<string> {
     /**
      * 구매자에 대한 거래후기 삭제 (판매자가 삭제)
+     * 선택된 매너 항목은 거래후기가 삭제되면 자동으로 삭제 (Cascade)
      *
      * @author 허정연(golgol22)
      * @param {user, post} 로그인한 유저, 삭제할 리뷰를 적은 게시글 ID
@@ -274,12 +295,15 @@ export class ReviewService {
     if (!buyerReview) {
       throw new NotFoundException('작성된 거래후기가 없습니다.');
     }
-    try {
-      await getRepository(BuyerReview).delete({ post });
-      return '거래후기가 삭제되었습니다';
-    } catch (err) {
-      console.error(err);
-      throw new InternalServerErrorException('거래 후기 삭제에 실패하였습니다. 잠시후 다시 시도해주세요.');
-    }
+    await getConnection()
+      .transaction(async (manager: EntityManager) => {
+        await this.mannerTempCal(manager, purchase.post.user, buyerReview.score === 3 ? 1 : 3, buyerReview.selectedMannerItems);
+        await manager.delete(BuyerReview, { post });
+      })
+      .catch(err => {
+        console.error(err);
+        throw new InternalServerErrorException('거래 후기 삭제에 실패하였습니다. 잠시후 다시 시도해주세요.');
+      });
+    return '거래후기가 삭제되었습니다';
   }
 }
