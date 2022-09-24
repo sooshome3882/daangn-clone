@@ -56,4 +56,11 @@ export class ReviewResolver {
   updateBuyerReview(@GetUser() user: User, @Args('reviewDto') reviewDto: ReviewDto): Promise<BuyerReview> {
     return this.reviewService.updateBuyerReview(user, reviewDto);
   }
+
+  // 판매자에 대한 거래후기 삭제
+  @Mutation(() => String)
+  @UsePipes(ValidationPipe)
+  deleteSellerReview(@GetUser() user: User, @Args('post', ParseIntPipe) post: number): Promise<string> {
+    return this.reviewService.deleteSellerReview(user, post);
+  }
 }
