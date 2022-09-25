@@ -24,6 +24,7 @@ import * as config from 'config';
 import * as AWS from 'aws-sdk';
 import { FileUpload } from 'src/users/models/fileUpload.model';
 import { PostImage } from './postImage.entity';
+import { Category } from 'src/categories/category.entity';
 
 const s3Config: any = config.get('S3');
 const AWS_S3_BUCKET_NAME = s3Config.AWS_S3_BUCKET_NAME;
@@ -42,6 +43,16 @@ export class PostService {
     private postRepository: PostRepository,
     private readonly userService: UserService,
   ) {}
+
+  async getCategoryItem(): Promise<Category[]> {
+    /**
+     * 게시글 카테고리 static data 조회
+     *
+     * @author 허정연(golgol22)
+     * @return {Category[]} 카테고리 데이터 반환
+     */
+    return await getRepository(Category).find();
+  }
 
   async imagesUploadToS3(manager: EntityManager, insertId: number, images: Promise<FileUpload>[]) {
     /**

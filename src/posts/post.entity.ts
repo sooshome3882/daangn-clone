@@ -5,7 +5,7 @@ import { TownRange } from 'src/townRanges/townRange.entity';
 import { User } from 'src/users/user.entity';
 import { PriceOffer } from './priceOffer.entity';
 import { PostsComplaint } from './postsComplaint.entity';
-import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { PostsLikeRecord } from './postsLikeRecord.entity';
 import { PostImage } from './postImage.entity';
 import { PurchaseHistory } from '../mypage/purchaseHistory.entity';
