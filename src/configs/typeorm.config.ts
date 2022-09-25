@@ -23,6 +23,7 @@ import { SelectedMannerItemToSeller } from 'src/reviews/entities/selectedMannerI
 import { BuyerReview } from 'src/reviews/entities/buyerReview.entity';
 import { ScoreItem } from 'src/reviews/entities/scoreItem.entity';
 import { SelectedMannerItemToBuyer } from 'src/reviews/entities/selectedMannerItemToBuyer.entity';
+import { Admin } from 'src/admins/entities/admin.entity';
 
 const dbConfig: any = config.get('db');
 
@@ -57,6 +58,7 @@ export const typeORMConfig: TypeOrmModuleOptions = {
     MannerItem,
     SelectedMannerItemToSeller,
     SelectedMannerItemToBuyer,
+    Admin,
   ],
   synchronize: dbConfig.synchronize,
   timezone: dbConfig.timezone,
