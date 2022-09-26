@@ -27,8 +27,8 @@ export class ReviewInputValidationPipe implements PipeTransform {
       }
     }
     if (score === 3) {
-      const isVaild = selectedMannerItems.filter((x: any) => mannerItemOptionsByScore3.includes(x));
-      if (isVaild.length !== selectedMannerItems.length) {
+      const isValid = selectedMannerItems.filter((x: any) => mannerItemOptionsByScore3.includes(x));
+      if (isValid.length !== selectedMannerItems.length) {
         throw new BadRequestException(`전체 거래 평가에 해당하는 매너 항목이 아닙니다.`);
       }
     }
