@@ -39,7 +39,7 @@ export class ReviewService {
     return await getRepository(MannerItem).find();
   }
 
-  async getSellerReviewById(sellerReviewId: number) {
+  private async getSellerReviewById(sellerReviewId: number) {
     /**
      * 판매자에 대한 거래후기 조회
      *
@@ -61,7 +61,7 @@ export class ReviewService {
     return await getRepository(BuyerReview).findOne(buyerReviewId);
   }
 
-  async mannerTempCal(manager: EntityManager, user: User, score: number, selectedMannerItems: any[]) {
+  private async mannerTempCal(manager: EntityManager, user: User, score: number, selectedMannerItems: any[]) {
     /**
      * 리뷰에 따른 매너 온도 계산
      *

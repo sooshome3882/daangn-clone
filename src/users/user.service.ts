@@ -134,7 +134,7 @@ export class UserService {
     return searchTownList;
   }
 
-  async verifyExistInData(area: string) {
+  private async verifyExistInData(area: string) {
     /**
      * 입력한 동네가 데이터에 있는지 여부 확인
      *
@@ -231,7 +231,7 @@ export class UserService {
     return await this.userRepository.findOne(phoneNumber);
   }
 
-  makeSignitureForSMS(): string {
+  private makeSignitureForSMS(): string {
     /**
      * sms를 보내기 위한 시그니처 생성
      *
@@ -255,7 +255,7 @@ export class UserService {
     return signiture.toString();
   }
 
-  makeRand6Num(): number {
+  private makeRand6Num(): number {
     /**
      * sms에 보낼 인증번호 6자리 생성
      *
@@ -385,7 +385,7 @@ export class UserService {
     }
   }
 
-  async imageDeleteFromS3(profileImage: string) {
+  private async imageDeleteFromS3(profileImage: string) {
     /**
      * S3에서 프로필 이미지 삭제
      *
@@ -636,7 +636,7 @@ export class UserService {
     return `동네 범위가 ${townRange}으로 변경되었습니다.`;
   }
 
-  async townRangeEqual1(location: Location) {
+  private async townRangeEqual1(location: Location) {
     /**
      * 동네 범위가 1일 때 동네 목록 조회
      * 동네 범위가 1일때는 같은 동만 조회가능 (ex. 논현1동 -> 논현동, 논현1동, 논현2동)
@@ -677,7 +677,7 @@ export class UserService {
     return eupMyeonDong.hits.hits;
   }
 
-  async getCoordinateByTown(location: Location) {
+  private async getCoordinateByTown(location: Location) {
     /**
      * DB에 저장된 위치 정보에 대한 위도, 경도 좌표값
      *
