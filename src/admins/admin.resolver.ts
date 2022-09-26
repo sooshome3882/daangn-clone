@@ -14,11 +14,13 @@ import { AuthorityInputValidationPipe } from './pipes/authority.pipe';
 export class AdminResolver {
   constructor(private readonly adminService: AdminService) {}
 
+  // 관리자 로그인
   @Query(() => String)
   loginAdmin(@Args('loginAdminDto') loginAdminDto: LoginAdminDto): Promise<string> {
     return this.adminService.loginAdmin(loginAdminDto);
   }
 
+  // 관리자 계정 생성
   @Mutation(() => Admin)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleType.ACCOUNT_CREATE)
@@ -26,6 +28,7 @@ export class AdminResolver {
     return this.adminService.createAdmin(adminDto);
   }
 
+  // 관라자 계정 수정
   @Mutation(() => Admin)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleType.ACCOUNT_UPDATE)

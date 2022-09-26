@@ -19,6 +19,14 @@ export class AdminService {
   ) {}
 
   async loginAdmin(loginAdminDto: LoginAdminDto): Promise<string> {
+    /**
+     * 관리자 로그인
+     *
+     * @author 허정연(golgol22)
+     * @param {adminId, adminPw} 관리자아이다, 관리자 패스워드
+     * @return {accessToken} 로그인되었을 때 토큰 발급
+     * @throws {UnauthorizedException} 일치하는 관리자 정보를 찾지 못했을 때 예외처리
+     */
     const { adminId, adminPw } = loginAdminDto;
     const found = await this.adminRepository.findOne(adminId);
     const validatePassword = await bcrypt.compare(adminPw, found.adminPw);
@@ -31,6 +39,14 @@ export class AdminService {
   }
 
   async createAdmin(adminDto: AdminDto): Promise<Admin> {
+    /**
+     * 관리자 계정 생성
+     *
+     * @author 허정연(golgol22)
+     * @param {adminId, adminPw, authorities} 관리자아이다, 관리자 패스워드, 가지게 될 권한
+     * @return {Admin} 생성된 관리자 계정
+     * @throws {ConflictException} 생성할 아이디가 이미 사용 중일 때 예외처리
+     */
     const { adminId, adminPw, authorities } = adminDto;
     const found = await this.adminRepository.findOne(adminId);
     if (found) {
@@ -43,6 +59,14 @@ export class AdminService {
   }
 
   async updateAdmin(adminDto: AdminDto): Promise<Admin> {
+    /**
+     * 관리자 계정 수정
+     *
+     * @author 허정연(golgol22)
+     * @param {adminId, adminPw, authorities} 관리자아이다, 관리자 패스워드, 가지게 될 권한
+     * @return {Admin} 수정된 관리자 계정
+     * @throws {NotFoundException} 수정하려고 하는 계정이 없는 아이디일 때 예외처리
+     */
     const { adminId, adminPw, authorities } = adminDto;
     const found = await this.adminRepository.findOne(adminId);
     if (!found) {

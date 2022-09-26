@@ -6,9 +6,8 @@ import { RoleType } from '../models/role.enum';
  *
  * @author 허정연(golgol22)
  * @return {value} 요청 파라미터로 전달받은 값
- * @throws {BadRequestException} 매너 항목을 하나도 선택하지 않았을 때 예외처리
- * @throws {BadRequestException} 최고예요(1), 좋아요(2)에 해당하는 매너항목이 아닐 때 예외처리
- * @throws {BadRequestException} 별로예요(3)에 해당하는 매너항목이 아닐 때 예외처리
+ * @throws {BadRequestException} 권한 항목을 하나도 선택하지 않았을 때 예외처리
+ * @throws {BadRequestException} 지정할 수 없는 권한을 포함하고 있을 때 예외처리
  */
 export class AuthorityInputValidationPipe implements PipeTransform {
   readonly roleOptions = [RoleType.ACCOUNT_CREATE, RoleType.ACCOUNT_UPDATE, RoleType.READ, RoleType.WRITE];
