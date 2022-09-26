@@ -18,6 +18,5 @@ export class AdminDto {
 
   @Field(() => [String])
   @IsNotEmpty()
-  @IsString()
   authorities!: RoleType[];
 }
