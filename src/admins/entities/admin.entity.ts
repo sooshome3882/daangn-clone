@@ -21,6 +21,7 @@ export class Admin extends BaseEntity {
   @UpdateDateColumn({ type: 'datetime' })
   updatedAt!: Date;
 
-  @OneToMany(type => AdminAuthority, adminAuthority => adminAuthority.admin, { eager: false })
+  @Field(() => [AdminAuthority])
+  @OneToMany(type => AdminAuthority, adminAuthority => adminAuthority.admin, { eager: true })
   authorities!: AdminAuthority[];
 }

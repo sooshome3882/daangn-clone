@@ -1,6 +1,6 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-import { RoleType } from '../role.enum';
+import { RoleType } from '../models/role.enum';
 import { Admin } from './admin.entity';
 
 @Entity()
@@ -10,10 +10,9 @@ export class AdminAuthority extends BaseEntity {
   @PrimaryGeneratedColumn({ type: 'int' })
   adminAuthorityId!: number;
 
-  @Field(() => Admin)
-  @ManyToOne(type => Admin, admin => admin.authorities)
   @JoinColumn({ name: 'adminId' })
-  admin: Admin;
+  @ManyToOne(type => Admin, admin => admin.authorities, { eager: false, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
+  admin!: string;
 
   @Field()
   @Column({ type: 'varchar' })
