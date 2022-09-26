@@ -10,9 +10,9 @@ export class AdminAuthority extends BaseEntity {
   @PrimaryGeneratedColumn({ type: 'int' })
   adminAuthorityId!: number;
 
-  @Field()
+  @Field(() => Admin)
   @ManyToOne(type => Admin, admin => admin.authorities)
-  @JoinColumn({ name: 'user_id' })
+  @JoinColumn({ name: 'adminId' })
   admin: Admin;
 
   @Field()
