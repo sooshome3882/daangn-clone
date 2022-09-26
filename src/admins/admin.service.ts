@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AdminRepository } from './repositories/admin.repository';
@@ -7,6 +7,7 @@ import * as bcrypt from 'bcrypt';
 import { AdminDto } from './dto/admin.dto';
 import { Admin } from './entities/admin.entity';
 import { AdminAuthorityRepository } from './repositories/adminAuthority.repository';
+import { EntityManager, getConnection } from 'typeorm';
 
 @Injectable()
 export class AdminService {
@@ -53,8 +54,15 @@ export class AdminService {
       throw new ConflictException('사용중인 아이디입니다.');
     }
     const hashedAdminPw = await bcrypt.hash(adminPw, 10);
-    await this.adminRepository.createAdmin(adminId, hashedAdminPw);
-    await this.adminAuthorityRepository.addAdminAuthorities(adminId, authorities);
+    await getConnection()
+      .transaction(async (manager: EntityManager) => {
+        await this.adminRepository.createAdmin(manager, adminId, hashedAdminPw);
+        await this.adminAuthorityRepository.addAdminAuthorities(manager, adminId, authorities);
+      })
+      .catch(err => {
+        console.error(err);
+        throw new InternalServerErrorException('관리자 계정 생성에 실패하였습니다. 잠시후 다시 시도해주세요.');
+      });
     return await this.adminRepository.getAdminById(adminId);
   }
 
@@ -73,9 +81,16 @@ export class AdminService {
       throw new NotFoundException('없는 아이디입니다.');
     }
     const hashedAdminPw = await bcrypt.hash(adminPw, 10);
-    await this.adminRepository.updateAdmin(adminId, hashedAdminPw);
-    await this.adminAuthorityRepository.deleteAdminAuthorities(adminId);
-    await this.adminAuthorityRepository.addAdminAuthorities(adminId, authorities);
+    await getConnection()
+      .transaction(async (manager: EntityManager) => {
+        await this.adminRepository.updateAdmin(manager, adminId, hashedAdminPw);
+        await this.adminAuthorityRepository.deleteAdminAuthorities(manager, adminId);
+        await this.adminAuthorityRepository.addAdminAuthorities(manager, adminId, authorities);
+      })
+      .catch(err => {
+        console.error(err);
+        throw new InternalServerErrorException('관리자 계정 수정에 실패하였습니다. 잠시후 다시 시도해주세요.');
+      });
     return await this.adminRepository.getAdminById(adminId);
   }
 }
