@@ -5,7 +5,7 @@ import { Strategy, ExtractJwt } from 'passport-jwt';
 import * as config from 'config';
 import { Payload } from '../models/payload.model';
 import { Admin } from '../entities/admin.entity';
-import { AdminRepository } from '../admin.repository';
+import { AdminRepository } from '../repositories/admin.repository';
 
 const jwtConfig: any = config.get('jwt');
 
