@@ -1,5 +1,6 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import { BaseEntity, Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn } from 'typeorm';
+import { BaseEntity, Column, CreateDateColumn, Entity, OneToMany, PrimaryColumn, UpdateDateColumn } from 'typeorm';
+import { AdminAuthority } from './adminAuthority.entity';
 
 @Entity()
 @ObjectType()
@@ -13,14 +14,13 @@ export class Admin extends BaseEntity {
   adminPw!: string;
 
   @Field()
-  @Column({ type: 'int' })
-  permission!: number;
-
-  @Field()
   @CreateDateColumn({ type: 'datetime' })
   createdAt!: Date;
 
   @Field()
   @UpdateDateColumn({ type: 'datetime' })
   updatedAt!: Date;
+
+  @OneToMany(type => AdminAuthority, adminAuthority => adminAuthority.admin, { eager: false })
+  authorities!: AdminAuthority[];
 }
