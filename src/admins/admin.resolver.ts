@@ -8,6 +8,7 @@ import { Admin } from './entities/admin.entity';
 import { JwtAuthGuard } from './guards/jwtAuth.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { RoleType } from './models/role.enum';
+import { AuthorityInputValidationPipe } from './pipes/authority.pipe';
 
 @Resolver(() => Admin)
 export class AdminResolver {
@@ -21,14 +22,14 @@ export class AdminResolver {
   @Mutation(() => Admin)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleType.ACCOUNT_CREATE)
-  createAdmin(@Args('adminDto') adminDto: AdminDto): Promise<Admin> {
+  createAdmin(@Args('adminDto', AuthorityInputValidationPipe) adminDto: AdminDto): Promise<Admin> {
     return this.adminService.createAdmin(adminDto);
   }
 
   @Mutation(() => Admin)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleType.ACCOUNT_UPDATE)
-  updateAdmin(@Args('adminDto') adminDto: AdminDto): Promise<Admin> {
+  updateAdmin(@Args('adminDto', AuthorityInputValidationPipe) adminDto: AdminDto): Promise<Admin> {
     return this.adminService.updateAdmin(adminDto);
   }
 }
