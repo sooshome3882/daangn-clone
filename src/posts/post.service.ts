@@ -82,7 +82,7 @@ export class PostService {
     }
   }
 
-  async imageDeleteFromS3(postImages: PostImage[]) {
+  private async imageDeleteFromS3(postImages: PostImage[]) {
     /**
      * S3에서 게시글 이미지 삭제
      *
