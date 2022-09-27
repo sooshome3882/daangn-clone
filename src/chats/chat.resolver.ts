@@ -1,3 +1,7 @@
+import { CreateChatComplaintsDto } from './dto/createChatComplaints.dto';
+import { ChatComplaints } from './chatComplaints.entity';
+import { CreateUsersComplaintsDto } from './dto/createUsersComplaints.dto';
+import { UserComplaints } from 'src/chats/userComplaints.entity';
 import { CreateChatRoomDto } from './dto/createChatRoom.dto';
 import { ChatRoom } from 'src/chats/chatRoom.entity';
 import { CreateChatDto } from './dto/createChat.dto';
@@ -36,5 +40,17 @@ export class ChatResolver {
   @Query(() => [Chat])
   getChatListOfChatRoom(@GetUser() user: User, @Args('chatRoomId') chatRoomId: number): Promise<Chat[]> {
     return this.chatService.getChatListOfChatRoom(user, chatRoomId);
+  }
+
+  // 채팅 유저 신고
+  @Mutation(() => UserComplaints)
+  reportUserFromChat(@GetUser() user: User, @Args('createUsersComplaintsDto') createUsersComplaintsDto: CreateUsersComplaintsDto): Promise<UserComplaints> {
+    return this.chatService.reportUserFromChat(user, createUsersComplaintsDto);
+  }
+
+  // 채팅 신고
+  @Mutation(() => ChatComplaints)
+  reportChat(@GetUser() user: User, @Args('createChatComplaintsDto') createChatComplaintsDto: CreateChatComplaintsDto): Promise<ChatComplaints> {
+    return this.chatService.reportChat(user, createChatComplaintsDto);
   }
 }
