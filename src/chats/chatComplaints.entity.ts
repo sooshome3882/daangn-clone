@@ -28,7 +28,7 @@ export class ChatComplaints extends BaseEntity {
   processState!: ProcessState;
 
   @Field(() => User)
-  @JoinColumn({ name: 'complaintUserName' })
+  @JoinColumn({ name: 'complaintUserPhoneNumber' })
   @ManyToOne(type => User, user => user.chatComplaints, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
   user!: User;
 

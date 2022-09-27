@@ -1,8 +1,10 @@
+import { BlockUser } from 'src/chats/blockUser.entity';
+import { CreateBlockUserDto } from './dto/createBlockUser.dto';
 import { ChatComplaints } from './chatComplaints.entity';
 import { CreateChatComplaintsDto } from './dto/createChatComplaints.dto';
 import { UserComplaints } from 'src/chats/userComplaints.entity';
 import { CreateUsersComplaintsDto } from './dto/createUsersComplaints.dto';
-import { NotFoundException } from '@nestjs/common';
+import { NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { CreateChatRoomDto } from './dto/createChatRoom.dto';
 import { EntityManager, EntityRepository, getConnection, getRepository, Repository } from 'typeorm';
 import { ChatRoom } from './chatRoom.entity';
@@ -24,19 +26,55 @@ export class ChatRepository extends Repository<ChatRoom> {
     return query.raw.insertId;
   }
 
-  async reportUserFromChat(user: User, createUsersComplaintsDto: CreateUsersComplaintsDto): Promise<number> {
+  async reportUserFromChat(manager: EntityManager, user: User, createUsersComplaintsDto: CreateUsersComplaintsDto): Promise<number> {
     const { subjectUserName, complaintReason } = createUsersComplaintsDto;
-    const query = await getRepository(UserComplaints)
+    const user1 = await getRepository(User).findOne({ where: { userName: subjectUserName } });
+    const query = await manager
+      .getRepository(UserComplaints)
       .createQueryBuilder('UserComplaints')
       .insert()
       .into(UserComplaints)
       .values({
+        complaintUserPhoneNumber: user,
+        subjectUserPhoneNumber: user1,
         complaintReason,
-        complaintUserName: user,
-        subjectUserName,
       })
       .execute();
     return query.raw.insertId;
+  }
+
+  async blockUser(manager: EntityManager, user: User, createUsersComplaintsDto: CreateUsersComplaintsDto) {
+    const { subjectUserName } = createUsersComplaintsDto;
+    const user1 = await getRepository(User).findOne({ where: { userName: subjectUserName } });
+    const query = await manager
+      .getRepository(BlockUser)
+      .createQueryBuilder('BlockUser')
+      .insert()
+      .into(BlockUser)
+      .values({
+        user,
+        targetUser: user1,
+      })
+      .execute();
+    return query.raw.insertId;
+  }
+
+  async dealReportedUserTransaction(user: User, createUsersComplaintDto: CreateUsersComplaintsDto) {
+    const queryRunner = getConnection().createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      await this.reportUserFromChat(queryRunner.manager, user, createUsersComplaintDto);
+      const insertId = await this.blockUser(queryRunner.manager, user, createUsersComplaintDto);
+      await queryRunner.commitTransaction();
+      return insertId;
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      console.error(err);
+      throw new InternalServerErrorException('채팅 상대 유저 신고 및 차단을 실패하였습니다. 잠시후 다시 시도해주세요.');
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   async reportChat(user: User, createChatComplaintsDto: CreateChatComplaintsDto) {

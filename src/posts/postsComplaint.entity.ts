@@ -1,5 +1,5 @@
-import { Field, Int, ObjectType } from '@nestjs/graphql';
-import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Field, ObjectType } from '@nestjs/graphql';
+import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Post } from './post.entity';
 import { ProcessState } from 'src/processStates/processState.entity';
 import { ComplaintReason } from 'src/complaintReasons/complaintReason.entity';
@@ -16,12 +16,12 @@ export class PostsComplaint extends BaseEntity {
   @ManyToOne(type => Post, post => post.postsComplaint, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
   post!: Post;
 
-  @Field()
+  @Field(() => ComplaintReason)
   @JoinColumn({ name: 'complaintReasonId' })
   @ManyToOne(type => ComplaintReason, complaintReason => complaintReason.postsComplaint, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
   complaintReason!: ComplaintReason;
 
-  @Field()
+  @Field(() => ProcessState)
   @JoinColumn({ name: 'processStateId' })
   @ManyToOne(type => ProcessState, processState => processState.postsComplaint, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
   processState!: ProcessState;

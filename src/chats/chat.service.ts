@@ -1,3 +1,5 @@
+import { BlockUser } from 'src/chats/blockUser.entity';
+import { CreateBlockUserDto } from './dto/createBlockUser.dto';
 import { CreateChatComplaintsDto } from './dto/createChatComplaints.dto';
 import { UserComplaints } from 'src/chats/userComplaints.entity';
 import { CreateUsersComplaintsDto } from './dto/createUsersComplaints.dto';
@@ -10,8 +12,12 @@ import { User } from 'src/users/user.entity';
 import { ChatRoom } from './chatRoom.entity';
 import { Post } from 'src/posts/post.entity';
 import { Chat } from './chat.entity';
-import { getRepository } from 'typeorm';
+import { getRepository, EntityManager } from 'typeorm';
 import { ChatComplaints } from './chatComplaints.entity';
+
+/**
+ * TODO: block table 구현 추가
+ */
 
 @Injectable()
 export class ChatService {
@@ -121,13 +127,23 @@ export class ChatService {
      * @author 이승연(dltmddus1998)
      * @param {User, createChatDto}
      * @return {Chat} 방금 보낸 채팅
-     * @throws {BadRequestException} 게시글 작성자와 구매희망자 외 채팅 작성 금지
+     * @throws {BadRequestException} 게시글 작성자와 구매희망자 외 채팅 작성 금지 / 차단한 및 차단당한 유저와 채팅 금지
      */
+    // 현재 로그인한 유저 - 채팅하려는 상대방 유저 조합이 blockUser에서 targetUser - user에서 발견되면 채팅 불가
+    const blockUser = await getRepository(BlockUser).findOne({
+      where: {
+        user,
+      },
+    });
     const { chatRoom } = createChatDto;
     const foundChatRoom = await ChatRoom.findOne(chatRoom);
     if (foundChatRoom.user.userName === user.userName || user.userName === foundChatRoom.post.user.userName) {
       const insertId = await this.chatRepository.createChat(user, createChatDto);
       return await Chat.findOne(insertId);
+    } else if (foundChatRoom.user.userName === blockUser.user.userName && user.userName === blockUser.targetUser.userName) {
+      throw new BadRequestException('로그인한 유저를 차단한 유저와는 채팅할 수 없습니다.');
+    } else if (foundChatRoom.user.userName === blockUser.targetUser.userName && user.userName === blockUser.user.userName) {
+      throw new BadRequestException('차단한 유저와는 채팅할 수 없습니다.');
     } else {
       throw new BadRequestException('해당 게시글 작성자와 구매희망자 외에는 채팅에 참여할 수 없습니다.');
     }
@@ -149,7 +165,22 @@ export class ChatService {
      * @param {User, CreateUsersComplaintsDto} 로그인한 유저, 신고대상 유저, 신고 이유
      * @return {UserComplaints} 유저 관련 신고 데이터
      */
-    const insertId = await this.chatRepository.reportUserFromChat(user, createUsersComplaintsDto);
+    const { subjectUserName } = createUsersComplaintsDto;
+    const targetUser = await getRepository(User).findOne({
+      where: {
+        userName: subjectUserName,
+      },
+    });
+    const blockUser = await getRepository(BlockUser).findOne({
+      where: {
+        user,
+        targetUser,
+      },
+    });
+    if (blockUser) {
+      throw new BadRequestException('이미 해당 유저에 대한 차단 기록이 존재합니다.');
+    }
+    const insertId = await this.chatRepository.dealReportedUserTransaction(user, createUsersComplaintsDto);
     return await this.getUserComplaintById(insertId);
   }
 
