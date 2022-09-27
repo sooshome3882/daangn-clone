@@ -30,8 +30,11 @@ export class AdminService {
      */
     const { adminId, adminPw } = loginAdminDto;
     const found = await this.adminRepository.findOne(adminId);
+    if (!found) {
+      throw new UnauthorizedException('아이디나 패스워드가 일치하지 않습니다.');
+    }
     const validatePassword = await bcrypt.compare(adminPw, found.adminPw);
-    if (!found || !validatePassword) {
+    if (!validatePassword) {
       throw new UnauthorizedException('아이디나 패스워드가 일치하지 않습니다.');
     }
     const payload = { adminId };
