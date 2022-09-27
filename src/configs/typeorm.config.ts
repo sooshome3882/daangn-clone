@@ -27,6 +27,7 @@ import { Admin } from 'src/admins/entities/admin.entity';
 import { AdminAuthority } from 'src/admins/entities/adminAuthority.entity';
 import { UserComplaints } from 'src/chats/userComplaints.entity';
 import { ChatComplaints } from 'src/chats/chatComplaints.entity';
+import { BlockUser } from 'src/chats/blockUser.entity';
 
 const dbConfig: any = config.get('db');
 
@@ -65,6 +66,7 @@ export const typeORMConfig: TypeOrmModuleOptions = {
     AdminAuthority,
     UserComplaints,
     ChatComplaints,
+    BlockUser,
   ],
   synchronize: dbConfig.synchronize,
   timezone: dbConfig.timezone,
