@@ -3,6 +3,7 @@ import {
   CacheInterceptor,
   CACHE_MANAGER,
   ConflictException,
+  ForbiddenException,
   Inject,
   Injectable,
   InternalServerErrorException,
@@ -196,6 +197,11 @@ export class UserService {
       const { siDo, siGunGu, eupMyeonDong } = await this.verifyExistInData(area);
       await this.userRepository.joinTransaction(marketingInfoAgree, phoneNumber, siDo, siGunGu, eupMyeonDong);
     }
+    if (found) {
+      if (found.suspensionOfUse) {
+        throw new ForbiddenException('이용정지된 사용자입니다. 고객센터에 문의해주세요.');
+      }
+    }
     const payload = { phoneNumber };
     const accessToken = this.jwtService.sign(payload);
     return accessToken;
@@ -214,6 +220,9 @@ export class UserService {
     const found = await this.getUserByPhoneNumber(phoneNumber);
     if (!found) {
       throw new UnauthorizedException('회원가입을 해주세요');
+    }
+    if (found.suspensionOfUse) {
+      throw new ForbiddenException('이용정지된 사용자입니다. 고객센터에 문의해주세요.');
     }
     const payload = { phoneNumber };
     const accessToken = this.jwtService.sign(payload);
