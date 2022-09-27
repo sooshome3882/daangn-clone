@@ -1,7 +1,8 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { User } from 'src/users/user.entity';
 import { ChatRoom } from './chatRoom.entity';
+import { ChatComplaints } from './chatComplaints.entity';
 
 @Entity()
 @ObjectType()
@@ -35,4 +36,7 @@ export class Chat extends BaseEntity {
   @Field()
   @Column({ default: false })
   reportHandling!: boolean;
+
+  @OneToMany(type => ChatComplaints, chatComplaints => chatComplaints.chat, { eager: false })
+  chatComplaints!: ChatComplaints[];
 }
