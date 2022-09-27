@@ -12,7 +12,7 @@ import { OfferPriceDto } from './dto/offerPrice.dto';
 import { Post } from './post.entity';
 import { PriceOffer } from './priceOffer.entity';
 import { PostService } from './post.service';
-import { PostsComplaint } from './postsComplaint.entity';
+import { PostComplaints } from './postComplaints.entity';
 import { UpdateDealStateDto } from './dto/updateDealState.dto';
 import { GetUser } from 'src/users/validations/getUser.decorator';
 import { JwtAuthGuard } from 'src/users/guards/jwtAuth.guard';
@@ -86,9 +86,9 @@ export class PostResolver {
   }
 
   // 게시글 신고
-  @Mutation(() => PostsComplaint)
+  @Mutation(() => PostComplaints)
   @UsePipes(ValidationPipe)
-  reportPost(@Args('createPostsComplaintDto', ParseFilePipe) createPostsComplaintDto: CreatePostsComplaintsDto): Promise<PostsComplaint> {
+  reportPost(@Args('createPostsComplaintDto', ParseFilePipe) createPostsComplaintDto: CreatePostsComplaintsDto): Promise<PostComplaints> {
     return this.postService.reportPost(createPostsComplaintDto);
   }
 

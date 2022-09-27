@@ -7,7 +7,7 @@ import { TownRange } from 'src/townRanges/townRange.entity';
 import { User } from 'src/users/user.entity';
 import { PriceOffer } from 'src/posts/priceOffer.entity';
 import { ComplaintReason } from 'src/complaintReasons/complaintReason.entity';
-import { PostsComplaint } from 'src/posts/postsComplaint.entity';
+import { PostComplaints } from 'src/posts/postComplaints.entity';
 import { ProcessState } from 'src/processStates/processState.entity';
 import { PostsLikeRecord } from 'src/posts/postsLikeRecord.entity';
 import { PostsViewRecord } from 'src/posts/postsViewRecord.entity';
@@ -46,7 +46,7 @@ export const typeORMConfig: TypeOrmModuleOptions = {
     DealState,
     TownRange,
     ComplaintReason,
-    PostsComplaint,
+    PostComplaints,
     ProcessState,
     PostsLikeRecord,
     PostsViewRecord,
