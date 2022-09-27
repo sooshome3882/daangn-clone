@@ -1,3 +1,6 @@
+import { CreateChatComplaintsDto } from './dto/createChatComplaints.dto';
+import { UserComplaints } from 'src/chats/userComplaints.entity';
+import { CreateUsersComplaintsDto } from './dto/createUsersComplaints.dto';
 import { CreateChatDto } from './dto/createChat.dto';
 import { CreateChatRoomDto } from './dto/createChatRoom.dto';
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
@@ -7,6 +10,8 @@ import { User } from 'src/users/user.entity';
 import { ChatRoom } from './chatRoom.entity';
 import { Post } from 'src/posts/post.entity';
 import { Chat } from './chat.entity';
+import { getRepository } from 'typeorm';
+import { ChatComplaints } from './chatComplaints.entity';
 
 @Injectable()
 export class ChatService {
@@ -126,5 +131,45 @@ export class ChatService {
     } else {
       throw new BadRequestException('해당 게시글 작성자와 구매희망자 외에는 채팅에 참여할 수 없습니다.');
     }
+  }
+
+  async getUserComplaintById(complaintId: number): Promise<UserComplaints> {
+    const found = await getRepository(UserComplaints).findOne(complaintId);
+    if (!found) {
+      throw new NotFoundException(`complaintId가 ${complaintId}인 것을 찾을 수 없습니다.`);
+    }
+    return found;
+  }
+
+  async reportUserFromChat(user: User, createUsersComplaintsDto: CreateUsersComplaintsDto): Promise<UserComplaints> {
+    /**
+     * 채팅 상대 유저 신고
+     *
+     * @author 이승연(dltmddus1998)
+     * @param {User, CreateUsersComplaintsDto} 로그인한 유저, 신고대상 유저, 신고 이유
+     * @return {UserComplaints} 유저 관련 신고 데이터
+     */
+    const insertId = await this.chatRepository.reportUserFromChat(user, createUsersComplaintsDto);
+    return await this.getUserComplaintById(insertId);
+  }
+
+  async getChatComplaintById(complaintId: number): Promise<ChatComplaints> {
+    const found = await getRepository(ChatComplaints).findOne(complaintId);
+    if (!found) {
+      throw new NotFoundException(`complaintId가 ${complaintId}인 것을 찾을 수 없습니다.`);
+    }
+    return found;
+  }
+
+  async reportChat(user: User, createChatComplaintsDto: CreateChatComplaintsDto): Promise<ChatComplaints> {
+    /**
+     * 채팅 신고
+     *
+     * @author 이승연(dltmddus1998)
+     * @param {User, CreateChatComplaintsDto} 로그인한 유저, 신고대상 채팅, 신고 이유
+     * @return {ChatComplaints} 채팅 관련 신고 데이터
+     */
+    const insertId = await this.chatRepository.reportChat(user, createChatComplaintsDto);
+    return await this.getChatComplaintById(insertId);
   }
 }
