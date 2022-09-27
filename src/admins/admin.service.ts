@@ -8,6 +8,10 @@ import { AdminDto } from './dto/admin.dto';
 import { Admin } from './entities/admin.entity';
 import { AdminAuthorityRepository } from './repositories/adminAuthority.repository';
 import { EntityManager, getConnection } from 'typeorm';
+import { SearchComplaintDto } from './dto/searchComplaint.dto';
+import { PostsComplaint } from 'src/posts/postsComplaint.entity';
+import { UserComplaints } from 'src/chats/userComplaints.entity';
+import { ChatComplaints } from 'src/chats/chatComplaints.entity';
 
 @Injectable()
 export class AdminService {
@@ -29,9 +33,12 @@ export class AdminService {
      * @throws {UnauthorizedException} 일치하는 관리자 정보를 찾지 못했을 때 예외처리
      */
     const { adminId, adminPw } = loginAdminDto;
-    const found = await this.adminRepository.findOne(adminId);
+    const found = await this.adminRepository.findOne({ where: { adminId } });
+    if (!found) {
+      throw new UnauthorizedException('아이디나 패스워드가 일치하지 않습니다.');
+    }
     const validatePassword = await bcrypt.compare(adminPw, found.adminPw);
-    if (!found || !validatePassword) {
+    if (!validatePassword) {
       throw new UnauthorizedException('아이디나 패스워드가 일치하지 않습니다.');
     }
     const payload = { adminId };
@@ -92,5 +99,9 @@ export class AdminService {
         throw new InternalServerErrorException('관리자 계정 수정에 실패하였습니다. 잠시후 다시 시도해주세요.');
       });
     return await this.adminRepository.getAdminById(adminId);
+  }
+
+  async getComplaints(searchComplatinDto: SearchComplaintDto): Promise<UserComplaints | ChatComplaints | PostsComplaint> {
+    throw new Error('Method not implemented.');
   }
 }
