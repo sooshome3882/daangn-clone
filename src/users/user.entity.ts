@@ -1,3 +1,5 @@
+import { ChatComplaints } from './../chats/chatComplaints.entity';
+import { UserComplaints } from 'src/chats/userComplaints.entity';
 import { Field, ObjectType } from '@nestjs/graphql';
 import { Post } from 'src/posts/post.entity';
 import { PostsLikeRecord } from 'src/posts/postsLikeRecord.entity';
@@ -8,6 +10,7 @@ import { PostsViewRecord } from 'src/posts/postsViewRecord.entity';
 import { Location } from './location.entity';
 import { ChatRoom } from 'src/chats/chatRoom.entity';
 import { Chat } from 'src/chats/chat.entity';
+import { BlockUser } from 'src/chats/blockUser.entity';
 
 @Entity()
 @ObjectType()
@@ -45,6 +48,10 @@ export class User extends BaseEntity {
   reportHandling!: boolean; // 채팅 관련 신고 여부
 
   @Field()
+  @Column({ default: 0 })
+  reportedTimes!: number; // 신고당한 횟수
+
+  @Field()
   @CreateDateColumn({ type: 'datetime' })
   createdAt!: Date;
 
@@ -73,9 +80,24 @@ export class User extends BaseEntity {
   @OneToMany(type => Location, location => location.user, { eager: false })
   locations!: Location[];
 
-  @OneToMany(type => User, user => user.chatRoom, { eager: false })
+  @OneToMany(type => ChatRoom, chatRoom => chatRoom.user, { eager: false })
   chatRoom!: ChatRoom[];
 
-  @OneToMany(type => User, user => user.chat, { eager: false })
+  @OneToMany(type => Chat, chat => chat.user, { eager: false })
   chat!: Chat[];
+
+  @OneToMany(type => UserComplaints, userComplaints => userComplaints.complaintUserPhoneNumber, { eager: false })
+  complaintUserPhoneNumber!: UserComplaints[];
+
+  @OneToMany(type => UserComplaints, userComplaints => userComplaints.subjectUserPhoneNumber, { eager: false })
+  subjectUserPhoneNumber!: UserComplaints[];
+
+  @OneToMany(type => ChatComplaints, chatComplaints => chatComplaints.user, { eager: false })
+  chatComplaints!: ChatComplaints[];
+
+  @OneToMany(type => BlockUser, blockUser => blockUser.user, { eager: false })
+  user!: BlockUser[];
+
+  @OneToMany(type => BlockUser, blockUser => blockUser.targetUser, { eager: false })
+  targetUser!: BlockUser[];
 }
