@@ -29,7 +29,7 @@ export class ChatRoom extends BaseEntity {
   post!: Post;
 
   @Field(() => User)
-  @JoinColumn({ name: 'userName' })
+  @JoinColumn({ name: 'userPhoneNumber' })
   @ManyToOne(type => User, user => user.chatRoom, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
   user!: User;
 

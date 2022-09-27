@@ -1,3 +1,4 @@
+import { CreateBlockUserDto } from './dto/createBlockUser.dto';
 import { CreateChatComplaintsDto } from './dto/createChatComplaints.dto';
 import { ChatComplaints } from './chatComplaints.entity';
 import { CreateUsersComplaintsDto } from './dto/createUsersComplaints.dto';
