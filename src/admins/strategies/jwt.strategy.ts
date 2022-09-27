@@ -17,7 +17,7 @@ const jwtConfig: any = config.get('jwt');
  * @throws {UnauthorizedException} payload에 저장된 정보로 조회했을 때 admin 정보가 없을 경우 예외처리
  */
 @Injectable()
-export class JwtStrategyAdmin extends PassportStrategy(Strategy, 'adminJWT') {
+export class JwtStrategy extends PassportStrategy(Strategy, 'adminJWT') {
   constructor(
     @InjectRepository(AdminRepository)
     private adminRepository: AdminRepository,
