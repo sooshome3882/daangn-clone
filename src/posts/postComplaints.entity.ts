@@ -26,9 +26,9 @@ export class PostComplaints extends BaseEntity {
   @ManyToOne(type => ProcessState, processState => processState.postsComplaint, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
   processState!: ProcessState;
 
-  @Field()
+  @Field({ nullable: true })
   @Column({ type: 'text', nullable: true })
-  memo!: string;
+  memo?: string;
 
   @Field()
   @CreateDateColumn({ type: 'datetime' })

@@ -1,9 +1,11 @@
 import { UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { PostComplaints } from 'src/posts/postComplaints.entity';
 import { AdminService } from './admin.service';
 import { Roles } from './decorators/role.decorator';
 import { AdminDto } from './dto/admin.dto';
 import { LoginAdminDto } from './dto/loginAdmin.dto';
+import { SearchPostComplaintDto } from './dto/searchPostComplaint.dto';
 import { Admin } from './entities/admin.entity';
 import { JwtAuthGuard } from './guards/jwtAuth.guard';
 import { RolesGuard } from './guards/roles.guard';
@@ -37,5 +39,14 @@ export class AdminResolver {
   @Roles(RoleType.ACCOUNT_UPDATE)
   updateAdmin(@Args('adminDto', AuthorityInputValidationPipe) adminDto: AdminDto): Promise<Admin> {
     return this.adminService.updateAdmin(adminDto);
+  }
+
+  // 게시글 신고 목록 조회 및 검색
+  @Query(() => [PostComplaints])
+  @UsePipes(ValidationPipe)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleType.READ)
+  getPostComplaints(@Args('searchPostComplaintDto') searchPostComplaintDto: SearchPostComplaintDto): Promise<PostComplaints[]> {
+    return this.adminService.getPostComplaints(searchPostComplaintDto);
   }
 }
