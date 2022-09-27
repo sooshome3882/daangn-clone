@@ -500,8 +500,8 @@ export class UserService {
   async deleteTown(user: User, deleteTownDto: DeleteTownDto): Promise<Location[]> {
     /**
      * 동네 삭제
-     * 기존 게시글이 1개인 경우 추가를 해야 삭제가 가능하도록 구현
-     * deleteAt를 현재 남짜로 수정 (위치를 삭제해도 게시글의 위치 정보를 남겨두는데 softDelate는 삭제된 정보를 조회할 수 없기 때문에 softDelete를 사용하지 않음)
+     * 기존 동네가 1개인 경우 추가를 해야 삭제가 가능하도록 구현
+     * deleteAt를 현재 남짜로 수정 (위치를 삭제해도 게시글의 위치 정보를 남겨두는데 softDelete는 삭제된 정보를 조회할 수 없기 때문에 softDelete를 사용하지 않음)
      * 동네 인증이 되지 않은 지역은 삭제, 인증이 된 지역은  deletedAt 상태 변경
      *
      * @author 허정연(golgol22)
