@@ -1,8 +1,8 @@
 import { UserComplaints } from './../chats/userComplaints.entity';
 import { ChatComplaints } from './../chats/chatComplaints.entity';
-import { Field, Int, ObjectType } from '@nestjs/graphql';
+import { Field, ObjectType } from '@nestjs/graphql';
 import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { PostsComplaint } from '../posts/postsComplaint.entity';
+import { PostComplaints } from '../posts/postComplaints.entity';
 
 @Entity()
 @ObjectType()
@@ -15,8 +15,8 @@ export class ProcessState extends BaseEntity {
   @Column({ type: 'varchar' })
   processState!: string;
 
-  @OneToMany(type => PostsComplaint, postsComplaint => postsComplaint.processState, { eager: false })
-  postsComplaint!: PostsComplaint[];
+  @OneToMany(type => PostComplaints, postComplaints => postComplaints.processState, { eager: false })
+  postsComplaint!: PostComplaints[];
 
   @OneToMany(type => ChatComplaints, chatComplaints => chatComplaints.processState, { eager: false })
   chatComplaints!: ChatComplaints[];

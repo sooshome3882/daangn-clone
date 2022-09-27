@@ -10,8 +10,8 @@ import { AcceptOfferedPriceDto } from './dto/acceptOfferedPrice.dto';
 import { CreatePostsComplaintsDto } from './dto/createPostsComplaints.dto';
 import { Post } from './post.entity';
 import { PriceOffer } from './priceOffer.entity';
-import { PostRepository } from './post.repository';
-import { PostsComplaint } from './postsComplaint.entity';
+import { PostRepository } from './repositories/post.repository';
+import { PostComplaints } from './postComplaints.entity';
 import { UpdateDealStateDto } from './dto/updateDealState.dto';
 import { PostsLikeRecord } from './postsLikeRecord.entity';
 import { PostsLikeDto } from './dto/addPostsLike.dto';
@@ -290,15 +290,15 @@ export class PostService {
     return priceOffered;
   }
 
-  async getPostsComplaintById(complaintId: number): Promise<PostsComplaint> {
-    const found = await PostsComplaint.findOne(complaintId);
+  async getPostsComplaintById(complaintId: number): Promise<PostComplaints> {
+    const found = await PostComplaints.findOne(complaintId);
     if (!found) {
       throw new NotFoundException(`postId가 ${complaintId}인 것을 찾을 수 없습니다.`);
     }
     return found;
   }
 
-  async reportPost(createPostsComplaintDto: CreatePostsComplaintsDto): Promise<PostsComplaint> {
+  async reportPost(createPostsComplaintDto: CreatePostsComplaintsDto): Promise<PostComplaints> {
     /**
      * 게시글 신고하기
      *

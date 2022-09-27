@@ -4,7 +4,7 @@ import { DealState } from 'src/dealStates/dealState.entity';
 import { TownRange } from 'src/townRanges/townRange.entity';
 import { User } from 'src/users/user.entity';
 import { PriceOffer } from './priceOffer.entity';
-import { PostsComplaint } from './postsComplaint.entity';
+import { PostComplaints } from './postComplaints.entity';
 import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { PostsLikeRecord } from './postsLikeRecord.entity';
 import { PostImage } from './postImage.entity';
@@ -97,8 +97,8 @@ export class Post extends BaseEntity {
   @OneToMany(type => PriceOffer, priceOffer => priceOffer.post)
   priceOffer!: PriceOffer[];
 
-  @OneToMany(type => PostsComplaint, postsComplaint => postsComplaint.post, { eager: false })
-  postsComplaint!: PostsComplaint[];
+  @OneToMany(type => PostComplaints, postComplaints => postComplaints.post, { eager: false })
+  postsComplaint!: PostComplaints[];
 
   @OneToMany(type => PostsLikeRecord, postsLikeRecord => postsLikeRecord.post, { eager: false })
   postsLikeRecord!: PostsLikeRecord[];
