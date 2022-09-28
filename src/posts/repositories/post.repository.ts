@@ -144,7 +144,7 @@ export class PostRepository extends Repository<Post> {
   }
 
   async createPostsComplaint(createPostsComplaintsDto: CreatePostsComplaintsDto): Promise<number> {
-    const { post, complaintReason, processState } = createPostsComplaintsDto;
+    const { post, complaintReason } = createPostsComplaintsDto;
     const query = await getRepository(PostComplaints)
       .createQueryBuilder('PostComplaints')
       .insert()
@@ -152,7 +152,6 @@ export class PostRepository extends Repository<Post> {
       .values({
         post,
         complaintReason,
-        processState,
       })
       .execute();
     return query.raw.insertId;

@@ -22,7 +22,8 @@ export class PostComplaints extends BaseEntity {
   complaintReason!: ComplaintReason;
 
   @Field(() => ProcessState)
-  @JoinColumn({ name: 'processStateId' })
+  @JoinColumn({ name: 'processState' })
+  @Column({ type: 'int', default: 1 })
   @ManyToOne(type => ProcessState, processState => processState.postsComplaint, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
   processState!: ProcessState;
 
