@@ -86,11 +86,11 @@ export class User extends BaseEntity {
   @OneToMany(type => Chat, chat => chat.user, { eager: false })
   chat!: Chat[];
 
-  @OneToMany(type => UserComplaints, userComplaints => userComplaints.complaintUserPhoneNumber, { eager: false })
-  complaintUserPhoneNumber!: UserComplaints[];
+  @OneToMany(type => UserComplaints, userComplaints => userComplaints.complaintUser, { eager: false })
+  complaintUser!: UserComplaints[];
 
-  @OneToMany(type => UserComplaints, userComplaints => userComplaints.subjectUserPhoneNumber, { eager: false })
-  subjectUserPhoneNumber!: UserComplaints[];
+  @OneToMany(type => UserComplaints, userComplaints => userComplaints.subjectUser, { eager: false })
+  subjectUser!: UserComplaints[];
 
   @OneToMany(type => ChatComplaints, chatComplaints => chatComplaints.user, { eager: false })
   chatComplaints!: ChatComplaints[];
