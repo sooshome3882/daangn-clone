@@ -7,7 +7,7 @@ import { CreateChatDto } from './dto/createChat.dto';
 import { CreateChatRoomDto } from './dto/createChatRoom.dto';
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ChatRepository } from './chat.repository';
+import { ChatRepository } from './repositories/chat.repository';
 import { User } from 'src/users/user.entity';
 import { ChatRoom } from './chatRoom.entity';
 import { Post } from 'src/posts/post.entity';
@@ -199,7 +199,17 @@ export class ChatService {
      * @author 이승연(dltmddus1998)
      * @param {User, CreateChatComplaintsDto} 로그인한 유저, 신고대상 채팅, 신고 이유
      * @return {ChatComplaints} 채팅 관련 신고 데이터
+     * @throws {BadRequestException} 이미 신고한 채팅 신고 불가
      */
+    const { chat } = createChatComplaintsDto;
+    const reportedChat = await getRepository(ChatComplaints).findOne({
+      where: {
+        chat,
+      },
+    });
+    if (reportedChat) {
+      throw new BadRequestException('이미 신고한 채팅입니다.');
+    }
     const insertId = await this.chatRepository.reportChat(user, createChatComplaintsDto);
     return await this.getChatComplaintById(insertId);
   }

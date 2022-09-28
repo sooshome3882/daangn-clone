@@ -307,6 +307,15 @@ export class PostService {
      * @return {PostsComplaint} 게시글 신고 전체 반환
      * @throws {NotFoundException} 해당 게시글 없을 때 예외 처리
      */
+    const { post } = createPostsComplaintDto;
+    const reportedPost = await getRepository(PostComplaints).findOne({
+      where: {
+        post,
+      },
+    });
+    if (reportedPost) {
+      throw new BadRequestException('이미 신고한 게시글입니다.');
+    }
     const insertId = await this.postRepository.createPostsComplaint(createPostsComplaintDto);
     return this.getPostsComplaintById(insertId);
   }

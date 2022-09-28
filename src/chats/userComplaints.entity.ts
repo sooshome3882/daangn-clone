@@ -2,7 +2,7 @@ import { Field, ObjectType } from '@nestjs/graphql';
 import { ComplaintReason } from 'src/complaintReasons/complaintReason.entity';
 import { ProcessState } from 'src/processStates/processState.entity';
 import { User } from 'src/users/user.entity';
-import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryColumn, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 @ObjectType()
@@ -17,19 +17,20 @@ export class UserComplaints extends BaseEntity {
   complaintReason!: ComplaintReason;
 
   @Field(() => ProcessState)
-  @JoinColumn({ name: 'processStateId' })
+  @JoinColumn({ name: 'processState' })
+  @Column({ type: 'int', default: 1 })
   @ManyToOne(type => ProcessState, processState => processState.userComplaints, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
   processState!: ProcessState;
 
   @Field(() => User)
   @JoinColumn({ name: 'complaintUserPhoneNumber' })
-  @ManyToOne(type => User, user => user.complaintUserPhoneNumber, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
-  complaintUserPhoneNumber!: User;
+  @ManyToOne(type => User, user => user.complaintUser, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
+  complaintUser!: User;
 
   @Field(() => User)
   @JoinColumn({ name: 'subjectUserPhoneNumber' })
-  @ManyToOne(type => User, user => user.subjectUserPhoneNumber, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
-  subjectUserPhoneNumber!: User;
+  @ManyToOne(type => User, user => user.subjectUser, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
+  subjectUser!: User;
 
   @Field()
   @Column({ type: 'text', nullable: true })

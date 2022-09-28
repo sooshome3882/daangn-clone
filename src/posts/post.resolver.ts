@@ -1,3 +1,4 @@
+import { ProcessState } from 'src/processStates/processState.entity';
 import { PostsLikeDto } from './dto/addPostsLike.dto';
 import { PostsLikeRecord } from 'src/posts/postsLikeRecord.entity';
 import { CreatePostsComplaintsDto } from './dto/createPostsComplaints.dto';
