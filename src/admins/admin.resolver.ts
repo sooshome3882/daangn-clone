@@ -1,13 +1,15 @@
 import { UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { ChatComplaints } from 'src/chats/chatComplaints.entity';
+import { UserComplaints } from 'src/chats/userComplaints.entity';
 import { PostComplaints } from 'src/posts/postComplaints.entity';
 import { AdminService } from './admin.service';
 import { Roles } from './decorators/role.decorator';
 import { AdminDto } from './dto/admin.dto';
 import { LoginAdminDto } from './dto/loginAdmin.dto';
-import { SearchPostComplaintDto } from './dto/searchPostComplaint.dto';
+import { SearchComplaintDto } from './dto/searchComplaint.dto';
 import { Admin } from './entities/admin.entity';
-import { JwtAuthGuard } from './guards/jwtAuth.guard';
+import { JwtAdminAuthGuard } from './guards/jwtAdminAuth.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { RoleType } from './models/role.enum';
 import { AuthorityInputValidationPipe } from './pipes/authority.pipe';
@@ -26,7 +28,7 @@ export class AdminResolver {
   // 관리자 계정 생성
   @Mutation(() => Admin)
   @UsePipes(ValidationPipe)
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(JwtAdminAuthGuard, RolesGuard)
   @Roles(RoleType.ACCOUNT_CREATE)
   createAdmin(@Args('adminDto', AuthorityInputValidationPipe) adminDto: AdminDto): Promise<Admin> {
     return this.adminService.createAdmin(adminDto);
@@ -35,7 +37,7 @@ export class AdminResolver {
   // 관라자 계정 수정
   @Mutation(() => Admin)
   @UsePipes(ValidationPipe)
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(JwtAdminAuthGuard, RolesGuard)
   @Roles(RoleType.ACCOUNT_UPDATE)
   updateAdmin(@Args('adminDto', AuthorityInputValidationPipe) adminDto: AdminDto): Promise<Admin> {
     return this.adminService.updateAdmin(adminDto);
@@ -44,9 +46,27 @@ export class AdminResolver {
   // 게시글 신고 목록 조회 및 검색
   @Query(() => [PostComplaints])
   @UsePipes(ValidationPipe)
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(JwtAdminAuthGuard, RolesGuard)
   @Roles(RoleType.READ)
-  getPostComplaints(@Args('searchPostComplaintDto') searchPostComplaintDto: SearchPostComplaintDto): Promise<PostComplaints[]> {
-    return this.adminService.getPostComplaints(searchPostComplaintDto);
+  getPostComplaints(@Args('searchComplaintDto') searchComplaintDto: SearchComplaintDto): Promise<PostComplaints[]> {
+    return this.adminService.getPostComplaints(searchComplaintDto);
+  }
+
+  // 채팅 신고 목록 조회 및 검색
+  @Query(() => [ChatComplaints])
+  @UsePipes(ValidationPipe)
+  @UseGuards(JwtAdminAuthGuard, RolesGuard)
+  @Roles(RoleType.READ)
+  getChatComplaints(@Args('searchComplaintDto') searchComplaintDto: SearchComplaintDto): Promise<ChatComplaints[]> {
+    return this.adminService.getChatComplaints(searchComplaintDto);
+  }
+
+  // 유저 신고 목록 조회 및 검색
+  @Query(() => [UserComplaints])
+  @UsePipes(ValidationPipe)
+  @UseGuards(JwtAdminAuthGuard, RolesGuard)
+  @Roles(RoleType.READ)
+  getUserComplaints(@Args('searchComplaintDto') searchComplaintDto: SearchComplaintDto): Promise<UserComplaints[]> {
+    return this.adminService.getUserComplaints(searchComplaintDto);
   }
 }

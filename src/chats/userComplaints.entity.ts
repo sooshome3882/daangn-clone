@@ -32,9 +32,9 @@ export class UserComplaints extends BaseEntity {
   @ManyToOne(type => User, user => user.subjectUser, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
   subjectUser!: User;
 
-  @Field()
+  @Field({ nullable: true })
   @Column({ type: 'text', nullable: true })
-  memo!: string;
+  memo?: string;
 
   @Field()
   @CreateDateColumn({ type: 'datetime' })

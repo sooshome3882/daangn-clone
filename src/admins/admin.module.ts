@@ -7,9 +7,11 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import * as config from 'config';
 import { JwtStrategy } from './strategies/jwt.strategy';
-import { JwtAuthGuard } from './guards/jwtAuth.guard';
+import { JwtAdminAuthGuard } from './guards/jwtAdminAuth.guard';
 import { AdminAuthorityRepository } from './repositories/adminAuthority.repository';
 import { PostComplaintsRepository } from 'src/posts/repositories/postComplaint.repository';
+import { ChatComplaintsRepository } from 'src/chats/repositories/chatComplaints.repository';
+import { UserComplaintsRepository } from 'src/chats/repositories/userComplaints.repository';
 
 const jwtConfig: any = config.get('jwt');
 const passportConfig: any = config.get('passport');
@@ -26,8 +28,8 @@ const passportConfig: any = config.get('passport');
         expiresIn: jwtConfig.expiresIn,
       },
     }),
-    TypeOrmModule.forFeature([AdminRepository, AdminAuthorityRepository, PostComplaintsRepository]),
+    TypeOrmModule.forFeature([AdminRepository, AdminAuthorityRepository, PostComplaintsRepository, ChatComplaintsRepository, UserComplaintsRepository]),
   ],
-  providers: [AdminResolver, AdminService, JwtStrategy, JwtAuthGuard],
+  providers: [AdminResolver, AdminService, JwtStrategy, JwtAdminAuthGuard],
 })
 export class AdminModule {}

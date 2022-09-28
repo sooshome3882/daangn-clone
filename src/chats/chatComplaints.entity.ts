@@ -33,9 +33,9 @@ export class ChatComplaints extends BaseEntity {
   @ManyToOne(type => User, user => user.chatComplaints, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
   user!: User;
 
-  @Field()
+  @Field({ nullable: true })
   @Column({ type: 'text', nullable: true })
-  memo!: string;
+  memo?: string;
 
   @Field()
   @CreateDateColumn({ type: 'datetime' })

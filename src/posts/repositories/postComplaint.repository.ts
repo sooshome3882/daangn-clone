@@ -1,13 +1,13 @@
 import { InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { SearchPostComplaintDto } from 'src/admins/dto/searchPostComplaint.dto';
 import { EntityRepository, getRepository, Repository } from 'typeorm';
 import { Post } from '../post.entity';
 import { PostComplaints } from '../postComplaints.entity';
+import { SearchComplaintDto } from 'src/admins/dto/searchComplaint.dto';
 
 @EntityRepository(PostComplaints)
 export class PostComplaintsRepository extends Repository<PostComplaints> {
-  async getPostComplaints(searchPostComplaintDto: SearchPostComplaintDto): Promise<PostComplaints[]> {
-    const { complaintReason, processState, memo, perPage, page } = searchPostComplaintDto;
+  getPostComplaints(searchComplaintDto: SearchComplaintDto) {
+    const { complaintReason, processState, memo, perPage, page } = searchComplaintDto;
     const queryBuilder = this.createQueryBuilder('postComplaints')
       .innerJoinAndSelect('postComplaints.post', 'post')
       .innerJoinAndSelect('postComplaints.complaintReason', 'complaintReason')

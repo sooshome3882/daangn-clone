@@ -8,9 +8,13 @@ import { AdminDto } from './dto/admin.dto';
 import { Admin } from './entities/admin.entity';
 import { AdminAuthorityRepository } from './repositories/adminAuthority.repository';
 import { EntityManager, getConnection } from 'typeorm';
-import { SearchPostComplaintDto } from './dto/searchPostComplaint.dto';
 import { PostComplaints } from 'src/posts/postComplaints.entity';
 import { PostComplaintsRepository } from 'src/posts/repositories/postComplaint.repository';
+import { SearchComplaintDto } from './dto/searchComplaint.dto';
+import { ChatComplaints } from 'src/chats/chatComplaints.entity';
+import { ChatComplaintsRepository } from 'src/chats/repositories/chatComplaints.repository';
+import { UserComplaints } from 'src/chats/userComplaints.entity';
+import { UserComplaintsRepository } from 'src/chats/repositories/userComplaints.repository';
 
 @Injectable()
 export class AdminService {
@@ -21,6 +25,10 @@ export class AdminService {
     private adminAuthorityRepository: AdminAuthorityRepository,
     @InjectRepository(PostComplaintsRepository)
     private postComplaintsRepository: PostComplaintsRepository,
+    @InjectRepository(ChatComplaintsRepository)
+    private chatComplaintsRepository: ChatComplaintsRepository,
+    @InjectRepository(UserComplaintsRepository)
+    private userComplaintsRepository: UserComplaintsRepository,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -102,7 +110,36 @@ export class AdminService {
     return await this.adminRepository.getAdminById(adminId);
   }
 
-  async getPostComplaints(searchPostComplaintDto: SearchPostComplaintDto): Promise<PostComplaints[]> {
-    return await this.postComplaintsRepository.getPostComplaints(searchPostComplaintDto);
+  async getPostComplaints(searchComplaintDto: SearchComplaintDto): Promise<PostComplaints[]> {
+    /**
+     * 게시글 신고목록 조회 및 검색
+     *
+     * @author 허정연(golgol22)
+     * @param { complaintReason, processState, memo, perPage, page } 신고 이유, 처리상태, 메모, 페이지 당 보여줄 개수, 페이지
+     * @return {PostComplaints[]} 게시글 신고목록
+     */
+    return await this.postComplaintsRepository.getPostComplaints(searchComplaintDto);
+  }
+
+  async getChatComplaints(searchComplaintDto: SearchComplaintDto): Promise<ChatComplaints[]> {
+    /**
+     * 채팅 신고목록 조회 및 검색
+     *
+     * @author 허정연(golgol22)
+     * @param { complaintReason, processState, memo, perPage, page } 신고 이유, 처리상태, 메모, 페이지 당 보여줄 개수, 페이지
+     * @return {ChatComplaints[]} 채팅 신고목록
+     */
+    return await this.chatComplaintsRepository.getChatComplaints(searchComplaintDto);
+  }
+
+  async getUserComplaints(searchComplaintDto: SearchComplaintDto): Promise<UserComplaints[]> {
+    /**
+     * 유저 신고목록 조회 및 검색
+     *
+     * @author 허정연(golgol22)
+     * @param { complaintReason, processState, memo, perPage, page } 신고 이유, 처리상태, 메모, 페이지 당 보여줄 개수, 페이지
+     * @return {ChatComplaints[]} 채팅 신고목록
+     */
+    return await this.userComplaintsRepository.getUserComplaints(searchComplaintDto);
   }
 }

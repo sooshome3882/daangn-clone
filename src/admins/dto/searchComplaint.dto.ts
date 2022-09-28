@@ -4,7 +4,7 @@ import { ComplaintReason } from 'src/complaintReasons/complaintReason.entity';
 import { ProcessState } from 'src/processStates/processState.entity';
 
 @InputType()
-export class SearchPostComplaintDto {
+export class SearchComplaintDto {
   @Field(() => Number, { nullable: true })
   complaintReason?: ComplaintReason;
 
