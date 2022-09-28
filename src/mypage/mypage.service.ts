@@ -8,6 +8,7 @@ import { FollowDto } from './dto/follow.dto';
 import { PurchaseHistoryDto } from './dto/purchaseHistory.dto';
 import { Post } from 'src/posts/post.entity';
 import { GetOtherProfileDto } from './dto/getOtherProfile.dto';
+import { PostsLikeRecord } from 'src/posts/postsLikeRecord.entity';
 
 @Injectable()
 export class MypageService {
@@ -36,7 +37,7 @@ export class MypageService {
      * @return {PurchaseHistory} 구매내역 반환
      * @throws {NotFoundException} 구매내역이 추가되지 않아 조회되지 않을 때 예외 처리
      */
-    const insertId = await this.mypageRepository.buy(user, purchaseHistoryDto);
+    const insertId = await this.mypageRepository.buyTransaction(user, purchaseHistoryDto);
     const found = PurchaseHistory.findOne(insertId);
     if (!found) {
       throw new NotFoundException(`${insertId}의 구매내역이 제대로 추가되지 않았습니다.`);
@@ -66,7 +67,7 @@ export class MypageService {
     return await this.mypageRepository.getSellingListOfUser(user, page, perPage);
   }
 
-  async getWatchListOfUser(user: User, page: number, perPage: number): Promise<Post[]> {
+  async getWatchListOfUser(user: User, page: number, perPage: number): Promise<PostsLikeRecord[]> {
     /**
      * 관심목록 조회하기
      *

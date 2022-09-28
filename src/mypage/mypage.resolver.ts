@@ -1,3 +1,4 @@
+import { PostsLikeRecord } from 'src/posts/postsLikeRecord.entity';
 import { ParseBoolPipe, UseGuards } from '@nestjs/common';
 import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
 import { Followings } from './followings.entity';
@@ -42,8 +43,8 @@ export class MypageResolver {
   }
 
   // 특정 사용자 관심목록 조회
-  @Query(() => [Post])
-  getWatchListOfUser(@GetUser() user: User, @Args('page') page: number, @Args('perPage') perPage: number): Promise<Post[]> {
+  @Query(() => [PostsLikeRecord])
+  getWatchListOfUser(@GetUser() user: User, @Args('page') page: number, @Args('perPage') perPage: number): Promise<PostsLikeRecord[]> {
     return this.mypageService.getWatchListOfUser(user, page, perPage);
   }
 

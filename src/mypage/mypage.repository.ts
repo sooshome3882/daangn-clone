@@ -1,4 +1,7 @@
-import { EntityRepository, getRepository, Repository } from 'typeorm';
+import { PostsLikeRecord } from 'src/posts/postsLikeRecord.entity';
+import { InternalServerErrorException, BadRequestException, NotFoundException } from '@nestjs/common';
+import { UpdateDealStateDto } from './../posts/dto/updateDealState.dto';
+import { EntityRepository, getRepository, Repository, EntityManager, getConnection } from 'typeorm';
 import { Followings } from './followings.entity';
 import { User } from 'src/users/user.entity';
 import { Post } from 'src/posts/post.entity';
@@ -43,10 +46,32 @@ export class MypageRepository extends Repository<Followings> {
       .getMany();
   }
 
-  async buy(user: User, purchaseHistoryDto: PurchaseHistoryDto): Promise<number> {
+  async buy(manager: EntityManager, user: User, purchaseHistoryDto: PurchaseHistoryDto) {
     const { post } = purchaseHistoryDto;
-    const query = await getRepository(PurchaseHistory).createQueryBuilder('PurchaseHistory').insert().into(PurchaseHistory).values({ user: user, post }).execute();
-    return query.raw.insertId;
+    await manager.getRepository(PurchaseHistory).createQueryBuilder('PurchaseHistory').insert().into(PurchaseHistory).values({ user: user, post }).execute();
+  }
+
+  async buyTransaction(user: User, purchaseHistoryDto: PurchaseHistoryDto) {
+    const { post } = purchaseHistoryDto;
+    const buyingPost = await Post.findOne(post);
+    if (buyingPost.dealState.dealStateId === 3) {
+      throw new BadRequestException('이미 구매처리가 확정된 게시글입니다.');
+    }
+    if (buyingPost.user.userName === user.userName) {
+      throw new BadRequestException('게시글 작성자는 구매를 할 수 없습니다.');
+    }
+    await getConnection()
+      .transaction(async (manager: EntityManager) => {
+        await this.buy(manager, user, purchaseHistoryDto);
+        const buyingPost = await Post.findOne(post);
+        buyingPost.dealState.dealStateId = 3;
+        await manager.save(buyingPost);
+      })
+      .catch(err => {
+        console.error(err);
+        throw new InternalServerErrorException('구매 확정에 실패하였습니다. 잠시후 다시 시도해주세요.');
+      });
+    return await Post.findOne(post);
   }
 
   async getBuyingListOfUser(user: User, page: number, perPage: number): Promise<PurchaseHistory[]> {
@@ -72,23 +97,19 @@ export class MypageRepository extends Repository<Followings> {
       .getMany();
   }
 
-  async getWatchListOfUser(user: User, page: number, perPage: number): Promise<Post[]> {
-    // 🔥 수정예정
-    return await getRepository(Post)
-      .createQueryBuilder('post')
-      .innerJoinAndSelect('post.postsLikeRecord', 'postsLikeRecord')
-      .where('postsLikeRecord.userPhoneNumber = :userPhoneNumber', { userPhoneNumber: user.phoneNumber })
-      .orderBy('post.createdAt', 'DESC')
-      .offset((page - 1) * perPage)
-      .limit(perPage)
-      .getMany();
-  }
-
-  async getMyProfileFromUser(user: User): Promise<User> {
-    return await getRepository(User).createQueryBuilder().select().where('phoneNumber = :phoneNumber', { phoneNumber: user.phoneNumber }).getOne();
+  async getWatchListOfUser(user: User, page: number, perPage: number): Promise<PostsLikeRecord[]> {
+    return await PostsLikeRecord.find({
+      where: {
+        phoneNumber: user.phoneNumber,
+      },
+    });
   }
 
   async getOtherProfileFromUser(phoneNumber: string): Promise<User> {
     return await getRepository(User).createQueryBuilder().select().where('phoneNumber = :phoneNumber', { phoneNumber: phoneNumber }).getOne();
+  }
+
+  async getMyProfileFromUser(user: User): Promise<User> {
+    return await getRepository(User).createQueryBuilder().select().where('userName = :userName', { userName: user.userName }).getOne();
   }
 }
