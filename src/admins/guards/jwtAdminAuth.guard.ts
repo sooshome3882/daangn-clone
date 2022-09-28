@@ -11,7 +11,7 @@ import { AuthenticationError } from 'apollo-server-core';
  * @throws {UnauthorizedException} err가 있거나 admin 정보가 없을 경우 예외처리
  */
 @Injectable()
-export class JwtAuthGuard extends AuthGuard('adminJWT') {
+export class JwtAdminAuthGuard extends AuthGuard('adminJWT') {
   getRequest(context: ExecutionContext) {
     const ctx = GqlExecutionContext.create(context);
     return ctx.getContext().req;
