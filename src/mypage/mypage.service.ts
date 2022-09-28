@@ -73,7 +73,7 @@ export class MypageService {
      *
      * @author 이승연(dltmddus1998)
      * @param {user, page, perPage} 로그인한 유저, 조회할 페이지, 한 페이지당 게시글 개수
-     * @returns {PurchaseHistory[]} 구매내역 전체 리스트 반환
+     * @returns {PostsLikeRecord[]} 구매내역 전체 리스트 반환
      */
     return await this.mypageRepository.getWatchListOfUser(user, page, perPage);
   }
