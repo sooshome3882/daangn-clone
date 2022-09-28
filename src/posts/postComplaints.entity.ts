@@ -6,7 +6,7 @@ import { ComplaintReason } from 'src/complaintReasons/complaintReason.entity';
 
 @Entity()
 @ObjectType()
-export class PostsComplaint extends BaseEntity {
+export class PostComplaints extends BaseEntity {
   @Field()
   @PrimaryGeneratedColumn({ type: 'int' })
   complaintId!: number;
@@ -18,7 +18,7 @@ export class PostsComplaint extends BaseEntity {
 
   @Field(() => ComplaintReason)
   @JoinColumn({ name: 'complaintReasonId' })
-  @ManyToOne(type => ComplaintReason, complaintReason => complaintReason.postsComplaint, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
+  @ManyToOne(type => ComplaintReason, complaintReason => complaintReason.postComplaints, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
   complaintReason!: ComplaintReason;
 
   @Field(() => ProcessState)
@@ -26,9 +26,9 @@ export class PostsComplaint extends BaseEntity {
   @ManyToOne(type => ProcessState, processState => processState.postsComplaint, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
   processState!: ProcessState;
 
-  @Field()
+  @Field({ nullable: true })
   @Column({ type: 'text', nullable: true })
-  memo!: string;
+  memo?: string;
 
   @Field()
   @CreateDateColumn({ type: 'datetime' })

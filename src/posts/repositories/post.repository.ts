@@ -1,23 +1,23 @@
 import { InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { UpdateDealStateDto } from './dto/updateDealState.dto';
-import { CreatePostsComplaintsDto } from './dto/createPostsComplaints.dto';
-import { AcceptOfferedPriceDto } from './dto/acceptOfferedPrice.dto';
-import { OfferPriceDto } from './dto/offerPrice.dto';
+import { UpdateDealStateDto } from '../dto/updateDealState.dto';
+import { CreatePostsComplaintsDto } from '../dto/createPostsComplaints.dto';
+import { AcceptOfferedPriceDto } from '../dto/acceptOfferedPrice.dto';
+import { OfferPriceDto } from '../dto/offerPrice.dto';
 import { EntityManager, EntityRepository, getConnection, getRepository, Repository } from 'typeorm';
-import { CreatePostDto } from './dto/createPost.dto';
-import { SearchPostDto } from './dto/searchPost.dto';
-import { UpdatePostDto } from './dto/updatePost.dto';
-import { Post } from './post.entity';
-import { PriceOffer } from './priceOffer.entity';
+import { CreatePostDto } from '../dto/createPost.dto';
+import { SearchPostDto } from '../dto/searchPost.dto';
+import { UpdatePostDto } from '../dto/updatePost.dto';
+import { Post } from '../post.entity';
+import { PriceOffer } from '../priceOffer.entity';
 import { ProcessState } from 'src/processStates/processState.entity';
-import { PostsComplaint } from './postsComplaint.entity';
+import { PostComplaints } from '../postComplaints.entity';
 import { DealState } from 'src/dealStates/dealState.entity';
 import { User } from 'src/users/user.entity';
-import { PostsLikeRecord } from './postsLikeRecord.entity';
-import { PostsLikeDto } from './dto/addPostsLike.dto';
-import { PostsViewDto } from './dto/addPostsView.dto';
-import { PostsViewRecord } from './postsViewRecord.entity';
-import { PostImage } from './postImage.entity';
+import { PostsLikeRecord } from '../postsLikeRecord.entity';
+import { PostsLikeDto } from '../dto/addPostsLike.dto';
+import { PostsViewDto } from '../dto/addPostsView.dto';
+import { PostsViewRecord } from '../postsViewRecord.entity';
+import { PostImage } from '../postImage.entity';
 import { Location } from 'src/users/location.entity';
 
 @EntityRepository(Post)
@@ -145,10 +145,10 @@ export class PostRepository extends Repository<Post> {
 
   async createPostsComplaint(createPostsComplaintsDto: CreatePostsComplaintsDto): Promise<number> {
     const { post, complaintReason, processState } = createPostsComplaintsDto;
-    const query = await getRepository(PostsComplaint)
-      .createQueryBuilder('PostsComplaint')
+    const query = await getRepository(PostComplaints)
+      .createQueryBuilder('PostComplaints')
       .insert()
-      .into(PostsComplaint)
+      .into(PostComplaints)
       .values({
         post,
         complaintReason,

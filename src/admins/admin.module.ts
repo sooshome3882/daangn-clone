@@ -9,6 +9,7 @@ import * as config from 'config';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtAuthGuard } from './guards/jwtAuth.guard';
 import { AdminAuthorityRepository } from './repositories/adminAuthority.repository';
+import { PostComplaintsRepository } from 'src/posts/repositories/postComplaint.repository';
 
 const jwtConfig: any = config.get('jwt');
 const passportConfig: any = config.get('passport');
@@ -25,7 +26,7 @@ const passportConfig: any = config.get('passport');
         expiresIn: jwtConfig.expiresIn,
       },
     }),
-    TypeOrmModule.forFeature([AdminRepository, AdminAuthorityRepository]),
+    TypeOrmModule.forFeature([AdminRepository, AdminAuthorityRepository, PostComplaintsRepository]),
   ],
   providers: [AdminResolver, AdminService, JwtStrategy, JwtAuthGuard],
 })

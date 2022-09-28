@@ -8,6 +8,9 @@ import { AdminDto } from './dto/admin.dto';
 import { Admin } from './entities/admin.entity';
 import { AdminAuthorityRepository } from './repositories/adminAuthority.repository';
 import { EntityManager, getConnection } from 'typeorm';
+import { SearchPostComplaintDto } from './dto/searchPostComplaint.dto';
+import { PostComplaints } from 'src/posts/postComplaints.entity';
+import { PostComplaintsRepository } from 'src/posts/repositories/postComplaint.repository';
 
 @Injectable()
 export class AdminService {
@@ -16,6 +19,8 @@ export class AdminService {
     private adminRepository: AdminRepository,
     @InjectRepository(AdminAuthorityRepository)
     private adminAuthorityRepository: AdminAuthorityRepository,
+    @InjectRepository(PostComplaintsRepository)
+    private postComplaintsRepository: PostComplaintsRepository,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -30,8 +35,11 @@ export class AdminService {
      */
     const { adminId, adminPw } = loginAdminDto;
     const found = await this.adminRepository.findOne(adminId);
+    if (!found) {
+      throw new UnauthorizedException('아이디나 패스워드가 일치하지 않습니다.');
+    }
     const validatePassword = await bcrypt.compare(adminPw, found.adminPw);
-    if (!found || !validatePassword) {
+    if (!validatePassword) {
       throw new UnauthorizedException('아이디나 패스워드가 일치하지 않습니다.');
     }
     const payload = { adminId };
@@ -92,5 +100,9 @@ export class AdminService {
         throw new InternalServerErrorException('관리자 계정 수정에 실패하였습니다. 잠시후 다시 시도해주세요.');
       });
     return await this.adminRepository.getAdminById(adminId);
+  }
+
+  async getPostComplaints(searchPostComplaintDto: SearchPostComplaintDto): Promise<PostComplaints[]> {
+    return await this.postComplaintsRepository.getPostComplaints(searchPostComplaintDto);
   }
 }

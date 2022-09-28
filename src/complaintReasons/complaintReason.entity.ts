@@ -2,7 +2,7 @@ import { UserComplaints } from './../chats/userComplaints.entity';
 import { ChatComplaints } from './../chats/chatComplaints.entity';
 import { Field, ObjectType } from '@nestjs/graphql';
 import { BaseEntity, Column, Entity, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
-import { PostsComplaint } from 'src/posts/postsComplaint.entity';
+import { PostComplaints } from 'src/posts/postComplaints.entity';
 
 @Entity()
 @ObjectType()
@@ -19,8 +19,8 @@ export class ComplaintReason extends BaseEntity {
   @Column()
   complaintReason!: string;
 
-  @OneToMany(type => PostsComplaint, postsComplaint => postsComplaint.complaintReason, { eager: false })
-  postsComplaint!: PostsComplaint[];
+  @OneToMany(type => PostComplaints, postComplaints => postComplaints.complaintReason, { eager: false })
+  postComplaints!: PostComplaints[];
 
   @OneToMany(type => ChatComplaints, chatComplaints => chatComplaints.complaintReason, { eager: false })
   chatComplaints!: ChatComplaints[];
