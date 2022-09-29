@@ -12,13 +12,13 @@ import { PriceOffer } from '../priceOffer.entity';
 import { ProcessState } from 'src/processStates/processState.entity';
 import { PostComplaints } from '../postComplaints.entity';
 import { DealState } from 'src/dealStates/dealState.entity';
-import { User } from 'src/users/user.entity';
+import { User } from 'src/users/entities/user.entity';
 import { PostsLikeRecord } from '../postsLikeRecord.entity';
 import { PostsLikeDto } from '../dto/addPostsLike.dto';
 import { PostsViewDto } from '../dto/addPostsView.dto';
 import { PostsViewRecord } from '../postsViewRecord.entity';
 import { PostImage } from '../postImage.entity';
-import { Location } from 'src/users/location.entity';
+import { Location } from 'src/users/entities/location.entity';
 
 @EntityRepository(Post)
 export class PostRepository extends Repository<Post> {

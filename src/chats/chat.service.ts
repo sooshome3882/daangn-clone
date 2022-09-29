@@ -8,7 +8,7 @@ import { CreateChatRoomDto } from './dto/createChatRoom.dto';
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ChatRepository } from './repositories/chat.repository';
-import { User } from 'src/users/user.entity';
+import { User } from 'src/users/entities/user.entity';
 import { ChatRoom } from './chatRoom.entity';
 import { Post } from 'src/posts/post.entity';
 import { Chat } from './chat.entity';

@@ -12,8 +12,8 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/users/user.entity';
-import { UserRepository } from './user.repository';
+import { User } from 'src/users/entities/user.entity';
+import { UserRepository } from './repositories/user.repository';
 import axios from 'axios';
 import { Cache } from 'cache-manager';
 import * as crypto from 'crypto';
@@ -26,13 +26,15 @@ import { ProfileUserDto } from './dto/profile.dto';
 import { v1 as uuid } from 'uuid';
 import { MyLocationDto } from './dto/mylocation.dto';
 import { ElasticsearchService } from '@nestjs/elasticsearch';
-import { EntityManager, Equal, getConnection, getRepository, IsNull, Not } from 'typeorm';
-import { Location } from './location.entity';
+import { EntityManager, Equal, getConnection, IsNull, Not } from 'typeorm';
+import { Location } from './entities/location.entity';
 import { DeleteTownDto } from './dto/deleteTown.dto';
 import { TownRange } from 'src/townRanges/townRange.entity';
 import { SearchHit } from '@elastic/elasticsearch/lib/api/types';
 import * as AWS from 'aws-sdk';
 import { FileUpload } from './models/fileUpload.model';
+import { LocationRepository } from './repositories/location.repository';
+import { TownRangeRepository } from 'src/posts/repositories/townRange.repository';
 
 const smsConfig: any = config.get('sms');
 const ACCESS_KEY_ID = smsConfig.access_key_id;
@@ -56,6 +58,10 @@ export class UserService {
   constructor(
     @InjectRepository(UserRepository)
     private readonly userRepository: UserRepository,
+    @InjectRepository(LocationRepository)
+    private readonly locationRepository: LocationRepository,
+    @InjectRepository(TownRangeRepository)
+    private readonly townRangeRepository: TownRangeRepository,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private readonly jwtService: JwtService,
     private readonly esService: ElasticsearchService,
@@ -195,7 +201,15 @@ export class UserService {
     const found = await this.getUserByPhoneNumber(phoneNumber);
     if (!found) {
       const { siDo, siGunGu, eupMyeonDong } = await this.verifyExistInData(area);
-      await this.userRepository.joinTransaction(marketingInfoAgree, phoneNumber, siDo, siGunGu, eupMyeonDong);
+      await getConnection()
+        .transaction(async (manager: EntityManager) => {
+          await this.userRepository.join(manager, marketingInfoAgree, phoneNumber);
+          await this.locationRepository.addLocation(manager, siDo, siGunGu, eupMyeonDong, phoneNumber);
+        })
+        .catch(err => {
+          console.error(err);
+          throw new InternalServerErrorException('회원가입에 실패하였습니다. 잠시후 다시 시도해주세요.');
+        });
     }
     if (found) {
       if (found.suspensionOfUse) {
@@ -359,7 +373,6 @@ export class UserService {
           await this.imageDeleteFromS3(user.profileImage);
           await this.imageUploadToS3(manager, user.phoneNumber, profileImage);
         }
-        throw new InternalServerErrorException();
       })
       .catch(err => {
         console.error(err);
@@ -421,7 +434,7 @@ export class UserService {
      * @param {user} 로그인한 유저
      * @return {Location[]} 저장된 위치 정보 반환
      */
-    return await getRepository(Location).find({ where: { user: user.phoneNumber, deletedAt: IsNull() } });
+    return await this.locationRepository.find({ where: { user: user.phoneNumber, deletedAt: IsNull() } });
   }
 
   async updateTownSelection(user: User, eupMyeonDong: string): Promise<Location[]> {
@@ -434,7 +447,7 @@ export class UserService {
      * @throws {BadRequestException} 이미 선택된 동네일 경우 예외처리
      * @throws {InternalServerErrorException} 동네 선택 수정에 실패할 때 예외처리
      */
-    const location = await getRepository(Location).findOne({ where: { user: user.phoneNumber, eupMyeonDong: eupMyeonDong } });
+    const location = await this.locationRepository.findOne({ where: { user: user.phoneNumber, eupMyeonDong: eupMyeonDong } });
     if (location.isSelected) {
       throw new BadRequestException('이미 선택된 동네입니다.');
     }
@@ -442,7 +455,7 @@ export class UserService {
       .transaction(async (manager: EntityManager) => {
         location.isSelected = true;
         await manager.save(location);
-        const location2 = await getRepository(Location).findOne({ where: { user: user.phoneNumber, eupMyeonDong: Not(Equal(eupMyeonDong)) } });
+        const location2 = await this.locationRepository.findOne({ where: { user: user.phoneNumber, eupMyeonDong: Not(Equal(eupMyeonDong)) } });
         location2.isSelected = false;
         await manager.save(location2);
       })
@@ -466,11 +479,11 @@ export class UserService {
      * @throws {InternalServerErrorException} 동네 추가에 실패할 때 예외처리
      */
     const { siDo, siGunGu, eupMyeonDong } = await this.verifyExistInData(area);
-    const count = await getRepository(Location).count({ where: { user: user.phoneNumber, deletedAt: IsNull() } });
+    const count = await this.locationRepository.count({ where: { user: user.phoneNumber, deletedAt: IsNull() } });
     if (count === 2) {
       throw new BadRequestException('동네는 2개까지 등록이 가능합니다.');
     }
-    const location = await getRepository(Location).findOne({ where: { user: user.phoneNumber, eupMyeonDong: eupMyeonDong } });
+    const location = await this.locationRepository.findOne({ where: { user: user.phoneNumber, eupMyeonDong: eupMyeonDong } });
     if (location) {
       if (location.deletedAt === null) {
         throw new ConflictException('이미 추가된 동네입니다.');
@@ -481,7 +494,7 @@ export class UserService {
           location.isSelected = true;
           location.deletedAt = null;
           await manager.save(location);
-          const location2 = await getRepository(Location).findOne({ where: { user: user.phoneNumber, eupMyeonDong: Not(Equal(eupMyeonDong)), deletedAt: IsNull() } });
+          const location2 = await this.locationRepository.findOne({ where: { user: user.phoneNumber, eupMyeonDong: Not(Equal(eupMyeonDong)), deletedAt: IsNull() } });
           location2.isSelected = false;
           await manager.save(location2);
         })
@@ -494,8 +507,8 @@ export class UserService {
     // 추가된 적 없을 경우 새로 추가
     await getConnection()
       .transaction(async (manager: EntityManager) => {
-        await this.userRepository.addLocation(manager, siDo, siGunGu, eupMyeonDong, user.phoneNumber);
-        const location2 = await getRepository(Location).findOne({ where: { user: user.phoneNumber, eupMyeonDong: Not(Equal(eupMyeonDong)), deletedAt: IsNull() } });
+        await this.locationRepository.addLocation(manager, siDo, siGunGu, eupMyeonDong, user.phoneNumber);
+        const location2 = await this.locationRepository.findOne({ where: { user: user.phoneNumber, eupMyeonDong: Not(Equal(eupMyeonDong)), deletedAt: IsNull() } });
         location2.isSelected = false;
         await manager.save(location2);
       })
@@ -523,7 +536,7 @@ export class UserService {
      * @throws {InternalServerErrorException} 동네 삭제에 실패할 때 예외처리
      */
     const { deleteDupMyeonDong, addArea } = deleteTownDto;
-    const locations = await getRepository(Location).find({ where: { user: user.phoneNumber } });
+    const locations = await this.locationRepository.find({ where: { user: user.phoneNumber } });
     const exist = locations.filter(location => location.eupMyeonDong === deleteDupMyeonDong);
     if (exist.length === 0) {
       throw new NotFoundException('등록된 적 없는 동네입니다.');
@@ -544,14 +557,14 @@ export class UserService {
         .transaction(async (manager: EntityManager) => {
           const deleted = locations.filter(location => location.eupMyeonDong === eupMyeonDong);
           if (deleted.length === 0) {
-            await this.userRepository.addLocation(manager, siDo, siGunGu, eupMyeonDong, user.phoneNumber);
+            await this.locationRepository.addLocation(manager, siDo, siGunGu, eupMyeonDong, user.phoneNumber);
           } else {
             deleted[0].isSelected = true;
             deleted[0].deletedAt = null;
             await manager.save(deleted[0]);
           }
 
-          const deleteLocation = await getRepository(Location).findOne({ where: { user: user.phoneNumber, eupMyeonDong: deleteDupMyeonDong } });
+          const deleteLocation = await this.locationRepository.findOne({ where: { user: user.phoneNumber, eupMyeonDong: deleteDupMyeonDong } });
           if (deleteLocation.isConfirmedPosition) {
             deleteLocation.isSelected = false;
             deleteLocation.deletedAt = new Date();
@@ -567,11 +580,11 @@ export class UserService {
     } else {
       await getConnection()
         .transaction(async (manager: EntityManager) => {
-          const location2 = await getRepository(Location).findOne({ where: { user: user.phoneNumber, eupMyeonDong: Not(Equal(deleteDupMyeonDong)), deletedAt: IsNull() } });
+          const location2 = await this.locationRepository.findOne({ where: { user: user.phoneNumber, eupMyeonDong: Not(Equal(deleteDupMyeonDong)), deletedAt: IsNull() } });
           location2.isSelected = true;
           await manager.save(location2);
 
-          const deleteLocation = await getRepository(Location).findOne({ where: { user: user.phoneNumber, eupMyeonDong: deleteDupMyeonDong } });
+          const deleteLocation = await this.locationRepository.findOne({ where: { user: user.phoneNumber, eupMyeonDong: deleteDupMyeonDong } });
           if (deleteLocation.isConfirmedPosition) {
             deleteLocation.isSelected = false;
             deleteLocation.deletedAt = new Date();
@@ -600,7 +613,7 @@ export class UserService {
      * @throws {NotFoundException} 주변 지역에 대한 정보가 없을 때 예외처리
      * @throws {InternalServerErrorException} 동네인증에 실패했을 때 예외처리
      */
-    const location = await getRepository(Location).findOne({ where: { user: user.phoneNumber, isSelected: true } });
+    const location = await this.locationRepository.findOne({ where: { user: user.phoneNumber, isSelected: true } });
     if (location.isConfirmedPosition) {
       throw new BadRequestException('이미 인증된 동네입니다.');
     }
@@ -612,7 +625,7 @@ export class UserService {
     });
     if (exist) {
       location.isConfirmedPosition = true;
-      await getRepository(Location).save(location);
+      await this.locationRepository.save(location);
       return `${location.eupMyeonDong} 인증되었습니다.`;
     }
     return `${location.eupMyeonDong} 인증에 실패하였습니다.`;
@@ -629,11 +642,11 @@ export class UserService {
      * @throws {BadRequestException} 이미 설정된 동네 범위를 설정하하려고 할 때 예외처리
      * @throws {NotFoundException} 없는 동네 범위를 설정하려고 할 때 예외 처리
      */
-    const location = await getRepository(Location).findOne({ where: { user: user.phoneNumber, isSelected: true } });
+    const location = await this.locationRepository.findOne({ where: { user: user.phoneNumber, isSelected: true } });
     if (location.townRange.townRangeId === townRange) {
       throw new BadRequestException('이미 설정된 동네 범위입니다.');
     }
-    const possibleTownRange = await getRepository(TownRange).find();
+    const possibleTownRange = await this.townRangeRepository.find();
     const exist = possibleTownRange.filter(town => {
       return town.townRangeId === townRange;
     });
@@ -641,7 +654,7 @@ export class UserService {
       throw new NotFoundException('지정할 수 없는 값입니다.');
     }
     location.townRange.townRangeId = townRange;
-    await getRepository(Location).save(location);
+    await this.locationRepository.save(location);
     return `동네 범위가 ${townRange}으로 변경되었습니다.`;
   }
 
@@ -775,7 +788,7 @@ export class UserService {
      * @return {number} 동네 개수
      * @throws {NotFoundException} 없는 동네 범위를 설정하려고 할 때 예외 처리
      */
-    const possibleTownRange = await getRepository(TownRange).find();
+    const possibleTownRange = await this.townRangeRepository.find();
     const exist = possibleTownRange.filter(town => {
       return town.townRangeId === townRange;
     });
@@ -801,7 +814,7 @@ export class UserService {
      * @return {string[]} 동네 목록
      * @throws {NotFoundException} 없는 동네 범위를 설정하려고 할 때 예외 처리
      */
-    const possibleTownRange = await getRepository(TownRange).find();
+    const possibleTownRange = await this.townRangeRepository.find();
     const exist = possibleTownRange.filter(town => {
       return town.townRangeId === townRange;
     });

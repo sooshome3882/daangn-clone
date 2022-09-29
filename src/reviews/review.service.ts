@@ -1,7 +1,7 @@
 import { BadRequestException, ForbiddenException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PurchaseHistory } from 'src/mypage/purchaseHistory.entity';
-import { User } from 'src/users/user.entity';
+import { User } from 'src/users/entities/user.entity';
 import { EntityManager, getConnection, getRepository } from 'typeorm';
 import { ReviewDto } from './dto/review.dto';
 import { BuyerReview } from './entities/buyerReview.entity';

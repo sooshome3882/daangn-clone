@@ -9,7 +9,7 @@ import { CreateChatRoomDto } from '../dto/createChatRoom.dto';
 import { EntityManager, EntityRepository, getConnection, getRepository, Repository } from 'typeorm';
 import { ChatRoom } from '../chatRoom.entity';
 import { Chat } from '../chat.entity';
-import { User } from 'src/users/user.entity';
+import { User } from 'src/users/entities/user.entity';
 import { CreateChatDto } from '../dto/createChat.dto';
 
 @EntityRepository(ChatRoom)

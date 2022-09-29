@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/users/user.entity';
+import { User } from 'src/users/entities/user.entity';
 import { Followings } from '../mypage/followings.entity';
 import { PurchaseHistory } from 'src/mypage/purchaseHistory.entity';
 import { MypageRepository } from './mypage.repository';

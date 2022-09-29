@@ -2,7 +2,7 @@ import { Field, ObjectType } from '@nestjs/graphql';
 import { Category } from 'src/categories/category.entity';
 import { DealState } from 'src/dealStates/dealState.entity';
 import { TownRange } from 'src/townRanges/townRange.entity';
-import { User } from 'src/users/user.entity';
+import { User } from 'src/users/entities/user.entity';
 import { PriceOffer } from './priceOffer.entity';
 import { PostComplaints } from './postComplaints.entity';
 import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
@@ -11,7 +11,7 @@ import { PostImage } from './postImage.entity';
 import { PurchaseHistory } from '../mypage/purchaseHistory.entity';
 import { PostsViewRecord } from './postsViewRecord.entity';
 import { ChatRoom } from 'src/chats/chatRoom.entity';
-import { Location } from 'src/users/location.entity';
+import { Location } from 'src/users/entities/location.entity';
 
 @Entity()
 @ObjectType()

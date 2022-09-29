@@ -1,7 +1,7 @@
 import { PostsViewDto } from './dto/addPostsView.dto';
 import { BadRequestException, ForbiddenException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/users/user.entity';
+import { User } from 'src/users/entities/user.entity';
 import { CreatePostDto } from './dto/createPost.dto';
 import { SearchPostDto } from './dto/searchPost.dto';
 import { UpdatePostDto } from './dto/updatePost.dto';
@@ -18,7 +18,7 @@ import { PostsLikeDto } from './dto/addPostsLike.dto';
 import { PostsViewRecord } from './postsViewRecord.entity';
 import { v1 as uuid } from 'uuid';
 import { EntityManager, getConnection, getRepository } from 'typeorm';
-import { Location } from 'src/users/location.entity';
+import { Location } from 'src/users/entities/location.entity';
 import { UserService } from 'src/users/user.service';
 import * as config from 'config';
 import * as AWS from 'aws-sdk';

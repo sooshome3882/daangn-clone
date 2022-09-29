@@ -5,7 +5,7 @@ import { CreatePostsComplaintsDto } from './dto/createPostsComplaints.dto';
 import { AcceptOfferedPriceDto } from './dto/acceptOfferedPrice.dto';
 import { ParseFilePipe, ParseIntPipe, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
-import { User } from 'src/users/user.entity';
+import { User } from 'src/users/entities/user.entity';
 import { CreatePostDto } from './dto/createPost.dto';
 import { SearchPostDto } from './dto/searchPost.dto';
 import { UpdatePostDto } from './dto/updatePost.dto';

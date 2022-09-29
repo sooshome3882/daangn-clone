@@ -1,4 +1,4 @@
-import { User } from 'src/users/user.entity';
+import { User } from 'src/users/entities/user.entity';
 import { Chat } from './chat.entity';
 import { ProcessState } from './../processStates/processState.entity';
 import { ComplaintReason } from './../complaintReasons/complaintReason.entity';

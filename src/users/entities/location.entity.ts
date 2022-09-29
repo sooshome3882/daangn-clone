@@ -44,7 +44,7 @@ export class Location extends BaseEntity {
   @ManyToOne(type => User, user => user.locations, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
   user!: string;
 
-  @Field()
+  @Field(() => TownRange)
   @JoinColumn({ name: 'townRange' })
   @Column({ type: 'int', default: 2 })
   @ManyToOne(type => TownRange, townRange => townRange.locations, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
