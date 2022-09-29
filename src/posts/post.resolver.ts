@@ -36,39 +36,39 @@ export class PostResolver {
   // 게시글 작성
   @Mutation(() => Post)
   @UsePipes(ValidationPipe)
-  createPost(@GetUser() user: User, @Args('createPostDto', PostImagesValidationPipe) createPostDto: CreatePostDto) {
+  createPost(@GetUser() user: User, @Args('createPostDto', PostImagesValidationPipe) createPostDto: CreatePostDto): Promise<Post> {
     return this.postService.createPost(user, createPostDto);
   }
 
   // 게시글 수정
   @Mutation(() => Post)
-  updatePost(@GetUser() user: User, @Args('postId', ParseIntPipe) postId: number, @Args('updatePostDto', PostImagesValidationPipe) updatePostDto: UpdatePostDto) {
+  updatePost(@GetUser() user: User, @Args('postId', ParseIntPipe) postId: number, @Args('updatePostDto', PostImagesValidationPipe) updatePostDto: UpdatePostDto): Promise<Post> {
     return this.postService.updatePost(user, postId, updatePostDto);
   }
 
   // 게시글 삭제
   @Mutation(() => String)
-  deletePost(@GetUser() user: User, @Args('postId', ParseIntPipe) postId: number) {
+  deletePost(@GetUser() user: User, @Args('postId', ParseIntPipe) postId: number): Promise<string> {
     return this.postService.deletePost(user, postId);
   }
 
   // 게시글 상세보기
   @Query(() => Post, { name: 'post' })
-  getPostById(@Args('postId', ParseIntPipe) postId: number) {
+  getPostById(@Args('postId', ParseIntPipe) postId: number): Promise<Post> {
     return this.postService.getPostById(postId);
   }
 
-  // 게시글 목록 가져오기 (게시글 검색 포함)
+  // 게시글 목록 조회 및 검색
   @Query(() => [Post], { name: 'posts' })
   @UsePipes(ValidationPipe)
-  getPosts(@GetUser() user: User, @Args('searchPostDto') searchPostDto: SearchPostDto) {
+  getPosts(@GetUser() user: User, @Args('searchPostDto') searchPostDto: SearchPostDto): Promise<Post[]> {
     return this.postService.getPosts(user, searchPostDto);
   }
 
   // 게시글 끌올
   @Mutation(() => Post)
   @UsePipes(ValidationPipe)
-  pullupPost(@Args('postId', ParseIntPipe) postId: number) {
+  pullupPost(@Args('postId', ParseIntPipe) postId: number): Promise<Post> {
     return this.postService.pullUpPost(postId);
   }
 

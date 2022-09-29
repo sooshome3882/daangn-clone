@@ -243,7 +243,7 @@ export class PostService {
     return filteredPosts;
   }
 
-  async pullUpPost(postId: number) {
+  async pullUpPost(postId: number): Promise<Post> {
     /**
      * 게시글 끌어올리기
      *

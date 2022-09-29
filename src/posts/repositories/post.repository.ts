@@ -22,7 +22,7 @@ import { Location } from 'src/users/entities/location.entity';
 
 @EntityRepository(Post)
 export class PostRepository extends Repository<Post> {
-  async createPost(manager: EntityManager, user: User, createPostDto: CreatePostDto, location: Location): Promise<number> {
+  async createPost(manager: EntityManager, user: User, createPostDto: CreatePostDto, location: Location) {
     const { title, content, category, price, isOfferedPrice, townRange, dealState } = createPostDto;
     const query = await manager
       .getRepository(Post)
@@ -42,12 +42,12 @@ export class PostRepository extends Repository<Post> {
     await manager.getRepository(PostImage).createQueryBuilder('PostImage').insert().into(PostImage).values({ imagePath, post }).execute();
   }
 
-  async updatePost(postId: number, updatePostDto: UpdatePostDto): Promise<void> {
+  async updatePost(postId: number, updatePostDto: UpdatePostDto) {
     const { title, content, category, price, isOfferedPrice, townRange } = updatePostDto;
     await getRepository(Post).createQueryBuilder('Post').update(Post).set({ title, content, price, isOfferedPrice, category, townRange }).where('postId = :postId', { postId }).execute();
   }
 
-  async getPosts(searchPostDto: SearchPostDto): Promise<Post[]> {
+  getPosts(searchPostDto: SearchPostDto) {
     const { search, minPrice, maxPrice, category, dealState, perPage, page } = searchPostDto;
     const queryBuilder = getRepository(Post)
       .createQueryBuilder('post')
@@ -70,11 +70,11 @@ export class PostRepository extends Repository<Post> {
     return queryBuilder.getMany();
   }
 
-  async changePulled(postId: number): Promise<void> {
+  async changePulled(postId: number) {
     await getRepository(Post).createQueryBuilder('post').update(Post).set({ pulledAt: new Date() }).where('postId = :postId', { postId }).execute();
   }
 
-  async requestPriceToSeller(offerPriceDto: OfferPriceDto): Promise<number> {
+  async requestPriceToSeller(offerPriceDto: OfferPriceDto) {
     const { offerPrice, post } = offerPriceDto;
     const query = await getRepository(PriceOffer).createQueryBuilder('priceOffer').insert().into(PriceOffer).values({ offerPrice, post }).execute();
     return query.raw.insertId;
@@ -143,7 +143,7 @@ export class PostRepository extends Repository<Post> {
       .execute();
   }
 
-  async createPostsComplaint(createPostsComplaintsDto: CreatePostsComplaintsDto): Promise<number> {
+  async createPostsComplaint(createPostsComplaintsDto: CreatePostsComplaintsDto) {
     const { post, complaintReason } = createPostsComplaintsDto;
     const query = await getRepository(PostComplaints)
       .createQueryBuilder('PostComplaints')
