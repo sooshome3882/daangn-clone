@@ -1,5 +1,5 @@
-import { ChatComplaints } from '../../chats/chatComplaints.entity';
-import { UserComplaints } from 'src/chats/userComplaints.entity';
+import { ChatComplaints } from '../../chats/entities/chatComplaints.entity';
+import { UserComplaints } from 'src/chats/entities/userComplaints.entity';
 import { Field, ObjectType } from '@nestjs/graphql';
 import { Post } from 'src/posts/entities/post.entity';
 import { PostsLikeRecord } from 'src/posts/entities/postsLikeRecord.entity';
@@ -8,9 +8,9 @@ import { BaseEntity, Column, CreateDateColumn, Entity, OneToMany, PrimaryColumn,
 import { Followings } from '../../mypage/entities/followings.entity';
 import { PostsViewRecord } from 'src/posts/entities/postsViewRecord.entity';
 import { Location } from './location.entity';
-import { ChatRoom } from 'src/chats/chatRoom.entity';
-import { Chat } from 'src/chats/chat.entity';
-import { BlockUser } from 'src/chats/blockUser.entity';
+import { ChatRoom } from 'src/chats/entities/chatRoom.entity';
+import { Chat } from 'src/chats/entities/chat.entity';
+import { BlockUser } from 'src/chats/entities/blockUser.entity';
 
 @Entity()
 @ObjectType()

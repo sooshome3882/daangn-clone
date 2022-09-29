@@ -15,8 +15,8 @@ import { Followings } from 'src/mypage/entities/followings.entity';
 import { PostImage } from 'src/posts/entities/postImage.entity';
 import { PurchaseHistory } from 'src/mypage/entities/purchaseHistory.entity';
 import { Location } from 'src/users/entities/location.entity';
-import { ChatRoom } from 'src/chats/chatRoom.entity';
-import { Chat } from 'src/chats/chat.entity';
+import { ChatRoom } from 'src/chats/entities/chatRoom.entity';
+import { Chat } from 'src/chats/entities/chat.entity';
 import { SellerReview } from 'src/reviews/entities/sellerReview.entity';
 import { MannerItem } from 'src/reviews/entities/mannerItem.entity';
 import { SelectedMannerItemToSeller } from 'src/reviews/entities/selectedMannerItemToSeller.entity';
@@ -25,9 +25,9 @@ import { ScoreItem } from 'src/reviews/entities/scoreItem.entity';
 import { SelectedMannerItemToBuyer } from 'src/reviews/entities/selectedMannerItemToBuyer.entity';
 import { Admin } from 'src/admins/entities/admin.entity';
 import { AdminAuthority } from 'src/admins/entities/adminAuthority.entity';
-import { UserComplaints } from 'src/chats/userComplaints.entity';
-import { ChatComplaints } from 'src/chats/chatComplaints.entity';
-import { BlockUser } from 'src/chats/blockUser.entity';
+import { UserComplaints } from 'src/chats/entities/userComplaints.entity';
+import { ChatComplaints } from 'src/chats/entities/chatComplaints.entity';
+import { BlockUser } from 'src/chats/entities/blockUser.entity';
 
 const dbConfig: any = config.get('db');
 

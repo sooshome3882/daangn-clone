@@ -10,7 +10,7 @@ import { PostsLikeRecord } from './postsLikeRecord.entity';
 import { PostImage } from './postImage.entity';
 import { PurchaseHistory } from '../../mypage/entities/purchaseHistory.entity';
 import { PostsViewRecord } from './postsViewRecord.entity';
-import { ChatRoom } from 'src/chats/chatRoom.entity';
+import { ChatRoom } from 'src/chats/entities/chatRoom.entity';
 import { Location } from 'src/users/entities/location.entity';
 
 @Entity()

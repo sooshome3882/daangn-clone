@@ -1,7 +1,7 @@
 import { UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { ChatComplaints } from 'src/chats/chatComplaints.entity';
-import { UserComplaints } from 'src/chats/userComplaints.entity';
+import { ChatComplaints } from 'src/chats/entities/chatComplaints.entity';
+import { UserComplaints } from 'src/chats/entities/userComplaints.entity';
 import { PostComplaints } from 'src/posts/entities/postComplaints.entity';
 import { AdminService } from './admin.service';
 import { Roles } from './decorators/role.decorator';

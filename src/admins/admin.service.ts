@@ -11,9 +11,9 @@ import { EntityManager, getConnection } from 'typeorm';
 import { PostComplaints } from 'src/posts/entities/postComplaints.entity';
 import { PostComplaintsRepository } from 'src/posts/repositories/postComplaint.repository';
 import { SearchComplaintDto } from './dto/searchComplaint.dto';
-import { ChatComplaints } from 'src/chats/chatComplaints.entity';
+import { ChatComplaints } from 'src/chats/entities/chatComplaints.entity';
 import { ChatComplaintsRepository } from 'src/chats/repositories/chatComplaints.repository';
-import { UserComplaints } from 'src/chats/userComplaints.entity';
+import { UserComplaints } from 'src/chats/entities/userComplaints.entity';
 import { UserComplaintsRepository } from 'src/chats/repositories/userComplaints.repository';
 
 @Injectable()

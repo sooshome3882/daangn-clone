@@ -1,6 +1,6 @@
-import { BlockUser } from 'src/chats/blockUser.entity';
+import { BlockUser } from 'src/chats/entities/blockUser.entity';
 import { CreateChatComplaintsDto } from './dto/createChatComplaints.dto';
-import { UserComplaints } from 'src/chats/userComplaints.entity';
+import { UserComplaints } from 'src/chats/entities/userComplaints.entity';
 import { CreateUsersComplaintsDto } from './dto/createUsersComplaints.dto';
 import { CreateChatDto } from './dto/createChat.dto';
 import { CreateChatRoomDto } from './dto/createChatRoom.dto';
@@ -8,11 +8,11 @@ import { BadRequestException, Injectable, NotFoundException, InternalServerError
 import { InjectRepository } from '@nestjs/typeorm';
 import { ChatRepository } from './repositories/chat.repository';
 import { User } from 'src/users/entities/user.entity';
-import { ChatRoom } from './chatRoom.entity';
+import { ChatRoom } from './entities/chatRoom.entity';
 import { Post } from 'src/posts/entities/post.entity';
-import { Chat } from './chat.entity';
+import { Chat } from './entities/chat.entity';
 import { getRepository } from 'typeorm';
-import { ChatComplaints } from './chatComplaints.entity';
+import { ChatComplaints } from './entities/chatComplaints.entity';
 
 /**
  * TODO: block table 구현 추가
