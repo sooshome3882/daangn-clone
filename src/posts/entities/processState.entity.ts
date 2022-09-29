@@ -2,7 +2,7 @@ import { UserComplaints } from '../../chats/userComplaints.entity';
 import { ChatComplaints } from '../../chats/chatComplaints.entity';
 import { Field, ObjectType } from '@nestjs/graphql';
 import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { PostComplaints } from '../postComplaints.entity';
+import { PostComplaints } from './postComplaints.entity';
 
 @Entity()
 @ObjectType()

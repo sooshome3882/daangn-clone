@@ -11,7 +11,7 @@ import { CreatePostsComplaintsDto } from './dto/createPostsComplaints.dto';
 import { Post } from './entities/post.entity';
 import { PriceOffer } from './priceOffer.entity';
 import { PostRepository } from './repositories/post.repository';
-import { PostComplaints } from './postComplaints.entity';
+import { PostComplaints } from './entities/postComplaints.entity';
 import { UpdateDealStateDto } from './dto/updateDealState.dto';
 import { PostsLikeRecord } from './postsLikeRecord.entity';
 import { PostsLikeDto } from './dto/addPostsLike.dto';

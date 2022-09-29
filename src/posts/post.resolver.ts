@@ -13,7 +13,7 @@ import { OfferPriceDto } from './dto/offerPrice.dto';
 import { Post } from './entities/post.entity';
 import { PriceOffer } from './priceOffer.entity';
 import { PostService } from './post.service';
-import { PostComplaints } from './postComplaints.entity';
+import { PostComplaints } from './entities/postComplaints.entity';
 import { UpdateDealStateDto } from './dto/updateDealState.dto';
 import { GetUser } from 'src/users/validations/getUser.decorator';
 import { JwtAuthGuard } from 'src/users/guards/jwtAuth.guard';

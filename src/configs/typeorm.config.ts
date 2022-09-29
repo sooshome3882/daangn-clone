@@ -7,7 +7,7 @@ import { TownRange } from 'src/posts/entities/townRange.entity';
 import { User } from 'src/users/entities/user.entity';
 import { PriceOffer } from 'src/posts/priceOffer.entity';
 import { ComplaintReason } from 'src/posts/entities/complaintReason.entity';
-import { PostComplaints } from 'src/posts/postComplaints.entity';
+import { PostComplaints } from 'src/posts/entities/postComplaints.entity';
 import { ProcessState } from 'src/posts/entities/processState.entity';
 import { PostsLikeRecord } from 'src/posts/postsLikeRecord.entity';
 import { PostsViewRecord } from 'src/posts/postsViewRecord.entity';

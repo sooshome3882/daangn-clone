@@ -4,7 +4,7 @@ import { UserModule } from 'src/users/user.module';
 import { PostRepository } from './repositories/post.repository';
 import { PostResolver } from './post.resolver';
 import { PostService } from './post.service';
-import { PostComplaints } from './postComplaints.entity';
+import { PostComplaints } from './entities/postComplaints.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([PostRepository, PostComplaints]), UserModule],

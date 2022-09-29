@@ -2,7 +2,7 @@ import { UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { ChatComplaints } from 'src/chats/chatComplaints.entity';
 import { UserComplaints } from 'src/chats/userComplaints.entity';
-import { PostComplaints } from 'src/posts/postComplaints.entity';
+import { PostComplaints } from 'src/posts/entities/postComplaints.entity';
 import { AdminService } from './admin.service';
 import { Roles } from './decorators/role.decorator';
 import { AdminDto } from './dto/admin.dto';

@@ -1,7 +1,7 @@
 import { InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { EntityRepository, getRepository, Repository } from 'typeorm';
 import { Post } from '../entities/post.entity';
-import { PostComplaints } from '../postComplaints.entity';
+import { PostComplaints } from '../entities/postComplaints.entity';
 import { SearchComplaintDto } from 'src/admins/dto/searchComplaint.dto';
 
 @EntityRepository(PostComplaints)

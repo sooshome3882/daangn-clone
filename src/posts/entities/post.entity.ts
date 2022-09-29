@@ -3,13 +3,13 @@ import { Category } from 'src/posts/entities/category.entity';
 import { DealState } from 'src/posts/entities/dealState.entity';
 import { TownRange } from 'src/posts/entities/townRange.entity';
 import { User } from 'src/users/entities/user.entity';
-import { PriceOffer } from '../priceOffer.entity';
-import { PostComplaints } from '../postComplaints.entity';
+import { PriceOffer } from './priceOffer.entity';
+import { PostComplaints } from './postComplaints.entity';
 import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-import { PostsLikeRecord } from '../postsLikeRecord.entity';
-import { PostImage } from '../postImage.entity';
+import { PostsLikeRecord } from './postsLikeRecord.entity';
+import { PostImage } from './postImage.entity';
 import { PurchaseHistory } from '../../mypage/purchaseHistory.entity';
-import { PostsViewRecord } from '../postsViewRecord.entity';
+import { PostsViewRecord } from './postsViewRecord.entity';
 import { ChatRoom } from 'src/chats/chatRoom.entity';
 import { Location } from 'src/users/entities/location.entity';
 
