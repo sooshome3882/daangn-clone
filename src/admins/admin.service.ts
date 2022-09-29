@@ -144,7 +144,7 @@ export class AdminService {
     return await this.userComplaintsRepository.getUserComplaints(searchComplaintDto);
   }
 
-  // 2. "신고 검토 중"으로 업데이트
+  // 1. "신고 검토 중"으로 업데이트
   async examinePostReport(complaintId: number): Promise<PostComplaints> {
     /**
      * 게시글 신고 검토
@@ -207,10 +207,11 @@ export class AdminService {
     return this.chatComplaintsRepository.getChatComplaintById(complaintId);
   }
 
-  // 3. 신고 검토 완료 허용 후 -> processState 4번으로 처리
+  // 2. 신고 검토 완료 허용 후 -> processState 4번으로 처리
   async dealPostReportBeforeThreeTimes(complaintId: number): Promise<PostComplaints> {
     /**
-     * 게시글 신고 검토 완료 허용 & 매너지수 감소 및 블라인드 처리 이후 신고 검토 완료 처리
+     * 1) 게시글 신고 검토 완료 허용 & 매너지수 감소 및 블라인드 처리 이후 신고 검토 완료 처리 (과거 신고 횟수가 3번 미만인 경우)
+     * 2) 게시글 신고 검토 완료 허용 & 유저 이용정지 처리 및 블라인드 처리 이후 신고 검토 완료 처리 (과거 신고 횟수가 3번인 경우)
      *
      * @author 이승연(dltmddus1998)
      * @param {complaintId}
@@ -225,8 +226,12 @@ export class AdminService {
     await getConnection()
       .transaction(async (manager: EntityManager) => {
         await this.postComplaintsRepository.completeReportHandlingOfPost(manager, complaintId);
-        const user = await getRepository(User).findOne(postComplaint.post.user.phoneNumber);
-        await this.userComplaintsRepository.declineMannerTemp(manager, user.userName);
+        if (postComplaint.post.user.reportedTimes < 3 && postComplaint.post.user.reportedTimes >= 0) {
+          await this.userComplaintsRepository.declineMannerTemp(manager, postComplaint.post.user.phoneNumber);
+          await this.userComplaintsRepository.updateUserReportedTimes(manager, postComplaint.post.user.phoneNumber);
+        } else if (postComplaint.post.user.reportedTimes === 3) {
+          await this.userComplaintsRepository.updateUserSuspensionOfUse(manager, postComplaint.post.user.phoneNumber);
+        }
         await this.postComplaintsRepository.updateBlindState(manager, complaintId);
         await this.postComplaintsRepository.afterCompleteReportHandlingOfPost(manager, complaintId);
       })
@@ -239,13 +244,14 @@ export class AdminService {
 
   async dealUserReportBeforeThreeTimes(complaintId: number): Promise<UserComplaints> {
     /**
-     * 유저 신고 검토 완료 허용 & 매너지수 감소 및 블라인드 처리 이후 신고 검토 완료 처리
+     * 1) 유저 신고 검토 완료 허용 & 매너지수 감소 및 블라인드 처리 이후 신고 검토 완료 처리 (과거 신고 횟수가 3번 미만인 경우)
+     * 2) 유저 신고 검토 완료 허용 & 유저 이용정지 처리 및 블라인드 처리 이후 신고 검토 완료 처리 (과거 신고 횟수가 3번인 경우)
      *
      * @author 이승연(dltmddus1998)
      * @param {complaintId}
      * @return {UserComplaints}
-     * @throws {I}
-     *
+     * @throws {NotFoundException} 존재하지 않는 신고
+     * @throws {InternalServerErrorException} 신고 검토 완료 실패
      */
     const userComplaint = await this.userComplaintsRepository.getUserComplaintById(complaintId);
     if (!userComplaint) {
@@ -254,9 +260,14 @@ export class AdminService {
     await getConnection()
       .transaction(async (manager: EntityManager) => {
         await this.userComplaintsRepository.completeReportHandlingOfUser(manager, complaintId);
-        await this.userComplaintsRepository.declineMannerTemp(manager, userComplaint.subjectUser.userName);
+        if (userComplaint.subjectUser.reportedTimes < 3 && userComplaint.subjectUser.reportedTimes >= 0) {
+          await this.userComplaintsRepository.declineMannerTemp(manager, userComplaint.subjectUser.userName);
+          await this.userComplaintsRepository.updateUserReportedTimes(manager, userComplaint.subjectUser.phoneNumber);
+        } else if (userComplaint.subjectUser.reportedTimes === 3) {
+          await this.userComplaintsRepository.updateUserSuspensionOfUse(manager, userComplaint.subjectUser.phoneNumber);
+        }
         await this.userComplaintsRepository.updateBlindState(manager, complaintId);
-        await this.userComplaintsRepository.afterCompleteReportHandlingOfUser(complaintId);
+        await this.userComplaintsRepository.afterCompleteReportHandlingOfUser(manager, complaintId);
       })
       .catch(err => {
         console.error(err);
@@ -265,25 +276,50 @@ export class AdminService {
     return await this.userComplaintsRepository.getUserComplaintById(complaintId);
   }
 
-  // async dealChatReportBeforeThreeTimes(complaintId: number): Promise<ChatComplaints> {
-  //   /**
-  //    * 채팅 신고 검토 완료 허용 & 매너지수 감소 및 블라인드 처리 이후 신고 검토 완료 처리
-  //    *
-  //    * @author 이승연(dltmddus1998)
-  //    * @param {complaintId}
-  //    * @return {ChatComplaints}
-  //    * @throws {}
-  //    *
-  //    */
-  //   const chatComplaint = await this.chatComplaintsRepository.getChatComplaintById(complaintId);
-  //   if (!chatComplaint) {
-  //     throw new NotFoundException('존재하지 않는 신고 내용입니다.');
-  //   }
-  //   await getConnection()
-  //     .transaction(async (manager: EntityManager) => {
-  //       await this.chatComplaintsRepository.completeReportHandlingOfChat(manager, complaintId);
-  //       await this.userComplaintsRepository.declineMannerTemp(manager, chatComplaint.user.userName);
-  //       await this.chatComplaintsRepository.
-  //     })
-  // }
+  async dealChatReport(complaintId: number): Promise<ChatComplaints> {
+    /**
+     * 1) 채팅 신고 검토 완료 허용 & 매너지수 감소 및 블라인드 처리 이후 신고 검토 완료 처리 (과거 신고 횟수가 3번 미만인 경우)
+     * 2) 채팅 신고 검토 완료 허용 & 유저 이용정지 처리 및 블라인드 처리 이후 신고 검토 완료 처리 (과거 신고 횟수가 3번인 경우)
+     *
+     * @author 이승연(dltmddus1998)
+     * @param {complaintId}
+     * @return {ChatComplaints}
+     * @throws {NotFoundException} 존재하지 않는 신고
+     * @throws {InternalServerErrorException} 신고 검토 완료 실패
+     */
+    const chatComplaint = await this.chatComplaintsRepository.getChatComplaintById(complaintId);
+    if (!chatComplaint) {
+      throw new NotFoundException('존재하지 않는 신고 내용입니다.');
+    }
+    if (chatComplaint.chat.user.reportedTimes < 3 && chatComplaint.chat.user.reportedTimes >= 0) {
+      await getConnection()
+        .transaction(async (manager: EntityManager) => {
+          await this.chatComplaintsRepository.completeReportHandlingOfChat(manager, complaintId);
+          if (chatComplaint.chat.user.reportedTimes < 3 && chatComplaint.chat.user.reportedTimes >= 0) {
+            await this.userComplaintsRepository.declineMannerTemp(manager, chatComplaint.user.phoneNumber);
+            await this.userComplaintsRepository.updateUserReportedTimes(manager, chatComplaint.user.phoneNumber);
+          } else if (chatComplaint.chat.user.reportedTimes === 3) {
+            await this.userComplaintsRepository.updateUserSuspensionOfUse(manager, chatComplaint.user.phoneNumber);
+          }
+          await this.chatComplaintsRepository.updateBlindState(manager, complaintId);
+          await this.chatComplaintsRepository.afterCompleteReportHandlingOfChat(manager, complaintId);
+        })
+        .catch(err => {
+          console.error(err);
+          throw new InternalServerErrorException('채팅 신고 검토 완료에 실패하였습니다. 잠시후 다시 시도해주세요.');
+        });
+    }
+    return await this.chatComplaintsRepository.getChatComplaintById(complaintId);
+  }
+
+  async getUsersInSuspensionOfUse(page: number, perPage: number) {
+    /**
+     * 이용정지자 목록 조회
+     *
+     * @author 이승연(dltmddus1998)
+     * @param
+     * @return
+     */
+    return await this.userComplaintsRepository.getUsersInSuspensionOfUse(page, perPage);
+  }
 }

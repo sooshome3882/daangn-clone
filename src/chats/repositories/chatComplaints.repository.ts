@@ -60,8 +60,24 @@ export class ChatComplaintsRepository extends Repository<ChatComplaints> {
     await getRepository(Chat).createQueryBuilder('Chat').update(Chat).set({ reportHandling: true }).where('chatId = :chatId', { chatId: chatComplaint.chat.chatId }).execute();
   }
 
-  async afterCompleteReportHandlingOfChat(complaintId: number) {
-    return await this.findOne(complaintId)
+  async updateBlindState(manager: EntityManager, complaintId: number) {
+    const chatComplaint = await this.findOne(complaintId);
+    if (!chatComplaint) {
+      throw new NotFoundException(`complaintId가 ${complaintId}에 해당하는 데이터가 없습니다.`);
+    }
+    return await manager
+      .getRepository(Chat)
+      .createQueryBuilder('Chat')
+      .update(Chat)
+      .set({ reportHandling: true })
+      .where('phoneNumber = :phoneNumber', { phoneNumber: chatComplaint.user.phoneNumber })
+      .execute();
+  }
+
+  async afterCompleteReportHandlingOfChat(manager: EntityManager, complaintId: number) {
+    return await manager
+      .getRepository(ChatComplaints)
+      .findOne(complaintId)
       .then(ChatComplaint => {
         ChatComplaint.processState.processStateId = 4;
         ChatComplaint.save();

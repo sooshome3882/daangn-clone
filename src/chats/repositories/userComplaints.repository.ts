@@ -53,12 +53,12 @@ export class UserComplaintsRepository extends Repository<UserComplaints> {
       });
   }
 
-  async declineMannerTemp(manager: EntityManager, userName: String) {
+  async declineMannerTemp(manager: EntityManager, phoneNumber: String) {
     return await manager
       .getRepository(User)
       .findOne({
         where: {
-          userName,
+          phoneNumber,
         },
       })
       .then(user => {
@@ -81,8 +81,9 @@ export class UserComplaintsRepository extends Repository<UserComplaints> {
       .execute();
   }
 
-  async afterCompleteReportHandlingOfUser(complaintId: number) {
-    return await getRepository(UserComplaints)
+  async afterCompleteReportHandlingOfUser(manager: EntityManager, complaintId: number) {
+    return await manager
+      .getRepository(UserComplaints)
       .findOne(complaintId)
       .then(userComplaint => {
         userComplaint.processState.processStateId = 4;
@@ -94,19 +95,32 @@ export class UserComplaintsRepository extends Repository<UserComplaints> {
       });
   }
 
-  async updateUserReportedTimes(phoneNumber: string) {
-    const user = await getRepository(User).findOne(phoneNumber);
-    user.reportedTimes += 1;
-    user.save();
-  }
-
-  async updateUserBlockState(phoneNumber: string) {
-    const user = await getRepository(User).findOne(phoneNumber);
+  async updateUserReportedTimes(manager: EntityManager, phoneNumber: string) {
+    const user = await manager.getRepository(User).findOne(phoneNumber);
     if (!user) {
       throw new NotFoundException('해당 유저는 존재하지 않습니다.');
     }
-    /**
-     * TODO - 유저 이용정지 처리
-     */
+    user.reportedTimes += 1;
+    await manager.save(user);
+  }
+
+  async updateUserSuspensionOfUse(manager: EntityManager, phoneNumber: string) {
+    const user = await manager.getRepository(User).findOne(phoneNumber);
+    if (!user) {
+      throw new NotFoundException('해당 유저는 존재하지 않습니다.');
+    }
+    user.suspensionOfUse = true;
+    await manager.save(user);
+  }
+
+  async getUsersInSuspensionOfUse(page: number, perPage: number) {
+    return await getRepository(User)
+      .createQueryBuilder('user')
+      .select()
+      .where('suspensionOfUse = :suspensionOfUse', { suspensionOfUse: true })
+      .orderBy('user.createdAt', 'DESC')
+      .offset((page - 1) * perPage)
+      .limit(perPage)
+      .getMany();
   }
 }
