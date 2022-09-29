@@ -8,16 +8,16 @@ import { CreatePostDto } from '../dto/createPost.dto';
 import { SearchPostDto } from '../dto/searchPost.dto';
 import { UpdatePostDto } from '../dto/updatePost.dto';
 import { Post } from '../entities/post.entity';
-import { PriceOffer } from '../priceOffer.entity';
+import { PriceOffer } from '../entities/priceOffer.entity';
 import { ProcessState } from 'src/posts/entities/processState.entity';
 import { PostComplaints } from '../entities/postComplaints.entity';
 import { DealState } from 'src/posts/entities/dealState.entity';
 import { User } from 'src/users/entities/user.entity';
-import { PostsLikeRecord } from '../postsLikeRecord.entity';
+import { PostsLikeRecord } from '../entities/postsLikeRecord.entity';
 import { PostsLikeDto } from '../dto/addPostsLike.dto';
 import { PostsViewDto } from '../dto/addPostsView.dto';
-import { PostsViewRecord } from '../postsViewRecord.entity';
-import { PostImage } from '../postImage.entity';
+import { PostsViewRecord } from '../entities/postsViewRecord.entity';
+import { PostImage } from '../entities/postImage.entity';
 import { Location } from 'src/users/entities/location.entity';
 
 @EntityRepository(Post)

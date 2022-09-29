@@ -1,6 +1,6 @@
 import { ProcessState } from 'src/posts/entities/processState.entity';
 import { PostsLikeDto } from './dto/addPostsLike.dto';
-import { PostsLikeRecord } from 'src/posts/postsLikeRecord.entity';
+import { PostsLikeRecord } from 'src/posts/entities/postsLikeRecord.entity';
 import { CreatePostsComplaintsDto } from './dto/createPostsComplaints.dto';
 import { AcceptOfferedPriceDto } from './dto/acceptOfferedPrice.dto';
 import { ParseFilePipe, ParseIntPipe, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
@@ -11,14 +11,14 @@ import { SearchPostDto } from './dto/searchPost.dto';
 import { UpdatePostDto } from './dto/updatePost.dto';
 import { OfferPriceDto } from './dto/offerPrice.dto';
 import { Post } from './entities/post.entity';
-import { PriceOffer } from './priceOffer.entity';
+import { PriceOffer } from './entities/priceOffer.entity';
 import { PostService } from './post.service';
 import { PostComplaints } from './entities/postComplaints.entity';
 import { UpdateDealStateDto } from './dto/updateDealState.dto';
 import { GetUser } from 'src/users/validations/getUser.decorator';
 import { JwtAuthGuard } from 'src/users/guards/jwtAuth.guard';
 import { PostImagesValidationPipe } from './pipes/postImages.pipe';
-import { PostsViewRecord } from './postsViewRecord.entity';
+import { PostsViewRecord } from './entities/postsViewRecord.entity';
 import { PostsViewDto } from './dto/addPostsView.dto';
 import { Category } from 'src/posts/entities/category.entity';
 

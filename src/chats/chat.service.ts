@@ -1,18 +1,17 @@
 import { BlockUser } from 'src/chats/blockUser.entity';
-import { CreateBlockUserDto } from './dto/createBlockUser.dto';
 import { CreateChatComplaintsDto } from './dto/createChatComplaints.dto';
 import { UserComplaints } from 'src/chats/userComplaints.entity';
 import { CreateUsersComplaintsDto } from './dto/createUsersComplaints.dto';
 import { CreateChatDto } from './dto/createChat.dto';
 import { CreateChatRoomDto } from './dto/createChatRoom.dto';
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ChatRepository } from './repositories/chat.repository';
 import { User } from 'src/users/entities/user.entity';
 import { ChatRoom } from './chatRoom.entity';
 import { Post } from 'src/posts/entities/post.entity';
 import { Chat } from './chat.entity';
-import { getRepository, EntityManager } from 'typeorm';
+import { getRepository } from 'typeorm';
 import { ChatComplaints } from './chatComplaints.entity';
 
 /**

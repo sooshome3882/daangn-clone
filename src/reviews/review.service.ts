@@ -197,7 +197,7 @@ export class ReviewService {
         sellerReview.review = review;
         sellerReview.retransaction = retransaction;
         await manager.save(sellerReview);
-        await this.selectedMannerItemToSellerRepository.delete({ sellerReview: sellerReview.sellerReviewId });
+        await manager.delete(SelectedMannerItemToSeller, { sellerReview: sellerReview.sellerReviewId });
         await this.selectedMannerItemToSellerRepository.setSelectedMannerItemToSeller(manager, sellerReview.sellerReviewId, selectedMannerItems);
         await this.mannerTempCal(manager, userMannerTempReset, score.scoreItemId, selectedMannerItems);
       })
@@ -240,7 +240,7 @@ export class ReviewService {
         buyerReview.review = review;
         buyerReview.retransaction = retransaction;
         await manager.save(buyerReview);
-        await manager.delete(SelectedMannerItemToBuyer, { buyerReview: buyerReview.buyerReviewId }); // TODO: 확인필요
+        await manager.delete(SelectedMannerItemToBuyer, { buyerReview: buyerReview.buyerReviewId });
         await this.selectedMannerItemToBuyerRepository.setSelectedMannerItemToBuyer(manager, buyerReview.buyerReviewId, selectedMannerItems);
         await this.mannerTempCal(manager, userMannerTempReset, score.scoreItemId, selectedMannerItems);
       })

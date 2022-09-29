@@ -1,6 +1,5 @@
-import { PostsLikeRecord } from 'src/posts/postsLikeRecord.entity';
-import { InternalServerErrorException, BadRequestException, NotFoundException } from '@nestjs/common';
-import { UpdateDealStateDto } from './../posts/dto/updateDealState.dto';
+import { PostsLikeRecord } from 'src/posts/entities/postsLikeRecord.entity';
+import { InternalServerErrorException, BadRequestException } from '@nestjs/common';
 import { EntityRepository, getRepository, Repository, EntityManager, getConnection } from 'typeorm';
 import { Followings } from './followings.entity';
 import { User } from 'src/users/entities/user.entity';

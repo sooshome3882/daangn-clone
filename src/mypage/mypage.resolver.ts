@@ -1,4 +1,4 @@
-import { PostsLikeRecord } from 'src/posts/postsLikeRecord.entity';
+import { PostsLikeRecord } from 'src/posts/entities/postsLikeRecord.entity';
 import { ParseBoolPipe, UseGuards } from '@nestjs/common';
 import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
 import { Followings } from './followings.entity';

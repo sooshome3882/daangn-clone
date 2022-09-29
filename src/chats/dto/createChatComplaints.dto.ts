@@ -1,5 +1,5 @@
 import { Field, InputType } from '@nestjs/graphql';
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber } from 'class-validator';
 import { Chat } from '../chat.entity';
 import { ComplaintReason } from 'src/posts/entities/complaintReason.entity';
 
