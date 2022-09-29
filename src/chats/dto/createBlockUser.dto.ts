@@ -3,9 +3,9 @@ import { IsNotEmpty, IsString } from 'class-validator';
 import { User } from 'src/users/entities/user.entity';
 
 @InputType()
-export class FollowDto {
+export class CreateBlockUserDto {
   @Field(() => String)
   @IsNotEmpty()
   @IsString()
-  followerUser!: User;
+  targetUserName!: User;
 }

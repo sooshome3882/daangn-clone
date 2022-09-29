@@ -1,7 +1,7 @@
 import { Field, InputType } from '@nestjs/graphql';
 import { IsNotEmpty, IsNumber } from 'class-validator';
-import { Post } from '../post.entity';
-import { ComplaintReason } from 'src/complaintReasons/complaintReason.entity';
+import { Post } from '../entities/post.entity';
+import { ComplaintReason } from 'src/posts/entities/complaintReason.entity';
 
 @InputType()
 export class CreatePostsComplaintsDto {

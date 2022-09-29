@@ -1,14 +1,14 @@
 import { PostsLikeRecord } from 'src/posts/entities/postsLikeRecord.entity';
 import { ParseBoolPipe, UseGuards } from '@nestjs/common';
 import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
-import { Followings } from './followings.entity';
+import { Followings } from './entities/followings.entity';
 import { MypageService } from './mypage.service';
 import { GetUser } from 'src/users/validations/getUser.decorator';
 import { FollowDto } from './dto/follow.dto';
 import { PurchaseHistoryDto } from './dto/purchaseHistory.dto';
-import { User } from 'src/users/user.entity';
-import { Post } from 'src/posts/post.entity';
-import { PurchaseHistory } from './purchaseHistory.entity';
+import { User } from 'src/users/entities/user.entity';
+import { Post } from 'src/posts/entities/post.entity';
+import { PurchaseHistory } from './entities/purchaseHistory.entity';
 import { JwtAuthGuard } from 'src/users/guards/jwtAuth.guard';
 import { PhoneNumberValidationPipe } from 'src/users/validations/phoneNumber.pipe';
 import { GetOtherProfileDto } from './dto/getOtherProfile.dto';

@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Strategy, ExtractJwt } from 'passport-jwt';
 import { UserRepository } from '../repositories/user.repository';
 import * as config from 'config';
-import { User } from '../user.entity';
+import { User } from '../entities/user.entity';
 import { Payload } from '../models/payload.model';
 
 const jwtConfig: any = config.get('jwt');

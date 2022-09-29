@@ -1,11 +1,11 @@
-import { ChatComplaints } from '../chats/entities/chatComplaints.entity';
+import { ChatComplaints } from '../../chats/entities/chatComplaints.entity';
 import { UserComplaints } from 'src/chats/entities/userComplaints.entity';
 import { Field, ObjectType } from '@nestjs/graphql';
-import { Post } from 'src/posts/post.entity';
+import { Post } from 'src/posts/entities/post.entity';
 import { PostsLikeRecord } from 'src/posts/entities/postsLikeRecord.entity';
-import { PurchaseHistory } from 'src/mypage/purchaseHistory.entity';
+import { PurchaseHistory } from 'src/mypage/entities/purchaseHistory.entity';
 import { BaseEntity, Column, CreateDateColumn, Entity, OneToMany, PrimaryColumn, UpdateDateColumn } from 'typeorm';
-import { Followings } from '../mypage/followings.entity';
+import { Followings } from '../../mypage/entities/followings.entity';
 import { PostsViewRecord } from 'src/posts/entities/postsViewRecord.entity';
 import { Location } from './location.entity';
 import { ChatRoom } from 'src/chats/entities/chatRoom.entity';

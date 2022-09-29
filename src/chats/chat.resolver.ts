@@ -11,7 +11,7 @@ import { UseGuards, ParseIntPipe } from '@nestjs/common';
 import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
 import { JwtAuthGuard } from 'src/users/guards/jwtAuth.guard';
 import { GetUser } from 'src/users/validations/getUser.decorator';
-import { User } from 'src/users/user.entity';
+import { User } from 'src/users/entities/user.entity';
 
 @Resolver()
 @UseGuards(JwtAuthGuard)

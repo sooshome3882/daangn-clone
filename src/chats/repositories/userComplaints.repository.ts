@@ -1,7 +1,7 @@
 import { EntityRepository, Repository, getRepository, EntityManager } from 'typeorm';
 import { SearchComplaintDto } from 'src/admins/dto/searchComplaint.dto';
 import { UserComplaints } from '../entities/userComplaints.entity';
-import { User } from 'src/users/user.entity';
+import { User } from 'src/users/entities/user.entity';
 import { InternalServerErrorException, NotFoundException } from '@nestjs/common';
 
 @EntityRepository(UserComplaints)
@@ -68,7 +68,7 @@ export class UserComplaintsRepository extends Repository<UserComplaints> {
   }
 
   async updateBlindState(manager: EntityManager, complaintId: number) {
-    const userComplaint = await getRepository(UserComplaints).findOne(complaintId);
+    const userComplaint = await this.findOne(complaintId);
     if (!userComplaint) {
       throw new NotFoundException(`complaintId가 ${complaintId}에 해당하는 데이터가 없습니다.`);
     }

@@ -4,7 +4,6 @@ import { UserModule } from 'src/users/user.module';
 import { ChatRepository } from './repositories/chat.repository';
 import { ChatResolver } from './chat.resolver';
 import { ChatService } from './chat.service';
-// import { ChatGateway } from './chat.gateway';
 
 @Module({
   imports: [TypeOrmModule.forFeature([ChatRepository]), UserModule],

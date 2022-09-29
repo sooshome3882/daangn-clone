@@ -1,8 +1,8 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { TownRange } from 'src/townRanges/townRange.entity';
+import { TownRange } from 'src/posts/entities/townRange.entity';
 import { User } from './user.entity';
-import { Post } from 'src/posts/post.entity';
+import { Post } from 'src/posts/entities/post.entity';
 
 @Entity()
 @ObjectType()
@@ -44,7 +44,7 @@ export class Location extends BaseEntity {
   @ManyToOne(type => User, user => user.locations, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
   user!: string;
 
-  @Field()
+  @Field(() => TownRange)
   @JoinColumn({ name: 'townRange' })
   @Column({ type: 'int', default: 2 })
   @ManyToOne(type => TownRange, townRange => townRange.locations, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })

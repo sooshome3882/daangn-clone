@@ -15,7 +15,7 @@ import { ChatComplaints } from 'src/chats/entities/chatComplaints.entity';
 import { ChatComplaintsRepository } from 'src/chats/repositories/chatComplaints.repository';
 import { UserComplaints } from 'src/chats/entities/userComplaints.entity';
 import { UserComplaintsRepository } from 'src/chats/repositories/userComplaints.repository';
-import { User } from 'src/users/user.entity';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class AdminService {

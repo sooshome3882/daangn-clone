@@ -6,10 +6,10 @@ import { CreateUsersComplaintsDto } from '../dto/createUsersComplaints.dto';
 import { InternalServerErrorException } from '@nestjs/common';
 import { CreateChatRoomDto } from '../dto/createChatRoom.dto';
 import { EntityManager, EntityRepository, getConnection, getRepository, Repository } from 'typeorm';
-import { Chat } from '../entities/chat.entity';
-import { User } from 'src/users/user.entity';
-import { CreateChatDto } from '../dto/createChat.dto';
 import { ChatRoom } from '../entities/chatRoom.entity';
+import { Chat } from '../entities/chat.entity';
+import { User } from 'src/users/entities/user.entity';
+import { CreateChatDto } from '../dto/createChat.dto';
 
 @EntityRepository(ChatRoom)
 export class ChatRepository extends Repository<ChatRoom> {
