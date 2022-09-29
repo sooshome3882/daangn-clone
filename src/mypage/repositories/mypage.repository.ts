@@ -1,11 +1,11 @@
 import { PostsLikeRecord } from 'src/posts/entities/postsLikeRecord.entity';
 import { InternalServerErrorException, BadRequestException } from '@nestjs/common';
 import { EntityRepository, getRepository, Repository, EntityManager, getConnection } from 'typeorm';
-import { Followings } from './followings.entity';
+import { Followings } from '../entities/followings.entity';
 import { User } from 'src/users/entities/user.entity';
 import { Post } from 'src/posts/entities/post.entity';
-import { PurchaseHistory } from './purchaseHistory.entity';
-import { PurchaseHistoryDto } from './dto/purchaseHistory.dto';
+import { PurchaseHistory } from '../entities/purchaseHistory.entity';
+import { PurchaseHistoryDto } from '../dto/purchaseHistory.dto';
 
 @EntityRepository(Followings)
 export class MypageRepository extends Repository<Followings> {

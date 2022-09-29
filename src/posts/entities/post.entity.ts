@@ -8,7 +8,7 @@ import { PostComplaints } from './postComplaints.entity';
 import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { PostsLikeRecord } from './postsLikeRecord.entity';
 import { PostImage } from './postImage.entity';
-import { PurchaseHistory } from '../../mypage/purchaseHistory.entity';
+import { PurchaseHistory } from '../../mypage/entities/purchaseHistory.entity';
 import { PostsViewRecord } from './postsViewRecord.entity';
 import { ChatRoom } from 'src/chats/chatRoom.entity';
 import { Location } from 'src/users/entities/location.entity';
