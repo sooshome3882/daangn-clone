@@ -26,7 +26,7 @@ import { ProfileUserDto } from './dto/profile.dto';
 import { v1 as uuid } from 'uuid';
 import { MyLocationDto } from './dto/mylocation.dto';
 import { ElasticsearchService } from '@nestjs/elasticsearch';
-import { EntityManager, Equal, getConnection, IsNull, Not } from 'typeorm';
+import { EntityManager, Equal, getConnection, getRepository, IsNull, Not } from 'typeorm';
 import { Location } from './entities/location.entity';
 import { DeleteTownDto } from './dto/deleteTown.dto';
 import { TownRange } from 'src/posts/entities/townRange.entity';
@@ -34,7 +34,6 @@ import { SearchHit } from '@elastic/elasticsearch/lib/api/types';
 import * as AWS from 'aws-sdk';
 import { FileUpload } from './models/fileUpload.model';
 import { LocationRepository } from './repositories/location.repository';
-import { TownRangeRepository } from 'src/posts/repositories/townRange.repository';
 
 const smsConfig: any = config.get('sms');
 const ACCESS_KEY_ID = smsConfig.access_key_id;
@@ -60,8 +59,6 @@ export class UserService {
     private readonly userRepository: UserRepository,
     @InjectRepository(LocationRepository)
     private readonly locationRepository: LocationRepository,
-    @InjectRepository(TownRangeRepository)
-    private readonly townRangeRepository: TownRangeRepository,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private readonly jwtService: JwtService,
     private readonly esService: ElasticsearchService,
@@ -646,7 +643,7 @@ export class UserService {
     if (location.townRange.townRangeId === townRange) {
       throw new BadRequestException('이미 설정된 동네 범위입니다.');
     }
-    const possibleTownRange = await this.townRangeRepository.find();
+    const possibleTownRange = await getRepository(TownRange).find();
     const exist = possibleTownRange.filter(town => {
       return town.townRangeId === townRange;
     });
@@ -788,7 +785,7 @@ export class UserService {
      * @return {number} 동네 개수
      * @throws {NotFoundException} 없는 동네 범위를 설정하려고 할 때 예외 처리
      */
-    const possibleTownRange = await this.townRangeRepository.find();
+    const possibleTownRange = await getRepository(TownRange).find();
     const exist = possibleTownRange.filter(town => {
       return town.townRangeId === townRange;
     });
@@ -814,7 +811,7 @@ export class UserService {
      * @return {string[]} 동네 목록
      * @throws {NotFoundException} 없는 동네 범위를 설정하려고 할 때 예외 처리
      */
-    const possibleTownRange = await this.townRangeRepository.find();
+    const possibleTownRange = await getRepository(TownRange).find();
     const exist = possibleTownRange.filter(town => {
       return town.townRangeId === townRange;
     });

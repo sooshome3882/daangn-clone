@@ -11,7 +11,6 @@ import { JwtAuthGuard } from './guards/jwtAuth.guard';
 import { ElasticsearchModule } from '@nestjs/elasticsearch';
 import * as redisStore from 'cache-manager-redis-store';
 import { LocationRepository } from './repositories/location.repository';
-import { TownRangeRepository } from 'src/posts/repositories/townRange.repository';
 
 const cacheConfig: any = config.get('cache');
 const jwtConfig: any = config.get('jwt');
@@ -44,7 +43,7 @@ const elasticsearchConfig: any = config.get('elasticsearch');
       pingTimeout: elasticsearchConfig.pingTimeout,
       sniffOnStart: elasticsearchConfig.sniffOnStart,
     }),
-    TypeOrmModule.forFeature([UserRepository, LocationRepository, TownRangeRepository]),
+    TypeOrmModule.forFeature([UserRepository, LocationRepository]),
   ],
   providers: [UserService, UserResolver, JwtStrategy, JwtAuthGuard],
   exports: [UserService, JwtStrategy, PassportModule, JwtAuthGuard],
