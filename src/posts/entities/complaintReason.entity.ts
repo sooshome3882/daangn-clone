@@ -1,8 +1,8 @@
-import { UserComplaints } from './../chats/userComplaints.entity';
-import { ChatComplaints } from './../chats/chatComplaints.entity';
+import { UserComplaints } from '../../chats/entities/userComplaints.entity';
+import { ChatComplaints } from '../../chats/entities/chatComplaints.entity';
 import { Field, ObjectType } from '@nestjs/graphql';
 import { BaseEntity, Column, Entity, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
-import { PostComplaints } from 'src/posts/postComplaints.entity';
+import { PostComplaints } from 'src/posts/entities/postComplaints.entity';
 
 @Entity()
 @ObjectType()

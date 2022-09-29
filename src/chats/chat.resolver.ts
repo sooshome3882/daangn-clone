@@ -1,18 +1,17 @@
-import { CreateBlockUserDto } from './dto/createBlockUser.dto';
 import { CreateChatComplaintsDto } from './dto/createChatComplaints.dto';
-import { ChatComplaints } from './chatComplaints.entity';
+import { ChatComplaints } from './entities/chatComplaints.entity';
 import { CreateUsersComplaintsDto } from './dto/createUsersComplaints.dto';
-import { UserComplaints } from 'src/chats/userComplaints.entity';
+import { UserComplaints } from 'src/chats/entities/userComplaints.entity';
 import { CreateChatRoomDto } from './dto/createChatRoom.dto';
-import { ChatRoom } from 'src/chats/chatRoom.entity';
+import { ChatRoom } from 'src/chats/entities/chatRoom.entity';
 import { CreateChatDto } from './dto/createChat.dto';
-import { Chat } from 'src/chats/chat.entity';
+import { Chat } from 'src/chats/entities/chat.entity';
 import { ChatService } from './chat.service';
 import { UseGuards, ParseIntPipe } from '@nestjs/common';
 import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
 import { JwtAuthGuard } from 'src/users/guards/jwtAuth.guard';
 import { GetUser } from 'src/users/validations/getUser.decorator';
-import { User } from 'src/users/user.entity';
+import { User } from 'src/users/entities/user.entity';
 
 @Resolver()
 @UseGuards(JwtAuthGuard)

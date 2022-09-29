@@ -1,30 +1,30 @@
 import { PostsViewDto } from './dto/addPostsView.dto';
 import { BadRequestException, ForbiddenException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/users/user.entity';
+import { User } from 'src/users/entities/user.entity';
 import { CreatePostDto } from './dto/createPost.dto';
 import { SearchPostDto } from './dto/searchPost.dto';
 import { UpdatePostDto } from './dto/updatePost.dto';
 import { OfferPriceDto } from './dto/offerPrice.dto';
 import { AcceptOfferedPriceDto } from './dto/acceptOfferedPrice.dto';
 import { CreatePostsComplaintsDto } from './dto/createPostsComplaints.dto';
-import { Post } from './post.entity';
-import { PriceOffer } from './priceOffer.entity';
+import { Post } from './entities/post.entity';
+import { PriceOffer } from './entities/priceOffer.entity';
 import { PostRepository } from './repositories/post.repository';
-import { PostComplaints } from './postComplaints.entity';
+import { PostComplaints } from './entities/postComplaints.entity';
 import { UpdateDealStateDto } from './dto/updateDealState.dto';
-import { PostsLikeRecord } from './postsLikeRecord.entity';
+import { PostsLikeRecord } from './entities/postsLikeRecord.entity';
 import { PostsLikeDto } from './dto/addPostsLike.dto';
-import { PostsViewRecord } from './postsViewRecord.entity';
+import { PostsViewRecord } from './entities/postsViewRecord.entity';
 import { v1 as uuid } from 'uuid';
 import { EntityManager, getConnection, getRepository } from 'typeorm';
-import { Location } from 'src/users/location.entity';
+import { Location } from 'src/users/entities/location.entity';
 import { UserService } from 'src/users/user.service';
 import * as config from 'config';
 import * as AWS from 'aws-sdk';
 import { FileUpload } from 'src/users/models/fileUpload.model';
-import { PostImage } from './postImage.entity';
-import { Category } from 'src/categories/category.entity';
+import { PostImage } from './entities/postImage.entity';
+import { Category } from 'src/posts/entities/category.entity';
 
 const s3Config: any = config.get('S3');
 const AWS_S3_BUCKET_NAME = s3Config.AWS_S3_BUCKET_NAME;
@@ -243,7 +243,7 @@ export class PostService {
     return filteredPosts;
   }
 
-  async pullUpPost(postId: number) {
+  async pullUpPost(postId: number): Promise<Post> {
     /**
      * 게시글 끌어올리기
      *

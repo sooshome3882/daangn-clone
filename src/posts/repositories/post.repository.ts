@@ -7,22 +7,22 @@ import { EntityManager, EntityRepository, getConnection, getRepository, Reposito
 import { CreatePostDto } from '../dto/createPost.dto';
 import { SearchPostDto } from '../dto/searchPost.dto';
 import { UpdatePostDto } from '../dto/updatePost.dto';
-import { Post } from '../post.entity';
-import { PriceOffer } from '../priceOffer.entity';
-import { ProcessState } from 'src/processStates/processState.entity';
-import { PostComplaints } from '../postComplaints.entity';
-import { DealState } from 'src/dealStates/dealState.entity';
-import { User } from 'src/users/user.entity';
-import { PostsLikeRecord } from '../postsLikeRecord.entity';
+import { Post } from '../entities/post.entity';
+import { PriceOffer } from '../entities/priceOffer.entity';
+import { ProcessState } from 'src/posts/entities/processState.entity';
+import { PostComplaints } from '../entities/postComplaints.entity';
+import { DealState } from 'src/posts/entities/dealState.entity';
+import { User } from 'src/users/entities/user.entity';
+import { PostsLikeRecord } from '../entities/postsLikeRecord.entity';
 import { PostsLikeDto } from '../dto/addPostsLike.dto';
 import { PostsViewDto } from '../dto/addPostsView.dto';
-import { PostsViewRecord } from '../postsViewRecord.entity';
-import { PostImage } from '../postImage.entity';
-import { Location } from 'src/users/location.entity';
+import { PostsViewRecord } from '../entities/postsViewRecord.entity';
+import { PostImage } from '../entities/postImage.entity';
+import { Location } from 'src/users/entities/location.entity';
 
 @EntityRepository(Post)
 export class PostRepository extends Repository<Post> {
-  async createPost(manager: EntityManager, user: User, createPostDto: CreatePostDto, location: Location): Promise<number> {
+  async createPost(manager: EntityManager, user: User, createPostDto: CreatePostDto, location: Location) {
     const { title, content, category, price, isOfferedPrice, townRange, dealState } = createPostDto;
     const query = await manager
       .getRepository(Post)
@@ -42,12 +42,12 @@ export class PostRepository extends Repository<Post> {
     await manager.getRepository(PostImage).createQueryBuilder('PostImage').insert().into(PostImage).values({ imagePath, post }).execute();
   }
 
-  async updatePost(postId: number, updatePostDto: UpdatePostDto): Promise<void> {
+  async updatePost(postId: number, updatePostDto: UpdatePostDto) {
     const { title, content, category, price, isOfferedPrice, townRange } = updatePostDto;
     await getRepository(Post).createQueryBuilder('Post').update(Post).set({ title, content, price, isOfferedPrice, category, townRange }).where('postId = :postId', { postId }).execute();
   }
 
-  async getPosts(searchPostDto: SearchPostDto): Promise<Post[]> {
+  getPosts(searchPostDto: SearchPostDto) {
     const { search, minPrice, maxPrice, category, dealState, perPage, page } = searchPostDto;
     const queryBuilder = getRepository(Post)
       .createQueryBuilder('post')
@@ -70,11 +70,11 @@ export class PostRepository extends Repository<Post> {
     return queryBuilder.getMany();
   }
 
-  async changePulled(postId: number): Promise<void> {
+  async changePulled(postId: number) {
     await getRepository(Post).createQueryBuilder('post').update(Post).set({ pulledAt: new Date() }).where('postId = :postId', { postId }).execute();
   }
 
-  async requestPriceToSeller(offerPriceDto: OfferPriceDto): Promise<number> {
+  async requestPriceToSeller(offerPriceDto: OfferPriceDto) {
     const { offerPrice, post } = offerPriceDto;
     const query = await getRepository(PriceOffer).createQueryBuilder('priceOffer').insert().into(PriceOffer).values({ offerPrice, post }).execute();
     return query.raw.insertId;
@@ -143,7 +143,7 @@ export class PostRepository extends Repository<Post> {
       .execute();
   }
 
-  async createPostsComplaint(createPostsComplaintsDto: CreatePostsComplaintsDto): Promise<number> {
+  async createPostsComplaint(createPostsComplaintsDto: CreatePostsComplaintsDto) {
     const { post, complaintReason } = createPostsComplaintsDto;
     const query = await getRepository(PostComplaints)
       .createQueryBuilder('PostComplaints')

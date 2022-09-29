@@ -1,6 +1,6 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { User } from 'src/users/user.entity';
+import { User } from 'src/users/entities/user.entity';
 import { ChatRoom } from './chatRoom.entity';
 import { ChatComplaints } from './chatComplaints.entity';
 

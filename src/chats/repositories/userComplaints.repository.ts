@@ -1,6 +1,6 @@
 import { EntityRepository, Repository } from 'typeorm';
 import { SearchComplaintDto } from 'src/admins/dto/searchComplaint.dto';
-import { UserComplaints } from '../userComplaints.entity';
+import { UserComplaints } from '../entities/userComplaints.entity';
 
 @EntityRepository(UserComplaints)
 export class UserComplaintsRepository extends Repository<UserComplaints> {

@@ -1,4 +1,4 @@
-import { ChatComplaints } from '../chatComplaints.entity';
+import { ChatComplaints } from '../entities/chatComplaints.entity';
 import { EntityRepository, Repository } from 'typeorm';
 import { SearchComplaintDto } from 'src/admins/dto/searchComplaint.dto';
 
