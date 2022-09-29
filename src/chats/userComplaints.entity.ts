@@ -1,6 +1,6 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import { ComplaintReason } from 'src/complaintReasons/complaintReason.entity';
-import { ProcessState } from 'src/processStates/processState.entity';
+import { ComplaintReason } from 'src/posts/entities/complaintReason.entity';
+import { ProcessState } from 'src/posts/entities/processState.entity';
 import { User } from 'src/users/entities/user.entity';
 import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 

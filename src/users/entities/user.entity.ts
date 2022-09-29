@@ -1,7 +1,7 @@
 import { ChatComplaints } from '../../chats/chatComplaints.entity';
 import { UserComplaints } from 'src/chats/userComplaints.entity';
 import { Field, ObjectType } from '@nestjs/graphql';
-import { Post } from 'src/posts/post.entity';
+import { Post } from 'src/posts/entities/post.entity';
 import { PostsLikeRecord } from 'src/posts/postsLikeRecord.entity';
 import { PurchaseHistory } from 'src/mypage/purchaseHistory.entity';
 import { BaseEntity, Column, CreateDateColumn, Entity, OneToMany, PrimaryColumn, UpdateDateColumn } from 'typeorm';

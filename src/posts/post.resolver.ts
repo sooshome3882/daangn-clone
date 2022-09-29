@@ -1,4 +1,4 @@
-import { ProcessState } from 'src/processStates/processState.entity';
+import { ProcessState } from 'src/posts/entities/processState.entity';
 import { PostsLikeDto } from './dto/addPostsLike.dto';
 import { PostsLikeRecord } from 'src/posts/postsLikeRecord.entity';
 import { CreatePostsComplaintsDto } from './dto/createPostsComplaints.dto';
@@ -10,7 +10,7 @@ import { CreatePostDto } from './dto/createPost.dto';
 import { SearchPostDto } from './dto/searchPost.dto';
 import { UpdatePostDto } from './dto/updatePost.dto';
 import { OfferPriceDto } from './dto/offerPrice.dto';
-import { Post } from './post.entity';
+import { Post } from './entities/post.entity';
 import { PriceOffer } from './priceOffer.entity';
 import { PostService } from './post.service';
 import { PostComplaints } from './postComplaints.entity';
@@ -20,7 +20,7 @@ import { JwtAuthGuard } from 'src/users/guards/jwtAuth.guard';
 import { PostImagesValidationPipe } from './pipes/postImages.pipe';
 import { PostsViewRecord } from './postsViewRecord.entity';
 import { PostsViewDto } from './dto/addPostsView.dto';
-import { Category } from 'src/categories/category.entity';
+import { Category } from 'src/posts/entities/category.entity';
 
 @Resolver(() => Post)
 @UseGuards(JwtAuthGuard)

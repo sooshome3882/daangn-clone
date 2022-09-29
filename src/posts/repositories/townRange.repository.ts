@@ -1,4 +1,4 @@
-import { TownRange } from 'src/townRanges/townRange.entity';
+import { TownRange } from 'src/posts/entities/townRange.entity';
 import { EntityRepository, Repository } from 'typeorm';
 
 @EntityRepository(TownRange)

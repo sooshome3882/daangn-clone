@@ -1,8 +1,8 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { TownRange } from 'src/townRanges/townRange.entity';
+import { TownRange } from 'src/posts/entities/townRange.entity';
 import { User } from './user.entity';
-import { Post } from 'src/posts/post.entity';
+import { Post } from 'src/posts/entities/post.entity';
 
 @Entity()
 @ObjectType()

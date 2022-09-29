@@ -8,7 +8,7 @@ import { UpdatePostDto } from './dto/updatePost.dto';
 import { OfferPriceDto } from './dto/offerPrice.dto';
 import { AcceptOfferedPriceDto } from './dto/acceptOfferedPrice.dto';
 import { CreatePostsComplaintsDto } from './dto/createPostsComplaints.dto';
-import { Post } from './post.entity';
+import { Post } from './entities/post.entity';
 import { PriceOffer } from './priceOffer.entity';
 import { PostRepository } from './repositories/post.repository';
 import { PostComplaints } from './postComplaints.entity';
@@ -24,7 +24,7 @@ import * as config from 'config';
 import * as AWS from 'aws-sdk';
 import { FileUpload } from 'src/users/models/fileUpload.model';
 import { PostImage } from './postImage.entity';
-import { Category } from 'src/categories/category.entity';
+import { Category } from 'src/posts/entities/category.entity';
 
 const s3Config: any = config.get('S3');
 const AWS_S3_BUCKET_NAME = s3Config.AWS_S3_BUCKET_NAME;

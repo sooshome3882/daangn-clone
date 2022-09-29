@@ -6,7 +6,7 @@ import { PurchaseHistory } from 'src/mypage/purchaseHistory.entity';
 import { MypageRepository } from './mypage.repository';
 import { FollowDto } from './dto/follow.dto';
 import { PurchaseHistoryDto } from './dto/purchaseHistory.dto';
-import { Post } from 'src/posts/post.entity';
+import { Post } from 'src/posts/entities/post.entity';
 import { GetOtherProfileDto } from './dto/getOtherProfile.dto';
 import { PostsLikeRecord } from 'src/posts/postsLikeRecord.entity';
 

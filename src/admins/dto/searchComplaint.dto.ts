@@ -1,7 +1,7 @@
 import { Field, InputType } from '@nestjs/graphql';
 import { IsNumber, Min } from 'class-validator';
-import { ComplaintReason } from 'src/complaintReasons/complaintReason.entity';
-import { ProcessState } from 'src/processStates/processState.entity';
+import { ComplaintReason } from 'src/posts/entities/complaintReason.entity';
+import { ProcessState } from 'src/posts/entities/processState.entity';
 
 @InputType()
 export class SearchComplaintDto {

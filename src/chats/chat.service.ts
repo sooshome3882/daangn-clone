@@ -10,7 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ChatRepository } from './repositories/chat.repository';
 import { User } from 'src/users/entities/user.entity';
 import { ChatRoom } from './chatRoom.entity';
-import { Post } from 'src/posts/post.entity';
+import { Post } from 'src/posts/entities/post.entity';
 import { Chat } from './chat.entity';
 import { getRepository, EntityManager } from 'typeorm';
 import { ChatComplaints } from './chatComplaints.entity';

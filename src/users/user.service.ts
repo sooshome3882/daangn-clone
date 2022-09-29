@@ -29,7 +29,7 @@ import { ElasticsearchService } from '@nestjs/elasticsearch';
 import { EntityManager, Equal, getConnection, IsNull, Not } from 'typeorm';
 import { Location } from './entities/location.entity';
 import { DeleteTownDto } from './dto/deleteTown.dto';
-import { TownRange } from 'src/townRanges/townRange.entity';
+import { TownRange } from 'src/posts/entities/townRange.entity';
 import { SearchHit } from '@elastic/elasticsearch/lib/api/types';
 import * as AWS from 'aws-sdk';
 import { FileUpload } from './models/fileUpload.model';

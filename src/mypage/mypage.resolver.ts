@@ -7,7 +7,7 @@ import { GetUser } from 'src/users/validations/getUser.decorator';
 import { FollowDto } from './dto/follow.dto';
 import { PurchaseHistoryDto } from './dto/purchaseHistory.dto';
 import { User } from 'src/users/entities/user.entity';
-import { Post } from 'src/posts/post.entity';
+import { Post } from 'src/posts/entities/post.entity';
 import { PurchaseHistory } from './purchaseHistory.entity';
 import { JwtAuthGuard } from 'src/users/guards/jwtAuth.guard';
 import { PhoneNumberValidationPipe } from 'src/users/validations/phoneNumber.pipe';
