@@ -22,6 +22,10 @@ export class UserComplaintsRepository extends Repository<UserComplaints> {
     return queryBuilder.getMany();
   }
 
+  async getUserComplaintById(complaintId: number) {
+    return await this.findOne(complaintId);
+  }
+
   async examineUserReport(complaintId: number) {
     return await getRepository(UserComplaints)
       .findOne(complaintId)
@@ -35,8 +39,9 @@ export class UserComplaintsRepository extends Repository<UserComplaints> {
       });
   }
 
-  async completeReportHandlingOfUser(complaintId: number) {
-    return await getRepository(UserComplaints)
+  async completeReportHandlingOfUser(manager: EntityManager, complaintId: number) {
+    return await manager
+      .getRepository(UserComplaints)
       .findOne(complaintId)
       .then(userComplaint => {
         userComplaint.processState.processStateId = 3;
@@ -62,12 +67,13 @@ export class UserComplaintsRepository extends Repository<UserComplaints> {
       });
   }
 
-  async updateBlockStateOfUser(complaintId: number) {
+  async updateBlindState(manager: EntityManager, complaintId: number) {
     const userComplaint = await getRepository(UserComplaints).findOne(complaintId);
     if (!userComplaint) {
       throw new NotFoundException(`complaintId가 ${complaintId}에 해당하는 데이터가 없습니다.`);
     }
-    return await getRepository(User)
+    return await manager
+      .getRepository(User)
       .createQueryBuilder('User')
       .update(User)
       .set({ reportHandling: true })

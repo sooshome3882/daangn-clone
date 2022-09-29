@@ -1,5 +1,5 @@
 import { ChatComplaints } from '../entities/chatComplaints.entity';
-import { EntityRepository, getRepository, Repository } from 'typeorm';
+import { EntityRepository, getRepository, Repository, EntityManager } from 'typeorm';
 import { SearchComplaintDto } from 'src/admins/dto/searchComplaint.dto';
 import { InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { Chat } from '../entities/chat.entity';
@@ -22,6 +22,10 @@ export class ChatComplaintsRepository extends Repository<ChatComplaints> {
     return queryBuilder.getMany();
   }
 
+  async getChatComplaintById(complaintId: number) {
+    return await this.findOne(complaintId);
+  }
+
   async examineChatReport(complaintId: number) {
     return await this.findOne(complaintId)
       .then(chatComplaint => {
@@ -34,8 +38,10 @@ export class ChatComplaintsRepository extends Repository<ChatComplaints> {
       });
   }
 
-  async completeReportHandlingOfChat(complaintId: number) {
-    return await this.findOne(complaintId)
+  async completeReportHandlingOfChat(manager: EntityManager, complaintId: number) {
+    return await manager
+      .getRepository(ChatComplaints)
+      .findOne(complaintId)
       .then(chatComplaint => {
         chatComplaint.processState.processStateId = 3;
         chatComplaint.save();

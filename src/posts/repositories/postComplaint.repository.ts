@@ -74,7 +74,11 @@ export class PostComplaintsRepository extends Repository<PostComplaints> {
       });
   }
 
-  async updateBlindState(manager: EntityManager, postId: number) {
-    return await manager.getRepository(Post).createQueryBuilder('post').update(Post).set({ reportHandling: true }).where('postId = :postId', { postId }).execute();
+  async updateBlindState(manager: EntityManager, complaintId: number) {
+    const postComplaint = await this.findOne(complaintId);
+    if (!postComplaint) {
+      throw new NotFoundException(`complaintId가 ${complaintId}에 해당하는 데이터가 없습니다.`);
+    }
+    return await manager.getRepository(Post).createQueryBuilder('post').update(Post).set({ reportHandling: true }).where('postId = :postId', { postId: postComplaint.post.postId }).execute();
   }
 }
