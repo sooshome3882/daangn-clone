@@ -1,16 +1,16 @@
-import { ChatComplaints } from './../chats/chatComplaints.entity';
-import { UserComplaints } from 'src/chats/userComplaints.entity';
+import { ChatComplaints } from '../chats/entities/chatComplaints.entity';
+import { UserComplaints } from 'src/chats/entities/userComplaints.entity';
 import { Field, ObjectType } from '@nestjs/graphql';
 import { Post } from 'src/posts/post.entity';
-import { PostsLikeRecord } from 'src/posts/postsLikeRecord.entity';
+import { PostsLikeRecord } from 'src/posts/entities/postsLikeRecord.entity';
 import { PurchaseHistory } from 'src/mypage/purchaseHistory.entity';
 import { BaseEntity, Column, CreateDateColumn, Entity, OneToMany, PrimaryColumn, UpdateDateColumn } from 'typeorm';
 import { Followings } from '../mypage/followings.entity';
-import { PostsViewRecord } from 'src/posts/postsViewRecord.entity';
+import { PostsViewRecord } from 'src/posts/entities/postsViewRecord.entity';
 import { Location } from './location.entity';
-import { ChatRoom } from 'src/chats/chatRoom.entity';
-import { Chat } from 'src/chats/chat.entity';
-import { BlockUser } from 'src/chats/blockUser.entity';
+import { ChatRoom } from 'src/chats/entities/chatRoom.entity';
+import { Chat } from 'src/chats/entities/chat.entity';
+import { BlockUser } from 'src/chats/entities/blockUser.entity';
 
 @Entity()
 @ObjectType()

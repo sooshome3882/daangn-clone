@@ -8,7 +8,7 @@ import { User } from 'src/users/user.entity';
 import { CreateChatRoomDto } from './dto/createChatRoom.dto';
 import jwt from 'jsonwebtoken';
 import * as config from 'config';
-import { ChatRoom } from './chatRoom.entity';
+import { ChatRoom } from './entities/chatRoom.entity';
 
 const jwtConfig: any = config.get('jwt');
 

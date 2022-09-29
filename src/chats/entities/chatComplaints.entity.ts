@@ -1,7 +1,7 @@
 import { User } from 'src/users/user.entity';
 import { Chat } from './chat.entity';
-import { ProcessState } from './../processStates/processState.entity';
-import { ComplaintReason } from './../complaintReasons/complaintReason.entity';
+import { ProcessState } from '../../processStates/processState.entity';
+import { ComplaintReason } from '../../complaintReasons/complaintReason.entity';
 import { Field, ObjectType } from '@nestjs/graphql';
 import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 

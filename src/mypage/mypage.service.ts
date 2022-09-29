@@ -8,7 +8,7 @@ import { FollowDto } from './dto/follow.dto';
 import { PurchaseHistoryDto } from './dto/purchaseHistory.dto';
 import { Post } from 'src/posts/post.entity';
 import { GetOtherProfileDto } from './dto/getOtherProfile.dto';
-import { PostsLikeRecord } from 'src/posts/postsLikeRecord.entity';
+import { PostsLikeRecord } from 'src/posts/entities/postsLikeRecord.entity';
 
 @Injectable()
 export class MypageService {

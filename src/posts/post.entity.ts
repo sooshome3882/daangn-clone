@@ -3,14 +3,14 @@ import { Category } from 'src/categories/category.entity';
 import { DealState } from 'src/dealStates/dealState.entity';
 import { TownRange } from 'src/townRanges/townRange.entity';
 import { User } from 'src/users/user.entity';
-import { PriceOffer } from './priceOffer.entity';
-import { PostComplaints } from './postComplaints.entity';
+import { PriceOffer } from './entities/priceOffer.entity';
+import { PostComplaints } from './entities/postComplaints.entity';
 import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-import { PostsLikeRecord } from './postsLikeRecord.entity';
-import { PostImage } from './postImage.entity';
+import { PostsLikeRecord } from './entities/postsLikeRecord.entity';
+import { PostImage } from './entities/postImage.entity';
 import { PurchaseHistory } from '../mypage/purchaseHistory.entity';
-import { PostsViewRecord } from './postsViewRecord.entity';
-import { ChatRoom } from 'src/chats/chatRoom.entity';
+import { PostsViewRecord } from './entities/postsViewRecord.entity';
+import { ChatRoom } from 'src/chats/entities/chatRoom.entity';
 import { Location } from 'src/users/location.entity';
 
 @Entity()
