@@ -9,6 +9,7 @@ import { PurchaseHistoryDto } from './dto/purchaseHistory.dto';
 import { Post } from 'src/posts/entities/post.entity';
 import { GetOtherProfileDto } from './dto/getOtherProfile.dto';
 import { PostsLikeRecord } from 'src/posts/entities/postsLikeRecord.entity';
+import { ProfileType } from 'aws-sdk/clients/transfer';
 
 @Injectable()
 export class MypageService {
@@ -162,7 +163,7 @@ export class MypageService {
     return await this.mypageRepository.seeFollowUsers(user, page, perPage);
   }
 
-  async getMyProfile(user: User): Promise<Object> {
+  async getMyProfile(user: User) {
     /**
      * 내 프로필 조회하기
      *
@@ -175,11 +176,15 @@ export class MypageService {
      * 유저테이블: 닉네임, 프로필 이미지, 매너온도, 응답률
      * TODO: 받은 매너 평가, 받은 거래 후기
      */
-    const myProfileFromUser = await this.mypageRepository.getMyProfileFromUser(user);
-    // const data = {
-    //   myProfileFromUser,
-    // };
-    return myProfileFromUser;
+    const userInfo = await this.mypageRepository.getMyProfileFromUser(user);
+    const sellerReviews = await this.mypageRepository.getMySellerReviewList(user);
+    const buyerReviews = await this.mypageRepository.getMyBuyerReviewList(user);
+    const profile = {
+      userInfo,
+      sellerReviews,
+      buyerReviews,
+    };
+    return profile;
   }
 
   async getOtherProfile(getOtherProfileDto: GetOtherProfileDto): Promise<Object> {
@@ -197,9 +202,13 @@ export class MypageService {
      */
     const { phoneNumber } = getOtherProfileDto;
     const otherProfileFromUser = await this.mypageRepository.getOtherProfileFromUser(phoneNumber);
-    // const data = {
-    //   otherProfileFromUser,
-    // };
-    return otherProfileFromUser;
+    const sellerReviews = await this.mypageRepository.getOtherSellerReviewList(getOtherProfileDto);
+    const buyerReviews = await this.mypageRepository.getOtherBuyerReviewList(getOtherProfileDto);
+    const profile = {
+      otherProfileFromUser,
+      sellerReviews,
+      buyerReviews,
+    };
+    return profile;
   }
 }

@@ -1,3 +1,7 @@
+import { SelectedMannerItemToSeller } from './../../reviews/entities/selectedMannerItemToSeller.entity';
+import { GetOtherProfileDto } from './../dto/getOtherProfile.dto';
+import { BuyerReview } from './../../reviews/entities/buyerReview.entity';
+import { SellerReview } from './../../reviews/entities/sellerReview.entity';
 import { PostsLikeRecord } from 'src/posts/entities/postsLikeRecord.entity';
 import { InternalServerErrorException, BadRequestException } from '@nestjs/common';
 import { EntityRepository, getRepository, Repository, EntityManager, getConnection } from 'typeorm';
@@ -104,11 +108,94 @@ export class MypageRepository extends Repository<Followings> {
     });
   }
 
+  async getMyProfileFromUser(user: User): Promise<User> {
+    return await getRepository(User).createQueryBuilder().select().where('userName = :userName', { userName: user.userName }).getOne();
+  }
+
+  async getMySellerReviewList(user: User): Promise<SellerReview[]> {
+    let mySellerReviewList = [];
+    const myPosts = await getRepository(Post).find({
+      where: {
+        user,
+      },
+    });
+    const sellerReviews = await getRepository(SellerReview).find();
+    myPosts.forEach(post => {
+      sellerReviews.forEach(review => {
+        if (post.user.phoneNumber === review.post.user.phoneNumber) {
+          mySellerReviewList.push(review);
+        }
+      });
+    });
+    return mySellerReviewList;
+  }
+
+  async getMyBuyerReviewList(user: User): Promise<BuyerReview[]> {
+    let myBuyerReviewList = [];
+    const myPosts = await getRepository(Post).find({
+      where: {
+        user,
+      },
+    });
+    const buyerReviews = await getRepository(BuyerReview).find();
+    myPosts.forEach(post => {
+      buyerReviews.forEach(review => {
+        if (post.user.phoneNumber === review.post.user.phoneNumber) {
+          myBuyerReviewList.push(review);
+        }
+      });
+    });
+    return myBuyerReviewList;
+  }
+
+  // async getMyMannerItemToSellerList(user: User) {
+  //   const selectedMannerItemToSeller =  await getRepository(SelectedMannerItemToSeller).find();
+  //   selectedMannerItemToSeller.forEach(mannerItem => {
+  //     mannerItem.sellerReview
+  //   })
+  // }
+
   async getOtherProfileFromUser(phoneNumber: string): Promise<User> {
     return await getRepository(User).createQueryBuilder().select().where('phoneNumber = :phoneNumber', { phoneNumber: phoneNumber }).getOne();
   }
 
-  async getMyProfileFromUser(user: User): Promise<User> {
-    return await getRepository(User).createQueryBuilder().select().where('userName = :userName', { userName: user.userName }).getOne();
+  async getOtherSellerReviewList(getOtherProfileDto: GetOtherProfileDto): Promise<SellerReview[]> {
+    const { phoneNumber } = getOtherProfileDto;
+    let otherSellerReviewList = [];
+    const otherUser = await this.getOtherProfileFromUser(phoneNumber);
+    const otherPosts = await getRepository(Post).find({
+      where: {
+        user: otherUser,
+      },
+    });
+    const sellerReviews = await getRepository(SellerReview).find();
+    otherPosts.forEach(post => {
+      sellerReviews.forEach(review => {
+        if (post.user.phoneNumber === review.post.user.phoneNumber) {
+          otherSellerReviewList.push(review);
+        }
+      });
+    });
+    return otherSellerReviewList;
+  }
+
+  async getOtherBuyerReviewList(getOtherProfileDto: GetOtherProfileDto): Promise<BuyerReview[]> {
+    const { phoneNumber } = getOtherProfileDto;
+    let otherBuyerReviewList = [];
+    const otherUser = await this.getOtherProfileFromUser(phoneNumber);
+    const otherPosts = await getRepository(Post).find({
+      where: {
+        user: otherUser,
+      },
+    });
+    const buyerReviews = await getRepository(BuyerReview).find();
+    otherPosts.forEach(post => {
+      buyerReviews.forEach(review => {
+        if (post.user.phoneNumber === review.post.user.phoneNumber) {
+          otherBuyerReviewList.push(review);
+        }
+      });
+    });
+    return otherBuyerReviewList;
   }
 }
