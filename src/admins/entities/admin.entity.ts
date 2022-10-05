@@ -6,8 +6,8 @@ import { WorkLogs } from './workLogs.entity';
 @Entity()
 @ObjectType()
 export class Admin extends BaseEntity {
-  @Field()
-  @PrimaryColumn({ type: 'varchar' })
+  @Field(() => String)
+  @PrimaryColumn({ type: 'varchar', unique: true })
   adminId!: string;
 
   @Field()

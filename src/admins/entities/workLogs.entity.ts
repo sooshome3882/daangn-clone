@@ -19,12 +19,12 @@ export class WorkLogs extends BaseEntity {
   @Field(() => WorkTypes)
   @JoinColumn({ name: 'workType' })
   @ManyToOne(type => WorkTypes, workTypes => workTypes.workLogs, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
-  workTypes!: WorkTypes;
+  workTypes!: number;
 
   @Field(() => ProcessTypes)
   @JoinColumn({ name: 'processType' })
   @ManyToOne(type => ProcessTypes, processTypes => processTypes.workLogs, { eager: true, onUpdate: 'CASCADE', onDelete: 'CASCADE' })
-  processTypes!: ProcessTypes;
+  processTypes!: number;
 
   @Field()
   @CreateDateColumn({ type: 'datetime' })
