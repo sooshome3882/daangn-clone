@@ -3,6 +3,8 @@ import { EntityManager, EntityRepository, getRepository, Repository } from 'type
 import { SearchComplaintDto } from 'src/admins/dto/searchComplaint.dto';
 import { InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { Chat } from '../entities/chat.entity';
+import { Admin } from 'src/admins/entities/admin.entity';
+import { WorkLogs } from 'src/admins/entities/workLogs.entity';
 
 @EntityRepository(ChatComplaints)
 export class ChatComplaintsRepository extends Repository<ChatComplaints> {
@@ -26,16 +28,30 @@ export class ChatComplaintsRepository extends Repository<ChatComplaints> {
     return await this.findOne(complaintId);
   }
 
-  async examineChatReport(complaintId: number) {
-    return await this.findOne(complaintId)
+  async putWorkLogExamine(manager: EntityManager, admin: Admin) {
+    return await manager.getRepository(WorkLogs).createQueryBuilder('WorkLogs').insert().into(WorkLogs).values({ admin, workTypes: 2, processTypes: 1 }).execute();
+  }
+
+  async examineChatReport(manager: EntityManager, complaintId: number) {
+    return await manager
+      .getRepository(ChatComplaints)
+      .findOne(complaintId)
       .then(chatComplaint => {
         chatComplaint.processState.processStateId = 2;
-        chatComplaint.save();
+        ChatComplaints.save(chatComplaint);
       })
       .catch(err => {
         console.error(err);
         throw new InternalServerErrorException('신고 접수가 제대로 되지 않았습니다. 잠시후 다시 시도해주세요.');
       });
+  }
+
+  async putWorkLogCompleteBlind(manager: EntityManager, admin: Admin) {
+    return await manager.getRepository(WorkLogs).createQueryBuilder('WorkLogs').insert().into(WorkLogs).values({ admin, workTypes: 2, processTypes: 2 }).execute();
+  }
+
+  async putWorkLogCompleteSuspensionOfUse(manager: EntityManager, admin: Admin) {
+    return await manager.getRepository(WorkLogs).createQueryBuilder('WorkLogs').insert().into(WorkLogs).values({ admin, workTypes: 2, processTypes: 3 }).execute();
   }
 
   async completeReportHandlingOfChat(manager: EntityManager, complaintId: number) {
@@ -44,7 +60,7 @@ export class ChatComplaintsRepository extends Repository<ChatComplaints> {
       .findOne(complaintId)
       .then(chatComplaint => {
         chatComplaint.processState.processStateId = 3;
-        chatComplaint.save();
+        ChatComplaints.save(chatComplaint);
       })
       .catch(err => {
         console.error(err);
@@ -78,9 +94,23 @@ export class ChatComplaintsRepository extends Repository<ChatComplaints> {
     return await manager
       .getRepository(ChatComplaints)
       .findOne(complaintId)
-      .then(ChatComplaint => {
-        ChatComplaint.processState.processStateId = 4;
-        ChatComplaint.save();
+      .then(chatComplaint => {
+        chatComplaint.processState.processStateId = 4;
+        manager.save(chatComplaint);
+      })
+      .catch(err => {
+        console.error(err);
+        throw new InternalServerErrorException('신고 검토 후 처리가 제대로 되지 않았습니다. 잠시후 다시 시도해주세요.');
+      });
+  }
+
+  async afterCompleteReportHandlingOfChatOverThird(manager: EntityManager, complaintId: number) {
+    return await manager
+      .getRepository(ChatComplaints)
+      .findOne(complaintId)
+      .then(chatComplaint => {
+        chatComplaint.processState.processStateId = 5;
+        manager.save(chatComplaint);
       })
       .catch(err => {
         console.error(err);

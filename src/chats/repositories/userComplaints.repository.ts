@@ -1,8 +1,10 @@
+import { Admin } from 'src/admins/entities/admin.entity';
+import { WorkLogs } from 'src/admins/entities/workLogs.entity';
 import { EntityRepository, Repository, getRepository, EntityManager } from 'typeorm';
 import { SearchComplaintDto } from 'src/admins/dto/searchComplaint.dto';
 import { UserComplaints } from '../entities/userComplaints.entity';
 import { User } from 'src/users/entities/user.entity';
-import { InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 
 @EntityRepository(UserComplaints)
 export class UserComplaintsRepository extends Repository<UserComplaints> {
@@ -23,20 +25,33 @@ export class UserComplaintsRepository extends Repository<UserComplaints> {
   }
 
   async getUserComplaintById(complaintId: number) {
-    return await this.findOne(complaintId);
+    return await getRepository(UserComplaints).findOne(complaintId);
   }
 
-  async examineUserReport(complaintId: number) {
-    return await getRepository(UserComplaints)
+  async putWorkLogExamine(manager: EntityManager, admin: Admin) {
+    return await manager.getRepository(WorkLogs).createQueryBuilder('WorkLogs').insert().into(WorkLogs).values({ admin, workTypes: 1, processTypes: 1 }).execute();
+  }
+
+  async examineUserReport(manager: EntityManager, complaintId: number) {
+    return await manager
+      .getRepository(UserComplaints)
       .findOne(complaintId)
       .then(userComplaint => {
         userComplaint.processState.processStateId = 2;
-        userComplaint.save();
+        manager.save(userComplaint);
       })
       .catch(err => {
         console.error(err);
         throw new InternalServerErrorException('신고 접수 다음 단계로 넘어가지 않았습니다. 잠시후 다시 시도해주세요.');
       });
+  }
+
+  async putWorkLogCompleteBlind(manager: EntityManager, admin: Admin) {
+    return await manager.getRepository(WorkLogs).createQueryBuilder('WorkLogs').insert().into(WorkLogs).values({ admin, workTypes: 1, processTypes: 2 }).execute();
+  }
+
+  async putWorkLogCompleteSuspensionOfUse(manager: EntityManager, admin: Admin) {
+    return await manager.getRepository(WorkLogs).createQueryBuilder('WorkLogs').insert().into(WorkLogs).values({ admin, workTypes: 1, processTypes: 3 }).execute();
   }
 
   async completeReportHandlingOfUser(manager: EntityManager, complaintId: number) {
@@ -45,7 +60,7 @@ export class UserComplaintsRepository extends Repository<UserComplaints> {
       .findOne(complaintId)
       .then(userComplaint => {
         userComplaint.processState.processStateId = 3;
-        userComplaint.save();
+        manager.save(userComplaint);
       })
       .catch(err => {
         console.error(err);
@@ -53,17 +68,19 @@ export class UserComplaintsRepository extends Repository<UserComplaints> {
       });
   }
 
-  async declineMannerTemp(manager: EntityManager, phoneNumber: String) {
+  async declineMannerTemp(manager: EntityManager, userName: String) {
     return await manager
       .getRepository(User)
       .findOne({
         where: {
-          phoneNumber,
+          userName,
         },
       })
       .then(user => {
-        user.mannerTemp -= 0.1;
-        user.save();
+        if (user.mannerTemp > 0) {
+          user.mannerTemp -= 0.1;
+          manager.save(user);
+        }
       });
   }
 
@@ -77,7 +94,7 @@ export class UserComplaintsRepository extends Repository<UserComplaints> {
       .createQueryBuilder('User')
       .update(User)
       .set({ reportHandling: true })
-      .where('phoneNumber = :phoneNumber', { phoneNumber: userComplaint.complaintUser.phoneNumber })
+      .where('phoneNumber = :phoneNumber', { phoneNumber: userComplaint.subjectUser.phoneNumber })
       .execute();
   }
 
@@ -87,7 +104,21 @@ export class UserComplaintsRepository extends Repository<UserComplaints> {
       .findOne(complaintId)
       .then(userComplaint => {
         userComplaint.processState.processStateId = 4;
-        userComplaint.save();
+        manager.save(userComplaint);
+      })
+      .catch(err => {
+        console.error(err);
+        throw new InternalServerErrorException('신고 검토 후 처리가 제대로 되지 않았습니다. 잠시후 다시 시도해주세요.');
+      });
+  }
+
+  async afterCompleteHandlingOfUserOverThird(manager: EntityManager, complaintId: number) {
+    return await manager
+      .getRepository(UserComplaints)
+      .findOne(complaintId)
+      .then(userComplaint => {
+        userComplaint.processState.processStateId = 5;
+        manager.save(userComplaint);
       })
       .catch(err => {
         console.error(err);
@@ -100,14 +131,19 @@ export class UserComplaintsRepository extends Repository<UserComplaints> {
     if (!user) {
       throw new NotFoundException('해당 유저는 존재하지 않습니다.');
     }
-    user.reportedTimes += 1;
-    await manager.save(user);
+    if (user.reportedTimes < 4) {
+      user.reportedTimes += 1;
+      await manager.save(user);
+    }
   }
 
   async updateUserSuspensionOfUse(manager: EntityManager, phoneNumber: string) {
     const user = await manager.getRepository(User).findOne(phoneNumber);
     if (!user) {
       throw new NotFoundException('해당 유저는 존재하지 않습니다.');
+    }
+    if (user.suspensionOfUse === true) {
+      throw new BadRequestException('이미 이용정지된 유저입니다.');
     }
     user.suspensionOfUse = true;
     await manager.save(user);
@@ -122,5 +158,21 @@ export class UserComplaintsRepository extends Repository<UserComplaints> {
       .offset((page - 1) * perPage)
       .limit(perPage)
       .getMany();
+  }
+
+  async clearSuspenseOfUse(userName: string) {
+    const user = await getRepository(User).findOne({
+      where: {
+        userName,
+      },
+    });
+    if (!user) {
+      throw new NotFoundException('해당 유저는 존재하지 않습니다.');
+    }
+    if (user.suspensionOfUse === false) {
+      throw new BadRequestException('이용정지 처리된 유저가 아닙니다.');
+    }
+    user.suspensionOfUse = false;
+    User.save(user);
   }
 }
