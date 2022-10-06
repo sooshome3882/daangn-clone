@@ -77,7 +77,7 @@ export class AdminResolver {
   // 게시글 신고 검토
   @Mutation(() => PostComplaints)
   @UseGuards(JwtAdminAuthGuard, RolesGuard)
-  @Roles(RoleType.ACCOUNT_UPDATE)
+  @Roles(RoleType.WRITE)
   examinePostReport(@GetUser() admin: Admin, @Args('complaintId', ParseIntPipe) complaintId: number): Promise<PostComplaints> {
     return this.adminService.examinePostReport(admin, complaintId);
   }
@@ -85,7 +85,7 @@ export class AdminResolver {
   // 유저 신고 검토
   @Mutation(() => UserComplaints)
   @UseGuards(JwtAdminAuthGuard, RolesGuard)
-  @Roles(RoleType.ACCOUNT_UPDATE)
+  @Roles(RoleType.WRITE)
   examineUserReport(@GetUser() admin: Admin, @Args('complaintId', ParseIntPipe) complaintId: number): Promise<UserComplaints> {
     return this.adminService.examineUserReport(admin, complaintId);
   }
@@ -93,7 +93,7 @@ export class AdminResolver {
   // 채팅 신고 검토
   @Mutation(() => ChatComplaints)
   @UseGuards(JwtAdminAuthGuard, RolesGuard)
-  @Roles(RoleType.ACCOUNT_UPDATE)
+  @Roles(RoleType.WRITE)
   examineChatReport(@GetUser() admin: Admin, @Args('complaintId', ParseIntPipe) complaintId: number): Promise<ChatComplaints> {
     return this.adminService.examineChatReport(admin, complaintId);
   }
@@ -101,7 +101,7 @@ export class AdminResolver {
   // 게시글 신고 검토 완료 허용 후 processState 4번 혹은 5번으로 처리
   @Mutation(() => PostComplaints)
   @UseGuards(JwtAdminAuthGuard, RolesGuard)
-  @Roles(RoleType.ACCOUNT_CREATE, RoleType.ACCOUNT_UPDATE, RoleType.READ, RoleType.WRITE)
+  @Roles(RoleType.WRITE, RoleType.READ)
   dealPostReport(@GetUser() admin: Admin, @Args('complaintId', ParseIntPipe) complaintId: number): Promise<PostComplaints> {
     return this.adminService.dealPostReport(admin, complaintId);
   }
@@ -109,7 +109,7 @@ export class AdminResolver {
   // 유저 신고 검토 완료 허용 후 processState 4번 혹은 5번으로 처리
   @Mutation(() => UserComplaints)
   @UseGuards(JwtAdminAuthGuard, RolesGuard)
-  @Roles(RoleType.ACCOUNT_CREATE, RoleType.ACCOUNT_UPDATE, RoleType.READ, RoleType.WRITE)
+  @Roles(RoleType.READ, RoleType.WRITE)
   dealUserReport(@GetUser() admin: Admin, @Args('complaintId', ParseIntPipe) complaintId: number): Promise<UserComplaints> {
     return this.adminService.dealUserReport(admin, complaintId);
   }
@@ -117,7 +117,7 @@ export class AdminResolver {
   // 채팅 신고 검토 완료 허용 후 processState 4번 혹은 5번으로 처리
   @Mutation(() => ChatComplaints)
   @UseGuards(JwtAdminAuthGuard, RolesGuard)
-  @Roles(RoleType.ACCOUNT_CREATE, RoleType.ACCOUNT_UPDATE, RoleType.READ, RoleType.WRITE)
+  @Roles(RoleType.READ, RoleType.WRITE)
   dealChatReport(@GetUser() admin: Admin, @Args('complaintId', ParseIntPipe) complaintId: number): Promise<ChatComplaints> {
     return this.adminService.dealChatReport(admin, complaintId);
   }
@@ -126,7 +126,7 @@ export class AdminResolver {
   @Mutation(() => User)
   @UsePipes(ValidationPipe)
   @UseGuards(JwtAdminAuthGuard, RolesGuard)
-  @Roles(RoleType.ACCOUNT_UPDATE, RoleType.READ)
+  @Roles(RoleType.WRITE, RoleType.READ)
   clearSuspenseOfUse(@Args('userName') userName: string): Promise<User> {
     return this.adminService.clearSuspenseOfUse(userName);
   }
