@@ -1,3 +1,5 @@
+import { BuyerReview } from './../reviews/entities/buyerReview.entity';
+import { SellerReview } from './../reviews/entities/sellerReview.entity';
 import { PostsLikeRecord } from 'src/posts/entities/postsLikeRecord.entity';
 import { ParseBoolPipe, UseGuards } from '@nestjs/common';
 import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
@@ -13,10 +15,24 @@ import { JwtAuthGuard } from 'src/users/guards/jwtAuth.guard';
 import { PhoneNumberValidationPipe } from 'src/users/validations/phoneNumber.pipe';
 import { GetOtherProfileDto } from './dto/getOtherProfile.dto';
 
+type Profile = {
+  userInfo: User;
+  sellerReviews: SellerReview[];
+  buyerReviews: BuyerReview[];
+};
+
 @Resolver()
 @UseGuards(JwtAuthGuard)
 export class MypageResolver {
   constructor(private readonly mypageService: MypageService) {}
+
+  typeOfProfile() {
+    type Profile = {
+      user: User;
+      sellerReview: SellerReview;
+      buyerReview: BuyerReview;
+    };
+  }
 
   // 숨김처리 리스트 조회
   @Query(() => [Post])
@@ -74,13 +90,33 @@ export class MypageResolver {
 
   // 내 프로필 조회하기
   @Query(() => User)
-  getMyProfile(@GetUser() user: User, @Args('phoneNumber', PhoneNumberValidationPipe) phoneNumber: String): Promise<Object> {
+  getMyProfile(@GetUser() user: User) {
     return this.mypageService.getMyProfile(user);
+  }
+
+  @Query(() => [SellerReview])
+  getMySellerReview(@GetUser() user: User): Promise<SellerReview[]> {
+    return this.mypageService.getMySellerReview(user);
+  }
+
+  @Query(() => [BuyerReview])
+  getMyBuyerReview(@GetUser() user: User): Promise<BuyerReview[]> {
+    return this.mypageService.getMyBuyerReview(user);
   }
 
   // 다른 유저 프로필 조회하기
   @Query(() => User)
-  getOtherProfile(@Args('getOtherProfileDto') getOtherProfileDto: GetOtherProfileDto) {
-    return this.mypageService.getOtherProfile(getOtherProfileDto);
+  getOtherProfile(@Args('userName') userName: string): Promise<User> {
+    return this.mypageService.getOtherProfile(userName);
+  }
+
+  @Query(() => [SellerReview])
+  getOtherSellerReview(@Args('userName') userName: string): Promise<SellerReview[]> {
+    return this.mypageService.getOtherSellerReview(userName);
+  }
+
+  @Query(() => [BuyerReview])
+  getOtherBuyerReview(@Args('userName') userName: string): Promise<BuyerReview[]> {
+    return this.mypageService.getOtherBuyerReview(userName);
   }
 }

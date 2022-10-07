@@ -148,21 +148,13 @@ export class MypageRepository extends Repository<Followings> {
     return myBuyerReviewList;
   }
 
-  // async getMyMannerItemToSellerList(user: User) {
-  //   const selectedMannerItemToSeller =  await getRepository(SelectedMannerItemToSeller).find();
-  //   selectedMannerItemToSeller.forEach(mannerItem => {
-  //     mannerItem.sellerReview
-  //   })
-  // }
-
-  async getOtherProfileFromUser(phoneNumber: string): Promise<User> {
-    return await getRepository(User).createQueryBuilder().select().where('phoneNumber = :phoneNumber', { phoneNumber: phoneNumber }).getOne();
+  async getOtherProfileFromUser(userName: string): Promise<User> {
+    return await getRepository(User).createQueryBuilder().select().where('userName = :userName', { userName }).getOne();
   }
 
-  async getOtherSellerReviewList(getOtherProfileDto: GetOtherProfileDto): Promise<SellerReview[]> {
-    const { phoneNumber } = getOtherProfileDto;
+  async getOtherSellerReviewList(userName: string): Promise<SellerReview[]> {
     let otherSellerReviewList = [];
-    const otherUser = await this.getOtherProfileFromUser(phoneNumber);
+    const otherUser = await this.getOtherProfileFromUser(userName);
     const otherPosts = await getRepository(Post).find({
       where: {
         user: otherUser,
@@ -179,10 +171,9 @@ export class MypageRepository extends Repository<Followings> {
     return otherSellerReviewList;
   }
 
-  async getOtherBuyerReviewList(getOtherProfileDto: GetOtherProfileDto): Promise<BuyerReview[]> {
-    const { phoneNumber } = getOtherProfileDto;
+  async getOtherBuyerReviewList(userName: string): Promise<BuyerReview[]> {
     let otherBuyerReviewList = [];
-    const otherUser = await this.getOtherProfileFromUser(phoneNumber);
+    const otherUser = await this.getOtherProfileFromUser(userName);
     const otherPosts = await getRepository(Post).find({
       where: {
         user: otherUser,
