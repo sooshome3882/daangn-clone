@@ -41,7 +41,7 @@ export class PostService {
   constructor(
     @InjectRepository(PostRepository)
     private postRepository: PostRepository,
-    private userService: UserService,
+    private readonly userService: UserService,
   ) {}
 
   async getCategoryItem(): Promise<Category[]> {
