@@ -1,5 +1,4 @@
-import { InternalServerErrorException } from '@nestjs/common';
-import { EntityManager, EntityRepository, getConnection, Repository } from 'typeorm';
+import { EntityManager, EntityRepository, Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 
 @EntityRepository(User)

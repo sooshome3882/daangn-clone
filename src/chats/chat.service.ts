@@ -14,10 +14,6 @@ import { Chat } from './entities/chat.entity';
 import { getRepository } from 'typeorm';
 import { ChatComplaints } from './entities/chatComplaints.entity';
 
-/**
- * TODO: block table 구현 추가
- */
-
 @Injectable()
 export class ChatService {
   constructor(

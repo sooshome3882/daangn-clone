@@ -1,5 +1,7 @@
+import { WorkLogs } from 'src/admins/entities/workLogs.entity';
+import { Admin } from 'src/admins/entities/admin.entity';
 import { InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { EntityRepository, getRepository, Repository } from 'typeorm';
+import { EntityManager, EntityRepository, getRepository, Repository } from 'typeorm';
 import { Post } from '../entities/post.entity';
 import { PostComplaints } from '../entities/postComplaints.entity';
 import { SearchComplaintDto } from 'src/admins/dto/searchComplaint.dto';
@@ -26,23 +28,17 @@ export class PostComplaintsRepository extends Repository<PostComplaints> {
     return found;
   }
 
-  async receivePostReport(complaintId: number) {
-    return await this.findOne(complaintId)
-      .then(postComplaints => {
-        postComplaints.processState.processStateId = 1;
-        postComplaints.save();
-      })
-      .catch(err => {
-        console.error(err);
-        throw new InternalServerErrorException('신고 접수가 제대로 되지 않았습니다. 잠시후 다시 시도해주세요.');
-      });
+  async putWorkLogExamine(manager: EntityManager, admin: Admin) {
+    return await manager.getRepository(WorkLogs).createQueryBuilder('WorkLogs').insert().into(WorkLogs).values({ admin, workTypes: 3, processTypes: 1 }).execute();
   }
 
-  async examinePostReport(complaintId: number) {
-    return await this.findOne(complaintId)
-      .then(postComplaints => {
-        postComplaints.processState.processStateId = 2;
-        postComplaints.save();
+  async examinePostReport(manager: EntityManager, complaintId: number) {
+    return await manager
+      .getRepository(PostComplaints)
+      .findOne(complaintId)
+      .then(postComplaint => {
+        postComplaint.processState.processStateId = 2;
+        PostComplaints.save(postComplaint);
       })
       .catch(err => {
         console.error(err);
@@ -50,8 +46,18 @@ export class PostComplaintsRepository extends Repository<PostComplaints> {
       });
   }
 
-  async completeReportHandlingOfPost(complaintId: number) {
-    return await this.findOne(complaintId)
+  async putWorkLogCompleteBlind(manager: EntityManager, admin: Admin) {
+    return await manager.getRepository(WorkLogs).createQueryBuilder('WorkLogs').insert().into(WorkLogs).values({ admin, workTypes: 3, processTypes: 2 }).execute();
+  }
+
+  async putWorkLogCompleteSuspensionOfUse(manager: EntityManager, admin: Admin) {
+    return await manager.getRepository(WorkLogs).createQueryBuilder('WorkLogs').insert().into(WorkLogs).values({ admin, workTypes: 3, processTypes: 3 }).execute();
+  }
+
+  async completeReportHandlingOfPost(manager: EntityManager, complaintId: number) {
+    return await manager
+      .getRepository(PostComplaints)
+      .findOne(complaintId)
       .then(postComplaints => {
         postComplaints.processState.processStateId = 3;
         postComplaints.save();
@@ -70,16 +76,39 @@ export class PostComplaintsRepository extends Repository<PostComplaints> {
     return await getRepository(Post).createQueryBuilder('Post').update(Post).set({ reportHandling: true }).where('postId = :postId', { postId: postsComplaint.post.postId }).execute();
   }
 
-  async afterCompleteReportHandlingOfPost(complaintId: number) {
-    return await getRepository(PostComplaints)
+  async afterCompleteReportHandlingOfPost(manager: EntityManager, complaintId: number) {
+    return await manager
+      .getRepository(PostComplaints)
       .findOne(complaintId)
-      .then(postComplaints => {
-        postComplaints.processState.processStateId = 4;
-        postComplaints.save();
+      .then(postComplaint => {
+        postComplaint.processState.processStateId = 4;
+        manager.save(postComplaint);
       })
       .catch(err => {
         console.error(err);
         throw new InternalServerErrorException('신고 검토 후 처리가 제대로 되지 않았습니다. 잠시후 다시 시도해주세요.');
       });
+  }
+
+  async afterCompleteReportHandlingOfPostOverThird(manager: EntityManager, complaintId: number) {
+    return await manager
+      .getRepository(PostComplaints)
+      .findOne(complaintId)
+      .then(postComplaint => {
+        postComplaint.processState.processStateId = 5;
+        manager.save(postComplaint);
+      })
+      .catch(err => {
+        console.error(err);
+        throw new InternalServerErrorException('신고 검토 후 처리가 제대로 되지 않았습니다. 잠시후 다시 시도해주세요.');
+      });
+  }
+
+  async updateBlindState(manager: EntityManager, complaintId: number) {
+    const postComplaint = await this.findOne(complaintId);
+    if (!postComplaint) {
+      throw new NotFoundException(`complaintId가 ${complaintId}에 해당하는 데이터가 없습니다.`);
+    }
+    return await manager.getRepository(Post).createQueryBuilder('post').update(Post).set({ reportHandling: true }).where('postId = :postId', { postId: postComplaint.post.postId }).execute();
   }
 }
