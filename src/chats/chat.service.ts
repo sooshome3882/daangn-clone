@@ -77,8 +77,6 @@ export class ChatService {
      * @param {User, postId} 로그인한 유저, 게시글 번호
      * @return {ChatRoom[]} 채팅방 리스트
      */
-
-    // 게시글 작성자만 채팅방 리스트 조회할 수 있어
     return await this.chatRepository.find({
       where: {
         user,
