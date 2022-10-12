@@ -115,34 +115,6 @@ export class PostRepository extends Repository<Post> {
     await getRepository(Post).createQueryBuilder('Post').update(Post).set({ isHidden: false }).where('postId = :postId', { postId }).execute();
   }
 
-  async putProcessStates() {
-    await getRepository(ProcessState)
-      .createQueryBuilder()
-      .insert()
-      .into(ProcessState)
-      .values([
-        { processStateId: 1, processState: '신고 접수' },
-        { processStateId: 2, processState: '신고 검토중' },
-        { processStateId: 3, processState: '신고 검토 완료 허용' },
-        { processStateId: 4, processState: '신고 검토 완료 후 {메시지, 채팅, 게시글} 블라인드 시키고 사용자 매너 점수 감소' },
-        { processStateId: 5, processState: '신고 검토 완료 후 {메시지, 채팅, 게시글} 블라인드 시키고 사용자 이용 정지 처분' },
-      ])
-      .execute();
-  }
-
-  async putDealState() {
-    await getRepository(DealState)
-      .createQueryBuilder()
-      .insert()
-      .into(DealState)
-      .values([
-        { dealStateId: 1, dealState: '판매중' },
-        { dealStateId: 2, dealState: '예약중' },
-        { dealStateId: 3, dealState: '거래완료' },
-      ])
-      .execute();
-  }
-
   async createPostsComplaint(createPostsComplaintsDto: CreatePostsComplaintsDto) {
     const { post, complaintReason } = createPostsComplaintsDto;
     const query = await getRepository(PostComplaints)
