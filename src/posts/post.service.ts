@@ -54,7 +54,7 @@ export class PostService {
     return await getRepository(Category).find();
   }
 
-  async imagesUploadToS3(manager: EntityManager, insertId: number, images: Promise<FileUpload>[]) {
+  private async imagesUploadToS3(manager: EntityManager, insertId: number, images: Promise<FileUpload>[]) {
     /**
      * S3에 게시글 이미지 저장
      *

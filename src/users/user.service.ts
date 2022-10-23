@@ -56,9 +56,9 @@ const s3 = new AWS.S3({
 export class UserService {
   constructor(
     @InjectRepository(UserRepository)
-    private readonly userRepository: UserRepository,
+    private userRepository: UserRepository,
     @InjectRepository(LocationRepository)
-    private readonly locationRepository: LocationRepository,
+    private locationRepository: LocationRepository,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private readonly jwtService: JwtService,
     private readonly esService: ElasticsearchService,
@@ -378,7 +378,7 @@ export class UserService {
     return await this.getUserByPhoneNumber(phoneNumber);
   }
 
-  async imageUploadToS3(manager: EntityManager, phoneNumber: string, profileImage: Promise<FileUpload>) {
+  private async imageUploadToS3(manager: EntityManager, phoneNumber: string, profileImage: Promise<FileUpload>) {
     /**
      * S3에 프로필 이미지 저장
      *

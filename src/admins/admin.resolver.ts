@@ -16,7 +16,7 @@ import { RolesGuard } from './guards/roles.guard';
 import { RoleType } from './models/role.enum';
 import { AuthorityInputValidationPipe } from './pipes/authority.pipe';
 import { WorkLogs } from './entities/workLogs.entity';
-import { GetUser } from 'src/users/validations/getUser.decorator';
+import { GetAdmin } from './decorators/getAdmin.decorator';
 
 @Resolver(() => Admin)
 export class AdminResolver {
@@ -78,7 +78,7 @@ export class AdminResolver {
   @Mutation(() => PostComplaints)
   @UseGuards(JwtAdminAuthGuard, RolesGuard)
   @Roles(RoleType.WRITE)
-  examinePostReport(@GetUser() admin: Admin, @Args('complaintId', ParseIntPipe) complaintId: number): Promise<PostComplaints> {
+  examinePostReport(@GetAdmin() admin: Admin, @Args('complaintId', ParseIntPipe) complaintId: number): Promise<PostComplaints> {
     return this.adminService.examinePostReport(admin, complaintId);
   }
 
@@ -86,7 +86,7 @@ export class AdminResolver {
   @Mutation(() => UserComplaints)
   @UseGuards(JwtAdminAuthGuard, RolesGuard)
   @Roles(RoleType.WRITE)
-  examineUserReport(@GetUser() admin: Admin, @Args('complaintId', ParseIntPipe) complaintId: number): Promise<UserComplaints> {
+  examineUserReport(@GetAdmin() admin: Admin, @Args('complaintId', ParseIntPipe) complaintId: number): Promise<UserComplaints> {
     return this.adminService.examineUserReport(admin, complaintId);
   }
 
@@ -94,7 +94,7 @@ export class AdminResolver {
   @Mutation(() => ChatComplaints)
   @UseGuards(JwtAdminAuthGuard, RolesGuard)
   @Roles(RoleType.WRITE)
-  examineChatReport(@GetUser() admin: Admin, @Args('complaintId', ParseIntPipe) complaintId: number): Promise<ChatComplaints> {
+  examineChatReport(@GetAdmin() admin: Admin, @Args('complaintId', ParseIntPipe) complaintId: number): Promise<ChatComplaints> {
     return this.adminService.examineChatReport(admin, complaintId);
   }
 
@@ -102,7 +102,7 @@ export class AdminResolver {
   @Mutation(() => PostComplaints)
   @UseGuards(JwtAdminAuthGuard, RolesGuard)
   @Roles(RoleType.WRITE, RoleType.READ)
-  dealPostReport(@GetUser() admin: Admin, @Args('complaintId', ParseIntPipe) complaintId: number): Promise<PostComplaints> {
+  dealPostReport(@GetAdmin() admin: Admin, @Args('complaintId', ParseIntPipe) complaintId: number): Promise<PostComplaints> {
     return this.adminService.dealPostReport(admin, complaintId);
   }
 
@@ -110,7 +110,7 @@ export class AdminResolver {
   @Mutation(() => UserComplaints)
   @UseGuards(JwtAdminAuthGuard, RolesGuard)
   @Roles(RoleType.READ, RoleType.WRITE)
-  dealUserReport(@GetUser() admin: Admin, @Args('complaintId', ParseIntPipe) complaintId: number): Promise<UserComplaints> {
+  dealUserReport(@GetAdmin() admin: Admin, @Args('complaintId', ParseIntPipe) complaintId: number): Promise<UserComplaints> {
     return this.adminService.dealUserReport(admin, complaintId);
   }
 
@@ -118,7 +118,7 @@ export class AdminResolver {
   @Mutation(() => ChatComplaints)
   @UseGuards(JwtAdminAuthGuard, RolesGuard)
   @Roles(RoleType.READ, RoleType.WRITE)
-  dealChatReport(@GetUser() admin: Admin, @Args('complaintId', ParseIntPipe) complaintId: number): Promise<ChatComplaints> {
+  dealChatReport(@GetAdmin() admin: Admin, @Args('complaintId', ParseIntPipe) complaintId: number): Promise<ChatComplaints> {
     return this.adminService.dealChatReport(admin, complaintId);
   }
 

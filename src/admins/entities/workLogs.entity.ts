@@ -1,7 +1,7 @@
 import { ProcessTypes } from './processTypes.entity';
 import { WorkTypes } from './workTypes.entity';
 import { Field, ObjectType } from '@nestjs/graphql';
-import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { BaseEntity, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Admin } from './admin.entity';
 
 @Entity()

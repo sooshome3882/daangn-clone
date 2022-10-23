@@ -149,7 +149,6 @@ export class AdminService {
     return await this.userComplaintsRepository.getUserComplaints(searchComplaintDto);
   }
 
-  // 1. "신고 검토 중"으로 업데이트
   async examinePostReport(admin: Admin, complaintId: number): Promise<PostComplaints> {
     /**
      * 게시글 신고 검토
@@ -250,7 +249,6 @@ export class AdminService {
     return this.chatComplaintsRepository.getChatComplaintById(complaintId);
   }
 
-  // 2. 신고 검토 완료 허용 후 -> processState 4번 or 5번으로 처리
   async dealPostReport(admin: Admin, complaintId: number): Promise<PostComplaints> {
     /**
      * 1) 게시글 신고 검토 완료 허용 & 매너지수 감소 및 블라인드 처리 이후 신고 검토 완료 처리 (과거 신고 횟수가 3번 미만인 경우)
@@ -321,7 +319,6 @@ export class AdminService {
         if (userComplaint.subjectUser.reportedTimes < 3 && userComplaint.subjectUser.reportedTimes >= 0) {
           await this.userComplaintsRepository.declineMannerTemp(manager, userComplaint.subjectUser.userName);
           await this.userComplaintsRepository.updateUserReportedTimes(manager, userComplaint.subjectUser.phoneNumber);
-          console.log(admin);
           await this.userComplaintsRepository.putWorkLogCompleteBlind(manager, admin);
           await this.userComplaintsRepository.afterCompleteReportHandlingOfUser(manager, complaintId);
         } else if (userComplaint.subjectUser.reportedTimes === 3) {
@@ -357,7 +354,6 @@ export class AdminService {
       throw new BadRequestException('이미 신고 검토 완료 처리된 채팅입니다.');
     }
     if (chatComplaint.processState.processStateId !== 2) {
-      console.log(chatComplaint.processState);
       throw new BadRequestException('잘못된 요청입니다.');
     }
     await getConnection()
@@ -369,7 +365,6 @@ export class AdminService {
           await this.chatComplaintsRepository.putWorkLogCompleteBlind(manager, admin);
           await this.chatComplaintsRepository.afterCompleteReportHandlingOfChat(manager, complaintId);
         } else if (chatComplaint.chat.user.reportedTimes === 3) {
-          console.log(chatComplaint.chat.user.reportedTimes);
           await this.userComplaintsRepository.updateUserSuspensionOfUse(manager, chatComplaint.user.phoneNumber);
           await this.chatComplaintsRepository.putWorkLogCompleteSuspensionOfUse(manager, admin);
           await this.chatComplaintsRepository.afterCompleteReportHandlingOfChatOverThird(manager, complaintId);
@@ -412,14 +407,14 @@ export class AdminService {
     return await this.userComplaintsRepository.getUsersInSuspensionOfUse(page, perPage);
   }
 
-  /**
-   * 관리자 작업 로그 전체 조회 (게시글, 유저, 채팅 별로 검색 가능)
-   *
-   * @author 이승연(dltmddus1998)
-   * @param {SearchWorkLogsDto} workTypes, processTypes, page, perPage
-   * @return {WorkLogs[]}
-   */
   async getWorkLogsList(searchWorkLogsDto: SearchWorkLogsDto): Promise<WorkLogs[]> {
+    /**
+     * 관리자 작업 로그 전체 조회 (게시글, 유저, 채팅 별로 검색 가능)
+     *
+     * @author 이승연(dltmddus1998)
+     * @param {SearchWorkLogsDto} workTypes, processTypes, page, perPage
+     * @return {WorkLogs[]}
+     */
     return await this.adminWorkLogsRepository.getWorkLogsList(searchWorkLogsDto);
   }
 }
