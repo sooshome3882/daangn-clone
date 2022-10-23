@@ -1,0 +1,449 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Category {
+  categoryId: Float!
+  category: String!
+}
+
+type DealState {
+  dealStateId: Float!
+  dealState: String!
+}
+
+type Location {
+  locationId: Float!
+  siDo: String!
+  siGunGu: String!
+  eupMyeonDong: String!
+  isConfirmedPosition: Boolean!
+  isSelected: Boolean!
+  createdAt: DateTime!
+  deletedAt: DateTime
+  user: User!
+  townRange: TownRange!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type TownRange {
+  townRangeId: Float!
+  townRange: Float!
+}
+
+type PriceOffer {
+  priceOfferId: Int!
+  offerPrice: Float!
+  accept: Boolean!
+  createdAt: DateTime!
+  post: Int!
+}
+
+type ComplaintReason {
+  complaintReasonId: Float!
+  type: String!
+  complaintReason: String!
+}
+
+type UserComplaints {
+  complaintId: Float!
+  complaintReason: ComplaintReason!
+  processState: ProcessState!
+  complaintUser: User!
+  subjectUser: User!
+  memo: String
+  createdAt: DateTime!
+}
+
+type ProcessState {
+  processStateId: Float!
+  processState: String!
+}
+
+type PostComplaints {
+  complaintId: Float!
+  post: Post!
+  complaintReason: ComplaintReason!
+  processState: ProcessState!
+  memo: String
+  createdAt: DateTime!
+}
+
+type PostsLikeRecord {
+  postsLikeId: Float!
+  post: Post!
+  user: User!
+}
+
+type PostImage {
+  postImageId: Float!
+  imagePath: String!
+}
+
+type PurchaseHistory {
+  purchaseHistoryId: Int!
+  user: User!
+  post: Post!
+  createdAt: DateTime!
+}
+
+type PostsViewRecord {
+  postsViewId: Float!
+  post: Post!
+  user: User!
+}
+
+type Post {
+  postId: Float!
+  title: String!
+  content: String!
+  price: Float!
+  isOfferedPrice: Boolean!
+  isHidden: Boolean!
+  reportHandling: Boolean!
+  likes: Float!
+  views: Float!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  pulledAt: DateTime!
+  user: User!
+  category: Category!
+  townRange: TownRange!
+  location: Location!
+  dealState: DealState!
+  postImages: [PostImage!]
+}
+
+type ChatRoom {
+  chatRoomId: Float!
+  createdAt: DateTime!
+  sellerLeft: Boolean!
+  senderLeft: Boolean!
+  post: Post!
+  user: User!
+}
+
+type Chat {
+  chatId: Float!
+  chatRoom: ChatRoom!
+  user: User!
+  chatting: String!
+  createdAt: DateTime!
+  isConfirmed: Boolean!
+  reportHandling: Boolean!
+}
+
+type ChatComplaints {
+  complaintId: Float!
+  chat: Chat!
+  complaintReason: ComplaintReason!
+  processState: ProcessState!
+  user: User!
+  memo: String
+  createdAt: DateTime!
+}
+
+type Followings {
+  followingId: Float!
+  followingUser: User!
+  followerUser: User!
+  createdAt: DateTime!
+}
+
+type User {
+  phoneNumber: String!
+  userName: String
+  profileImage: String
+  mannerTemp: Float!
+  respTime: Float
+  marketingInfoAgree: Boolean!
+  suspensionOfUse: Boolean!
+  reportHandling: Boolean!
+  reportedTimes: Float!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type SelectedMannerItemToSeller {
+  selectedMannerItemId: Float!
+  sellerReview: SellerReview!
+  mannerItem: MannerItem!
+  createdAt: DateTime!
+}
+
+type MannerItem {
+  mannerItemId: String!
+  mannerItem: String!
+}
+
+type SelectedMannerItemToBuyer {
+  selectedMannerItemId: Float!
+  buyerReview: BuyerReview!
+  mannerItem: MannerItem!
+  createdAt: DateTime!
+}
+
+type BuyerReview {
+  buyerReviewId: Float!
+  review: String!
+  retransaction: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  deletedAt: DateTime
+  post: Post!
+  score: ScoreItem!
+  selectedMannerItems: [SelectedMannerItemToBuyer!]!
+}
+
+type ScoreItem {
+  scoreItemId: Float!
+  score: String!
+}
+
+type SellerReview {
+  sellerReviewId: Float!
+  review: String!
+  retransaction: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  deletedAt: DateTime
+  post: Post!
+  score: ScoreItem!
+  selectedMannerItems: [SelectedMannerItemToSeller!]!
+}
+
+type AdminAuthority {
+  adminAuthorityId: Float!
+  authority: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Admin {
+  adminId: String!
+  adminPw: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  authorities: [AdminAuthority!]!
+}
+
+type Query {
+  getCategoryItem: [Category!]!
+  post(postId: Float!): Post!
+  posts(searchPostDto: SearchPostDto!): [Post!]!
+  getAroundTownList(myLocationDto: MyLocationDto!): [String!]!
+  getSearchTownList(area: String!): [String!]!
+  login(loginUserDto: LoginUserDto!): String!
+  checkSMS(phoneNumber: String!, inputNumber: String!): String!
+  getMyTownList: [Location!]!
+  getTownCountByTownRange(townRange: Float!): Float!
+  getTownListByTownRange(townRange: Float!): [String!]!
+  getHiddenPosts(page: Float!, perPage: Float!): [Post!]!
+  getBuyingListsOfUser(page: Float!, perPage: Float!): [PurchaseHistory!]!
+  getSellingListOfUser(page: Float!, perPage: Float!): [Post!]!
+  getWatchListOfUser(page: Float!, perPage: Float!): [PostsLikeRecord!]!
+  seeFollowUsers(page: Float!, perPage: Float!): [Followings!]!
+  getMyProfile(phoneNumber: String!): User!
+  getOtherProfile(getOtherProfileDto: GetOtherProfileDto!): User!
+  getScoreItemData: [ScoreItem!]!
+  getMannerItemData: [MannerItem!]!
+  loginAdmin(loginAdminDto: LoginAdminDto!): String!
+  getPostComplaints(searchComplaintDto: SearchComplaintDto!): [PostComplaints!]!
+  getChatComplaints(searchComplaintDto: SearchComplaintDto!): [ChatComplaints!]!
+  getUserComplaints(searchComplaintDto: SearchComplaintDto!): [UserComplaints!]!
+  getChatRoomList(postId: Float!): [ChatRoom!]!
+  getChatListOfChatRoom(chatRoomId: Float!): [Chat!]!
+}
+
+input SearchPostDto {
+  search: String
+  minPrice: Float = 0
+  maxPrice: Float = -1
+  category: Float
+  townRange: Float
+  dealState: Float
+  perPage: Float = 10
+  page: Float = 1
+}
+
+input MyLocationDto {
+  latitude: Float!
+  longitude: Float!
+  from: Float = 0
+  size: Float = 20
+}
+
+input LoginUserDto {
+  phoneNumber: String!
+  isCertified: Boolean!
+}
+
+input GetOtherProfileDto {
+  phoneNumber: String!
+}
+
+input LoginAdminDto {
+  adminId: String!
+  adminPw: String!
+}
+
+input SearchComplaintDto {
+  complaintReason: Float
+  processState: Float
+  memo: String
+  perPage: Float = 10
+  page: Float = 1
+}
+
+type Mutation {
+  createPost(createPostDto: CreatePostDto!): Post!
+  updatePost(postId: Float!, updatePostDto: UpdatePostDto!): Post!
+  deletePost(postId: Float!): String!
+  pullupPost(postId: Float!): Post!
+  offerPriceToSeller(offerPriceDto: OfferPriceDto!): PriceOffer!
+  acceptOfferedPriceOfSeller(acceptOfferedPriceDto: AcceptOfferedPriceDto!): PriceOffer!
+  reportPost(createPostsComplaintDto: CreatePostsComplaintsDto!): PostComplaints!
+  updateDealState(postId: Float!, updateDealStateDto: UpdateDealStateDto!): Post!
+  hidePost(postId: Float!): Post!
+  clearHiddenPostState(postId: Float!): Post!
+  addLikeToPost(postsLikeDto: PostsLikeDto!): PostsLikeRecord!
+  substractLikeToPost(postsLikeDto: PostsLikeDto!): Post!
+  addViewToPost(postsViewDto: PostsViewDto!): PostsViewRecord!
+  join(joinUserDto: JoinUserDto!): String!
+  sendSMS(phoneNumber: String!): String!
+  setProfile(profileUserDto: ProfileUserDto!): User!
+  updateTownSelection(eupMyeonDong: String!): [Location!]!
+  addTown(area: String!): [Location!]!
+  deleteTown(deleteTownDto: DeleteTownDto!): [Location!]!
+  setTownCertification(myLocationDto: MyLocationDto!): String!
+  setTownRange(townRange: Float!): String!
+  buy(purchaseHistoryDto: PurchaseHistoryDto!): PurchaseHistory!
+  setMarkeingInfoAgree(marketingInfoAgree: Boolean!): User!
+  followUsers(followDto: FollowDto!): Followings!
+  deleteFollowUsers(followingId: Float!): String!
+  createSellerReview(reviewDto: ReviewDto!): SellerReview!
+  createBuyerReview(reviewDto: ReviewDto!): BuyerReview!
+  updateSellerReview(reviewDto: ReviewDto!): SellerReview!
+  updateBuyerReview(reviewDto: ReviewDto!): BuyerReview!
+  deleteSellerReview(post: Float!): String!
+  deleteBuyerReview(post: Float!): String!
+  createAdmin(adminDto: AdminDto!): Admin!
+  updateAdmin(adminDto: AdminDto!): Admin!
+  createChatRoom(createChatRoomDto: CreateChatRoomDto!): ChatRoom!
+  createChat(createChatDto: CreateChatDto!): Chat!
+  reportUserFromChat(createUsersComplaintsDto: CreateUsersComplaintsDto!): UserComplaints!
+  reportChat(createChatComplaintsDto: CreateChatComplaintsDto!): ChatComplaints!
+}
+
+input CreatePostDto {
+  title: String!
+  content: String!
+  category: Float!
+  price: Float!
+  isOfferedPrice: Boolean!
+  townRange: Float = 4
+  dealState: Float = 1
+  images: [Upload!]
+}
+
+"""The `Upload` scalar type represents a file upload."""
+scalar Upload
+
+input UpdatePostDto {
+  title: String!
+  content: String!
+  category: Float!
+  price: Float!
+  isOfferedPrice: Boolean!
+  townRange: Float!
+  images: [Upload!]
+}
+
+input OfferPriceDto {
+  offerPrice: Float!
+  post: Float!
+}
+
+input AcceptOfferedPriceDto {
+  accept: Boolean!
+  priceOfferId: Float!
+}
+
+input CreatePostsComplaintsDto {
+  post: Float!
+  complaintReason: Float!
+}
+
+input UpdateDealStateDto {
+  dealState: Float!
+}
+
+input PostsLikeDto {
+  post: Float!
+}
+
+input PostsViewDto {
+  post: Float!
+}
+
+input JoinUserDto {
+  area: String!
+  marketingInfoAgree: Boolean!
+  phoneNumber: String!
+  isCertified: Boolean!
+}
+
+input ProfileUserDto {
+  userName: String
+  profileImage: Upload
+}
+
+input DeleteTownDto {
+  deleteDupMyeonDong: String!
+  addArea: String
+}
+
+input PurchaseHistoryDto {
+  post: Float!
+}
+
+input FollowDto {
+  followerUser: String!
+}
+
+input ReviewDto {
+  post: Float!
+  score: Float!
+  selectedMannerItems: [String!]!
+  review: String!
+  retransaction: Boolean!
+}
+
+input AdminDto {
+  adminId: String!
+  adminPw: String!
+  authorities: [String!]!
+}
+
+input CreateChatRoomDto {
+  post: Float!
+}
+
+input CreateChatDto {
+  chatRoom: Float!
+  chatting: String!
+}
+
+input CreateUsersComplaintsDto {
+  subjectUserName: String!
+  complaintReason: Float!
+}
+
+input CreateChatComplaintsDto {
+  chat: Float!
+  complaintReason: Float!
+}
